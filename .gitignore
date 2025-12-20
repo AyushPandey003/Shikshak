@@ -1,2 +1,10 @@
 node_modules/
-.env
+
+# Environment files - NEVER commit these
+
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+pnpm-lock.yaml

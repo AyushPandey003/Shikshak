@@ -1,0 +1,16 @@
+# Check for .env files in staged changes
+if git diff --cached --name-only | grep -E '\.env$|\.env\.local$|\.env\.production$|\.env\.development$'; then
+  echo ""
+  echo "❌ ERROR: Attempting to commit .env file(s)!"
+  echo ""
+  echo "The following .env files are staged for commit:"
+  git diff --cached --name-only | grep -E '\.env$|\.env\.local$|\.env\.production$|\.env\.development$'
+  echo ""
+  echo "🔐 .env files contain sensitive information and should NOT be committed."
+  echo ""
+  echo "To fix this:"
+  echo "  1. Run: git reset HEAD <filename>"
+  echo "  2. Make sure .env is in your .gitignore"
+  echo ""
+  exit 1
+fi
