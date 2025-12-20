@@ -67,4 +67,48 @@ export const handleUpdateProfile = async (req: IncomingMessage, res: ServerRespo
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Internal Server Error', details: error.message }));
     }
+
+};
+
+export const handleGetProfile = async (req: IncomingMessage, res: ServerResponse) => {
+    setCorsHeaders(res);
+    if (req.method === 'OPTIONS') {
+        res.writeHead(200);
+        res.end();
+        return;
+    }
+
+    if (req.method !== 'GET') {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Method Not Allowed' }));
+        return;
+    }
+
+    try {
+        const session = await auth.api.getSession({
+            headers: fromNodeHeaders(req.headers)
+        });
+
+        if (!session) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Unauthorized' }));
+            return;
+        }
+
+        const user = await User.findById(session.user.id);
+
+        if (!user) {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'User not found' }));
+            return;
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ user }));
+
+    } catch (error: any) {
+        console.error('Get Profile Error:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal Server Error' }));
+    }
 };

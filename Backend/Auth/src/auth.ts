@@ -16,6 +16,7 @@ export const auth = betterAuth({
             client
         }),
     experimental: { joins: true },
+    trustedOrigins: ["http://localhost:3001"],
     socialProviders: {
         google: {
             clientId: process.env.GOOGLE_CLIENT_ID || "",

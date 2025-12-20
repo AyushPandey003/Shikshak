@@ -21,7 +21,8 @@ export const parseBody = (req: IncomingMessage): Promise<any> => {
 };
 
 export const setCorsHeaders = (res: ServerResponse) => {
-    res.setHeader('Access-Control-Allow-Origin', '*'); // Adjust for production
+    // In production, check req.headers.origin against a whitelist
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PATCH, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
