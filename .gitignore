@@ -9,4 +9,6 @@ node_modules/
 .env.test
 pnpm-lock.yaml
 
+.env    
+
 
