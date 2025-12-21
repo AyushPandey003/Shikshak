@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-}, { discriminatorKey: 'role', timestamps: true });
+}, { discriminatorKey: 'role', timestamps: true, collection: 'user' });
 
 const User = mongoose.model('User', userSchema);
 
@@ -46,7 +46,7 @@ const Teacher = User.discriminator('teacher', new mongoose.Schema({
 // Student Discriminator
 const Student = User.discriminator('student', new mongoose.Schema({
     class: String,
-    courseId: String,
+    courses: [String],
 }));
 
 // Parent Discriminator

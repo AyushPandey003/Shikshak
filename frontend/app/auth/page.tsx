@@ -11,14 +11,20 @@ export default function Home() {
   const router = useRouter();
 
   // Global State
-  const { session, isAuthLoading, user, setProfile } = useAppStore();
+  const { session, isAuthLoading, user, setProfile, profile } = useAppStore();
+
+  React.useEffect(() => {
+    if (session && profile) {
+      router.push('/');
+    }
+  }, [session, profile, router]);
 
   // 2. Profile Handler: Details -> Dashboard (or next step)
   const handleProfileSubmit = async (profile: UserProfile) => {
     console.log("Saving Profile to Backend:", { user: session?.user, ...profile });
 
     try {
-      const response = await fetch('http://localhost:4000/api/user/update-profile', {
+      const response = await fetch('http://localhost:4000/authentication/user_detail', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

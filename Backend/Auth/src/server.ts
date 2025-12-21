@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db';
 import { auth } from './auth';
 import { toNodeHandler } from "better-auth/node";
-import { handleUpdateProfile } from './controllers/userController';
+import { getUser, handleUpdateProfile } from './controllers/userController';
 import { setCorsHeaders } from './utils/httpUtils';
 
 dotenv.config();
@@ -26,14 +26,28 @@ const server = http.createServer(async (req, res) => {
 
     const start = Date.now();
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-
     if (req.url?.startsWith('/api/auth')) {
-        // Better Auth Handler
+        console.log(`[DEBUG] Checking auth route: ${req.url}`);
+        // Handle custom auth endpoints first (before Better Auth)
+        if (req.url === '/api/auth/get_user') {
+            console.log('[DEBUG] Routing to getUser');
+            return getUser(req, res);
+        }
+        if (req.url === '/api/auth/user_detail') {
+            console.log('[DEBUG] Routing to handleUpdateProfile');
+            return handleUpdateProfile(req, res);
+        }
+        // Better Auth Handler for all other /api/auth routes
+        console.log('[DEBUG] Routing to Better Auth');
         return toNodeHandler(auth)(req, res);
-    } else if (req.url === '/api/user/update-profile') {
-        // User Profile Update
+    } else if (req.url === '/user_detail') {
+        // User Profile Update (direct access)
         return handleUpdateProfile(req, res);
-    } else {
+    } else if (req.url === '/get_user') {
+        // Get User (direct access)
+        return getUser(req, res);
+    }
+    else {
         // Serve static files from public folder
         let filePath = req.url === '/' ? '/index.html' : req.url;
         const fullPath = path.join(__dirname, '../public', filePath || '');

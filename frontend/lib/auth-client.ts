@@ -1,7 +1,8 @@
 import { createAuthClient } from "better-auth/react"
 
 export const authClient = createAuthClient({
-    baseURL: "http://localhost:4000", // Pointing to Backend Port 3000
+    baseURL: "http://localhost:4000",
+    basePath: "/authentication", // Maps to /api/auth on backend via API Gateway
     fetchOptions: {
         credentials: "include",
     }
