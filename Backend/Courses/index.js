@@ -1,5 +1,6 @@
 import express from "express";
 import authRoutes from "./routes/courses.js";
+import uploadRoutes from "./routes/upload.js";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.get("/", (req, res) => {
 
 // Courses routes
 app.use("/", authRoutes);
+app.use("/upload", uploadRoutes);
 
 const PORT = 4002;
 app.listen(PORT, () => {

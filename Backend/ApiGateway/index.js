@@ -17,7 +17,15 @@ const limiter = rateLimit({
 
 app.use(limiter);
 app.use(cors({
-  origin: "http://localhost:3001",
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile api or curl requests), or localhost:3001
+    const allowedOrigins = ["http://localhost:3001", "null"];
+    if (!origin || allowedOrigins.indexOf(origin) !== -1 || origin.startsWith("file://")) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 // app.use(express.json()); // Removed to prevent body stream consumption before proxy

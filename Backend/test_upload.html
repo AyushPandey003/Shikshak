@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test File Upload</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #response {
+            margin-top: 20px;
+            pading: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            display: none;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>📂 Upload Test</h2>
+        <form id="uploadForm">
+            <div class="form-group">
+                <label for="fileInput">Select File:</label>
+                <input type="file" id="fileInput" name="file" required>
+            </div>
+            <button type="submit">Upload via Gateway</button>
+        </form>
+        <div id="response"></div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('fileInput');
+            const responseDiv = document.getElementById('response');
+
+            if (!fileInput.files[0]) {
+                alert('Please select a file!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            responseDiv.style.display = 'block';
+            responseDiv.innerText = 'Uploading...';
+
+            try {
+                // Testing via API Gateway (Port 4000) -> /courses/upload
+                const res = await fetch('http://localhost:4000/courses/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+                if (data.url) {
+                    responseDiv.innerHTML = `<strong>Status:</strong> Success<br>` +
+                        `<strong>Message:</strong> ${data.message}<br>` +
+                        `<strong>Blob Name:</strong> <code>${data.blobName}</code><br><br>` +
+                        `<a href="${data.url}" target="_blank" style="background:green; color:white; padding:5px 10px; text-decoration:none; border-radius:4px;">View File (SAS URL)</a>` +
+                        `<br><br><small>Raw JSON: <pre>${JSON.stringify(data, null, 2)}</pre></small>`;
+                }
+
+            } catch (error) {
+                responseDiv.innerText = 'Error: ' + error.message;
+            }
+        });
+    </script>
+</body>
+
+</html>

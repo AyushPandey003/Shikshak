@@ -3,7 +3,7 @@ const authMiddleware = async (req, res, next) => {
 
   const path = req.path; // removes query params
 
-  if (path === "/authentication/get-session" || "/authentication/signin") {
+  if (path === "/authentication/get-session" || path === "/authentication/signin" || path.startsWith("/courses/upload")) {
     return next();
   }
 
