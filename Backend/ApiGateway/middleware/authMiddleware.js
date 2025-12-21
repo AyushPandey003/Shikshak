@@ -3,10 +3,10 @@ import jwt from "jsonwebtoken";
 const authMiddleware = (req, res, next) => {
   // Public routes
   if (
+    req.originalUrl.startsWith("/api/auth") ||
+    req.originalUrl.startsWith("/auth/api/user") ||
     req.originalUrl.startsWith("/auth/login") ||
-    req.originalUrl.startsWith("/auth/logout") ||
-    req.originalUrl.startsWith("/courses/getall") ||
-    req.originalUrl.startsWith("/courses/get_course")
+    req.originalUrl.startsWith("/auth/logout")
   ) {
     return next();
   }

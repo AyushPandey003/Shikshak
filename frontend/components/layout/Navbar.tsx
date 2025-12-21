@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Logo from '@/components/ui/Logo';
 import { authClient } from '@/lib/auth-client';
+import { useAppStore } from '@/store/useAppStore';
 import { User, LogOut, ChevronDown } from 'lucide-react'; // Added icons
 
 const Navbar: React.FC = () => {
@@ -16,7 +17,8 @@ const Navbar: React.FC = () => {
   const router = useRouter();
   const isHomePage = pathname === '/';
 
-  const { data: session } = authClient.useSession();
+  const { session } = useAppStore();
+  console.log(session)
 
   const handleLogout = async () => {
     await authClient.signOut();

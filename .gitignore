@@ -8,4 +8,7 @@ node_modules/
 .env.production
 .env.test
 pnpm-lock.yaml
-.env
+
+.env    
+
+
