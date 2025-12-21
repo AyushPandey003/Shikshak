@@ -13,14 +13,15 @@ export interface Course {
   rating: number;
   students: number;
   image: string;
-  
+
   // New Fields
   subject: string;      // e.g., Mathematics
   grade: string;        // e.g., 10th Class
   board: string;        // e.g., CBSE
-  
+
   tags: string[]; // e.g. "Best Seller", "Bundle"
   isBundle?: boolean;
+  type?: string;
 }
 
 export type SortOption = 'relevance' | 'price-low' | 'price-high' | 'rating';

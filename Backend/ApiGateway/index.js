@@ -16,14 +16,23 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+  origin: "http://localhost:3001",
+  credentials: true
+}));
+// app.use(express.json()); // Removed to prevent body stream consumption before proxy
 
 // 🔹 Global middleware
 app.use(authMiddleware);
 
 // 🔓 Public routes
-app.use("/auth", authProxy);
+// 🔓 Public routes - Manual check to ensure no path stripping
+app.use((req, res, next) => {
+  if (req.url.startsWith("/auth") || req.url.startsWith("/api/auth") || req.url.startsWith("/api/user")) {
+    return authProxy(req, res, next);
+  }
+  next();
+});
 
 // 🔐 Protected routes
 app.use("/courses", courseProxy);

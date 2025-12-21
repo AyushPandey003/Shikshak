@@ -5,7 +5,7 @@ import { auth } from '../auth';
 import { fromNodeHeaders } from "better-auth/node";
 
 export const handleUpdateProfile = async (req: IncomingMessage, res: ServerResponse) => {
-    setCorsHeaders(res);
+    setCorsHeaders(req, res);
     if (req.method === 'OPTIONS') {
         res.writeHead(200);
         res.end();

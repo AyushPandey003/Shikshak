@@ -17,7 +17,7 @@ const PORT = process.env.PORT;
 
 const server = http.createServer(async (req, res) => {
     // Handle CORS for all requests first
-    setCorsHeaders(res);
+    setCorsHeaders(req, res);
     if (req.method === 'OPTIONS') {
         res.writeHead(200);
         res.end();
