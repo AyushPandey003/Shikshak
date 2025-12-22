@@ -189,94 +189,146 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
     setShowSettings(false);
   };
 
+
+  // Controls Visibility State
+  const [showControls, setShowControls] = useState(false);
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleUserActivity = () => {
+    setShowControls(true);
+    if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
+    }
+    if (isPlaying) {
+        controlsTimeoutRef.current = setTimeout(() => {
+            setShowControls(false);
+        }, 3000);
+    }
+  };
+
+  const handleContainerClick = (e: React.MouseEvent) => {
+    // If clicking on controls, don't toggle
+    if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('input')) return;
+    
+    // Toggle controls on click/tap
+    setShowControls(prev => !prev);
+    if (!showControls) {
+        // If we are showing them, set the auto-hide timer
+        handleUserActivity();
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isPlaying) {
+        setShowControls(false);
+    }
+  };
+
+  // Reset timer on play/pause
+  useEffect(() => {
+      if(isPlaying) {
+          handleUserActivity();
+      } else {
+          setShowControls(true); // Always show when paused
+          if(controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+      }
+  }, [isPlaying]);
+
   return (
     <div 
       ref={containerRef}
       className={`relative w-full h-full bg-black overflow-hidden shadow-2xl group ring-1 ring-white/10 ${isFullscreen ? 'rounded-none' : 'rounded-lg'}`}
       onContextMenu={(e) => e.preventDefault()}
+      onMouseMove={handleUserActivity}
+      onMouseLeave={handleMouseLeave}
+      onClick={handleContainerClick} // Handle Tap/Click for visibility
     >
       <video
         ref={videoRef}
         src={src}
         className="w-full h-full object-contain cursor-pointer"
         poster={poster}
-        onClick={togglePlay}
+        // onClick handled by container to toggle UI
+        playsInline
       />
 
       {/* Loading Spinner */}
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
           <Loader2 className="w-12 h-12 text-white/50 animate-spin" />
         </div>
       )}
 
-      {/* Big Play Button Overlay */}
-      {!isPlaying && !isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-colors">
+      {/* Big Play Button Overlay - Only when Paused and Controls Visible (or initial) */}
+      {!isPlaying && !isLoading && showControls && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/10 z-20 pointer-events-none">
           <button 
-            onClick={togglePlay}
-            className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:bg-indigo-600/90 shadow-2xl ring-1 ring-white/20"
+            onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+            className="w-16 h-16 sm:w-20 sm:h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:bg-indigo-600/90 shadow-2xl ring-1 ring-white/20 pointer-events-auto"
           >
-             <Play className="w-8 h-8 text-white fill-white ml-2" />
+             <Play className="w-6 h-6 sm:w-8 sm:h-8 text-white fill-white ml-2" />
           </button>
         </div>
       )}
 
       {/* Controls Bar */}
-      <div className={`
-        absolute bottom-0 left-0 right-0 p-4 pt-16 bg-gradient-to-t from-black/90 via-black/60 to-transparent 
-        transition-opacity duration-300
-        ${!isPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
-      `}>
+      <div 
+        className={`
+            absolute bottom-0 left-0 right-0 p-3 sm:p-4 pt-16 bg-gradient-to-t from-black/90 via-black/60 to-transparent 
+            transition-opacity duration-300 z-30
+            ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+        `}
+        onClick={(e) => e.stopPropagation()} // Prevent container click when interacting with bar
+      >
         {/* Progress Bar with Scrubbing */}
         <div 
           ref={progressBarRef}
-          className="relative w-full h-1.5 bg-white/30 rounded-full mb-4 cursor-pointer hover:h-2.5 transition-all group/progress"
+          className="relative w-full h-1 sm:h-1.5 bg-white/30 rounded-full mb-3 sm:mb-4 cursor-pointer hover:h-2 sm:hover:h-2.5 transition-all group/progress"
           onMouseDown={handleMouseDown}
         >
           <div 
             className="h-full bg-indigo-500 rounded-full relative"
             style={{ width: `${(currentTime / duration) * 100}%` }}
           >
-            <div className={`absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg ${isScrubbing ? 'scale-100' : 'scale-0 group-hover/progress:scale-100'} transition-transform duration-200`} />
+            <div className={`absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full shadow-lg ${isScrubbing ? 'scale-100' : 'scale-0 group-hover/progress:scale-100'} transition-transform duration-200`} />
           </div>
         </div>
 
         <div className="flex items-center justify-between z-20 relative">
-          <div className="flex items-center gap-6">
-             <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-6">
+             <div className="flex items-center gap-2 sm:gap-4">
                 <button 
                   onClick={() => skip(-10)} 
-                  className="text-white/90 hover:text-indigo-400 transition-colors transform hover:scale-110"
+                  className="text-white/90 hover:text-indigo-400 transition-colors transform active:scale-95 p-1"
                   title="-10s"
                 >
-                  <SkipBack className="w-5 h-5"/>
+                  <SkipBack className="w-4 h-4 sm:w-5 sm:h-5"/>
                 </button>
                 
                 <button 
                   onClick={togglePlay} 
-                  className="text-white hover:text-indigo-400 transition-colors transform hover:scale-110"
+                  className="text-white hover:text-indigo-400 transition-colors transform active:scale-95 p-1"
                 >
                   {isPlaying ? (
-                    <Pause className="w-7 h-7 fill-white"/>
+                    <Pause className="w-6 h-6 sm:w-7 sm:h-7 fill-white"/>
                   ) : (
-                    <Play className="w-7 h-7 fill-white"/>
+                    <Play className="w-6 h-6 sm:w-7 sm:h-7 fill-white"/>
                   )}
                 </button>
                 
                 <button 
                   onClick={() => skip(10)} 
-                  className="text-white/90 hover:text-indigo-400 transition-colors transform hover:scale-110"
+                  className="text-white/90 hover:text-indigo-400 transition-colors transform active:scale-95 p-1"
                   title="+10s"
                 >
-                  <SkipForward className="w-5 h-5"/>
+                  <SkipForward className="w-4 h-4 sm:w-5 sm:h-5"/>
                 </button>
              </div>
              
-             {/* Volume Control */}
-             <div className="flex items-center gap-2 group/vol">
-                <button onClick={toggleMute} className="text-white/90 hover:text-indigo-400 transition-colors">
-                  {isMuted || volume === 0 ? <VolumeX className="w-5 h-5"/> : <Volume2 className="w-5 h-5"/>}
+             {/* Volume Control - Hidden on very small screens if needed, or compact */}
+             <div className="hidden xs:flex items-center gap-2 group/vol">
+                <button onClick={toggleMute} className="text-white/90 hover:text-indigo-400 transition-colors p-1">
+                  {isMuted || volume === 0 ? <VolumeX className="w-4 h-4 sm:w-5 sm:h-5"/> : <Volume2 className="w-4 h-4 sm:w-5 sm:h-5"/>}
                 </button>
                 <input 
                   type="range" 
@@ -285,31 +337,31 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
                   step="0.1" 
                   value={isMuted ? 0 : volume} 
                   onChange={handleVolumeChange}
-                  className="w-0 overflow-hidden group-hover/vol:w-20 transition-all duration-300 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full"
+                  className="w-16 sm:w-0 overflow-hidden sm:group-hover/vol:w-20 transition-all duration-300 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full"
                 />
              </div>
 
-             <div className="flex items-center gap-2 text-white text-sm font-medium font-mono tracking-wider ml-2 select-none">
+             <div className="flex items-center gap-1 sm:gap-2 text-white text-[10px] sm:text-sm font-medium font-mono tracking-wider ml-1 sm:ml-2 select-none">
                 <span>{formatTime(currentTime)}</span>
                 <span className="text-white/40">/</span>
                 <span>{formatTime(duration || 0)}</span>
              </div>
           </div>
 
-          <div className="flex items-center gap-4 relative">
+          <div className="flex items-center gap-2 sm:gap-4 relative">
             
             {/* Settings Menu Trigger */}
             <div className="relative">
               <button 
                 onClick={() => setShowSettings(!showSettings)} 
-                className={`text-white/90 hover:text-indigo-400 transition-colors transform ${showSettings ? 'rotate-90 text-indigo-400' : ''}`}
+                className={`text-white/90 hover:text-indigo-400 transition-colors transform p-1 ${showSettings ? 'rotate-90 text-indigo-400' : ''}`}
               >
-                <Settings className="w-5 h-5"/>
+                <Settings className="w-4 h-4 sm:w-5 sm:h-5"/>
               </button>
               
-              {/* Settings Menu - White Theme */}
+              {/* Settings Menu */}
               {showSettings && (
-                <div className="absolute bottom-12 right-0 bg-white rounded-xl p-3 w-56 shadow-2xl border border-gray-100 text-sm animate-in fade-in slide-in-from-bottom-2 z-50">
+                <div className="absolute bottom-10 right-0 bg-white rounded-xl p-3 w-48 sm:w-56 shadow-2xl border border-gray-100 text-sm animate-in fade-in slide-in-from-bottom-2 z-50">
                    {/* Speed Section */}
                    <div className="pb-3 border-b border-gray-100 mb-3">
                       <div className="px-2 py-1 text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Speed</div>
@@ -318,7 +370,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
                           <button 
                             key={s}
                             onClick={() => changeSpeed(s)}
-                            className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${playbackSpeed === s ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                            className={`flex-1 py-1.5 rounded-md text-[10px] sm:text-xs font-bold transition-all ${playbackSpeed === s ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                           >
                             {s}x
                           </button>
@@ -346,8 +398,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
               )}
             </div>
 
-            <button onClick={toggleFullscreen} className="text-white/90 hover:text-indigo-400 transition-colors">
-              {isFullscreen ? <Minimize className="w-5 h-5"/> : <Maximize className="w-5 h-5"/>}
+            <button onClick={toggleFullscreen} className="text-white/90 hover:text-indigo-400 transition-colors p-1">
+              {isFullscreen ? <Minimize className="w-4 h-4 sm:w-5 sm:h-5"/> : <Maximize className="w-4 h-4 sm:w-5 sm:h-5"/>}
             </button>
           </div>
         </div>
