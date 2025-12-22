@@ -1,10 +1,12 @@
 import express from "express";
 import authRoutes from "./routes/courses.js";
 import uploadRoutes from "./routes/upload.js";
-
+import connectDB from "./db/index.js";
 const app = express();
 
 app.use(express.json());
+
+connectDB();
 
 // Health check
 app.get("/", (req, res) => {
