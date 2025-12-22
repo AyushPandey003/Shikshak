@@ -148,12 +148,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
       }
   }, [isPlaying]);
 
+  // Use a ref to track scrubbing state for the event listener
+  // This avoids re-binding the event listener whenever isScrubbing changes
+  const isScrubbingRef = useRef(isScrubbing);
+  useEffect(() => {
+      isScrubbingRef.current = isScrubbing;
+  }, [isScrubbing]);
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     const onTimeUpdate = () => {
-        if (!isScrubbing) {
+        // Check the ref current value
+        if (!isScrubbingRef.current) {
             setCurrentTime(video.currentTime);
         }
     };
@@ -171,6 +179,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
     video.addEventListener('canplay', onCanPlay);
     video.addEventListener('ended', onEnded);
 
+    // Initial check for metadata in case it's already loaded
+    if (video.readyState >= 1) {
+        setDuration(video.duration);
+        setIsLoading(false);
+    }
+
     return () => {
       video.removeEventListener('timeupdate', onTimeUpdate);
       video.removeEventListener('loadedmetadata', onLoadedMetadata);
@@ -178,7 +192,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
       video.removeEventListener('canplay', onCanPlay);
       video.removeEventListener('ended', onEnded);
     };
-  }, [isScrubbing]); // Dependency on isScrubbing is crucial
+  }, [src]); // Re-bind if src changes to ensure we catch new metadata
 
   return (
     <div 

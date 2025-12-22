@@ -38,6 +38,7 @@ const VideoProgressBar: React.FC<VideoProgressBarProps> = ({ currentTime, durati
                 const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
                 const newTime = pos * duration;
                 setParentCurrentTime(newTime);
+                videoRef.current.currentTime = newTime; // Live scrubbing
             }
         };
 
@@ -71,7 +72,7 @@ const VideoProgressBar: React.FC<VideoProgressBarProps> = ({ currentTime, durati
         >
           <div 
             className="h-full bg-indigo-500 rounded-full relative"
-            style={{ width: `${(currentTime / duration) * 100}%` }}
+            style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
           >
             <div className={`absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full shadow-lg ${isScrubbing ? 'scale-100' : 'scale-0 group-hover/progress:scale-100'} transition-transform duration-200`} />
           </div>
