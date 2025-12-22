@@ -71,7 +71,7 @@ export default function ModulePage() {
                 <div className="flex-1 flex flex-col w-full relative overflow-hidden bg-white">
                     
                     {/* Content Scrollable Area */}
-                    <div className="flex-1 overflow-y-auto">
+                    <div className="flex-1 overflow-y-auto scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                         <div className="p-0 sm:p-6 lg:p-8 max-w-[1200px] mx-auto w-full">
                             
                             {/* Toggle Sidebar Button (if closed or mobile) */}

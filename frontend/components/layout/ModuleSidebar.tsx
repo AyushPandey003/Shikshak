@@ -68,7 +68,7 @@ const ModuleSidebar: React.FC<ModuleSidebarProps> = ({ sections, activeLectureId
             </div>
 
             {/* Content List */}
-            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400">
+            <div className="flex-1 overflow-y-auto scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                 {sections.map((section, idx) => (
                     <div key={section.id} className="border-b border-gray-100 last:border-none">
                         
