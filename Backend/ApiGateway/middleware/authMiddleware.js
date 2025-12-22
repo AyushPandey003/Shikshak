@@ -3,7 +3,23 @@ const authMiddleware = async (req, res, next) => {
 
   const path = req.path; // removes query params
 
-  if (path === "/authentication/get-session" || path === "/authentication/signin" || path.startsWith("/courses/upload")) {
+  // Skip auth validation for public authentication routes
+  // These routes either don't require auth or are part of the auth flow itself
+  const publicAuthPaths = [
+    "/authentication/get-session",
+    "/authentication/sign-in",      // Better Auth sign-in routes
+    "/authentication/signin",       // Legacy format
+    "/authentication/sign-up",      // Sign-up routes
+    "/authentication/signup",       // Legacy format
+    "/authentication/sign-out",     // Sign-out routes
+    "/authentication/signout",      // Legacy format
+    "/authentication/callback",     // OAuth callbacks
+    "/authentication/error",        // Auth error pages
+  ];
+
+  const isPublicAuthRoute = publicAuthPaths.some(p => path.startsWith(p)) || path.startsWith("/courses/upload");
+
+  if (isPublicAuthRoute) {
     return next();
   }
 
