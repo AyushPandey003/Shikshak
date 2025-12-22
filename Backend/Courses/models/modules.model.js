@@ -7,16 +7,18 @@ const moduleSchema = new mongoose.Schema(
             ref: "Course",
             required: true,
         },
-        video_id: {
-            type: String,
-        },
-        notes_id: {
-            type: String,
-        },
-        description: {
+        title: {
             type: String,
             required: true,
         },
+        video_id: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Video",
+        }],
+        notes_id: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Notes",
+        }]
     },
     { timestamps: true }
 );

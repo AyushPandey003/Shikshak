@@ -66,6 +66,12 @@ const courseSchema = new mongoose.Schema(
                 type: String,
             },
         ],
+        reviews: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Review",
+            },
+        ],
     },
     { timestamps: true }
 );
