@@ -5,8 +5,11 @@ import { useRouter, useParams } from 'next/navigation';
 import { SAMPLE_COURSE } from '@/constants/coursedetails';
 import VideoPlayer from '@/components/ui/VideoPlayer';
 import ModuleSidebar from '@/components/layout/ModuleSidebar';
-import { ArrowLeft, Menu, X, ThumbsUp, ThumbsDown, Flag, ArrowRight, FileText, Download, BookOpen } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar'; 
+import SidebarCollapsedStrip from '@/components/learn/SidebarCollapsedStrip';
+import CourseInfoTabs from '@/components/learn/CourseInfoTabs';
+import LearnPageFooter from '@/components/learn/LearnPageFooter';
+import { Menu } from 'lucide-react'; // Retaining Menu for mobile button if needed, though Footer handles it
 
 export default function ModulePage() {
     const router = useRouter();
@@ -50,15 +53,7 @@ export default function ModulePage() {
                 {/* Left Sidebar Logic */}
                 {/* Desktop: Collapsed State (Thin Strip) */}
                 {!isSidebarOpen && !isMobile && (
-                     <div className="hidden lg:flex flex-col w-[60px] bg-white border-r border-gray-200 z-30 shrink-0 items-center py-4 transition-all duration-300">
-                        <button 
-                            onClick={() => setSidebarOpen(true)}
-                            className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"
-                            title="Open Sidebar"
-                        >
-                            <Menu className="w-6 h-6" />
-                        </button>
-                     </div>
+                     <SidebarCollapsedStrip onOpen={() => setSidebarOpen(true)} />
                 )}
 
                 {/* Actual Sidebar Content */}
@@ -88,7 +83,6 @@ export default function ModulePage() {
                     <div className="flex-1 overflow-y-auto scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                         <div className="p-4 sm:p-6 lg:p-8 max-w-[1200px] mx-auto w-full">
                             
-                            
                             {/* Video Player Container */}
                             <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-black mb-6 sm:mb-8">
                                 <div className="aspect-video w-full">
@@ -102,146 +96,17 @@ export default function ModulePage() {
                                     {activeLecture?.title}
                                 </h1>
                                 
-                            {/* Tabs Interface */}
-                            <div className="mb-6">
-                                <div className="border-b border-gray-200 flex items-center gap-6 sm:gap-8 text-sm font-bold text-gray-600 mb-6 overflow-x-auto scrollbar-hide pb-1">
-                                    <button 
-                                        onClick={() => setActiveTab('description')}
-                                        className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === 'description' ? 'border-blue-600 text-blue-700' : 'border-transparent hover:text-gray-900'}`}
-                                    >
-                                        Description
-                                    </button>
-                                    <button 
-                                        onClick={() => setActiveTab('transcript')}
-                                        className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === 'transcript' ? 'border-blue-600 text-blue-700' : 'border-transparent hover:text-gray-900'}`}
-                                    >
-                                        Transcript
-                                    </button>
-                                    <button 
-                                        onClick={() => setActiveTab('notes')}
-                                        className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === 'notes' ? 'border-blue-600 text-blue-700' : 'border-transparent hover:text-gray-900'}`}
-                                    >
-                                        Notes
-                                    </button>
-                                    <button 
-                                        onClick={() => setActiveTab('downloads')}
-                                        className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === 'downloads' ? 'border-blue-600 text-blue-700' : 'border-transparent hover:text-gray-900'}`}
-                                    >
-                                        Downloads
-                                    </button>
-                                </div>
-
-                                {/* Tab Content */}
-                                <div className="min-h-[200px] text-gray-700 leading-relaxed text-[15px]">
-                                    {activeTab === 'description' && (
-                                        <div className="prose prose-indigo prose-lg max-w-none text-gray-600">
-                                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">
-                                                About this lesson
-                                            </h3>
-                                            <p className="mb-4 text-[15px] sm:text-base leading-relaxed">
-                                                {activeLecture?.description || "No description available for this lesson."}
-                                            </p>
-                                        </div>
-                                    )}
-                                    {/* ... (rest of tab content usually unchanged, but verify styles if needed) ... */}
-                                    {/* For brevity, assuming other tabs are fine, let's just make sure the block closes properly later */}
-                                    {activeTab === 'transcript' && (
-                                        <div className="space-y-4">
-                                            <div className="flex gap-4">
-                                                <span className="text-xs text-blue-600 font-bold min-w-[30px] pt-1">0:00</span>
-                                                <p className="text-sm sm:text-base">Welcome to this lecture on {activeLecture?.title}. In this session, we will explore the fundamental concepts that form the building blocks of our module.</p>
-                                            </div>
-                                            <div className="flex gap-4">
-                                                <span className="text-xs text-blue-600 font-bold min-w-[30px] pt-1">0:30</span>
-                                                <p className="text-sm sm:text-base">Often, students find this topic challenging because of the abstract nature. However, by using real-world examples, we simplify the understanding.</p>
-                                            </div>
-                                            <div className="flex gap-4">
-                                                <span className="text-xs text-blue-600 font-bold min-w-[30px] pt-1">1:15</span>
-                                                <p className="text-sm sm:text-base">Let's look at the first example displayed on the screen. Notice the pattern here?</p>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {activeTab === 'notes' && (
-                                        <div className="bg-yellow-50 p-6 rounded-lg border border-yellow-100">
-                                            <div className="flex items-center gap-2 font-bold text-gray-800 mb-3">
-                                                <BookOpen className="w-5 h-5 text-yellow-600" />
-                                                <span>Your Notes</span>
-                                            </div>
-                                            <p className="text-gray-600 italic text-sm sm:text-base">You haven't added any notes for this lecture yet. Click "Save note" to add one.</p>
-                                        </div>
-                                    )}
-                                     {activeTab === 'downloads' && (
-                                        <div className="space-y-3">
-                                            <div className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors">
-                                                <div className="flex items-center gap-3 sm:gap-4">
-                                                    <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center group-hover:bg-red-100 transition-colors">
-                                                        <FileText className="w-5 h-5 text-red-500" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-medium text-gray-900 text-sm sm:text-base">Lecture Slides.pdf</p>
-                                                        <p className="text-xs text-gray-500">2.4 MB • PDF Document</p>
-                                                    </div>
-                                                </div>
-                                                <button className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-                                                    <Download className="w-4 h-4 text-gray-500" />
-                                                </button>
-                                            </div>
-                                            <div className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors">
-                                                <div className="flex items-center gap-3 sm:gap-4">
-                                                     <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-                                                        <FileText className="w-5 h-5 text-blue-500" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-medium text-gray-900 text-sm sm:text-base">Source Code.zip</p>
-                                                         <p className="text-xs text-gray-500">156 KB • ZIP Archive</p>
-                                                    </div>
-                                                </div>
-                                                <button className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-                                                     <Download className="w-4 h-4 text-gray-500" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+                                <CourseInfoTabs 
+                                    activeTab={activeTab} 
+                                    setActiveTab={setActiveTab} 
+                                    activeLecture={activeLecture} 
+                                />
                             </div>
                         </div>
                     </div>
-
 
                     {/* Footer Actions */}
-                    <div className="border-t border-gray-200 bg-white z-30 shrink-0">
-                         <div className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-4">
-                            
-                            {/* Mobile: Sidebar Toggle */}
-                            <button 
-                                onClick={toggleSidebar}
-                                className="lg:hidden p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                                title="Course Content"
-                            >
-                                <Menu className="w-6 h-6" />
-                            </button>
-
-                            {/* Desktop: Like/Dislike Actions */}
-                            <div className="hidden lg:flex items-center gap-6">
-                                <button className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
-                                    <ThumbsUp className="w-4 h-4" /> Like
-                                </button>
-                                <button className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors">
-                                    <ThumbsDown className="w-4 h-4" /> Dislike
-                                </button>
-                                <button className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors">
-                                    <Flag className="w-4 h-4" /> Report
-                                </button>
-                            </div>
-                            
-                            {/* Next Item Button */}
-                            <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-all shadow-sm active:scale-95">
-                                <span>Next item</span>
-                                <ArrowRight className="w-4 h-4" />
-                            </button>
-                        </div>
-                    </div>
+                    <LearnPageFooter onToggleSidebar={toggleSidebar} />
 
                 </div>
 
@@ -253,6 +118,14 @@ export default function ModulePage() {
                     />
                 )}
             </div>
+            
+             {/* Mobile Sidebar Toggle Button (Floating) - Ensuring it's removed if redundant, checking page.tsx logic previously.. 
+                 Wait, I removed the floating button in previous steps but added it back in one edit? 
+                 In the current page.tsx content (lines 209-245), the toggle is in the Footer. 
+                 There is no floating button in the main content area anymore except the one I removed.
+                 BUT, checking line 217 in previous view... yes, footer has it.
+                 So I don't need to add any extra floating button here.
+             */}
         </div>
     );
 }

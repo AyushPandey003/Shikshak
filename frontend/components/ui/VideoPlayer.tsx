@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Loader2 } from 'lucide-react';
+import { Play, Pause, Maximize, Minimize, SkipBack, SkipForward, Loader2 } from 'lucide-react';
+import VideoProgressBar from './video-player/VideoProgressBar';
+import VideoVolumeControl from './video-player/VideoVolumeControl';
+import VideoSettingsMenu from './video-player/VideoSettingsMenu';
+import VideoPlayOverlay from './video-player/VideoPlayOverlay';
 
 interface VideoPlayerProps {
   src: string;
@@ -20,7 +24,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const progressBarRef = useRef<HTMLDivElement>(null);
+  
+  // Note: progressBarRef and isScrubbing state moved to VideoProgressBar component
+  // We just need to handle updates from it.
 
   useEffect(() => {
     const video = videoRef.current;
@@ -60,77 +66,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
       setIsPlaying(!isPlaying);
     }
   };
-
-  // Scrubbing State
-  const [isScrubbing, setIsScrubbing] = useState(false);
-
-  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!progressBarRef.current || !videoRef.current) return;
-    const rect = progressBarRef.current.getBoundingClientRect();
-    const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)); // Clamp between 0 and 1
-    const newTime = pos * duration;
-    
-    // Only update video time if we are clicking, or if we are scrubbing
-    if (!isScrubbing) {
-        videoRef.current.currentTime = newTime;
-    }
-    setCurrentTime(newTime);
-  };
-
-  // Handle Dragging/Scrubbing
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    setIsScrubbing(true);
-    handleSeek(e); // Update immediately on click
-  };
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isScrubbing && progressBarRef.current && videoRef.current) {
-        const rect = progressBarRef.current.getBoundingClientRect();
-        const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-        const newTime = pos * duration;
-        setCurrentTime(newTime); // Visual update only while dragging
-      }
-    };
-
-    const handleMouseUp = (e: MouseEvent) => {
-      if (isScrubbing && videoRef.current) {
-        setIsScrubbing(false);
-        // Commit the change on mouse up
-        if(progressBarRef.current) {
-            const rect = progressBarRef.current.getBoundingClientRect();
-            const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-            const newTime = pos * duration;
-            videoRef.current.currentTime = newTime;
-            setCurrentTime(newTime);
-        }
-      }
-    };
-
-    if (isScrubbing) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isScrubbing, duration]);
-
-  // Update time from video ONLY if not scrubbing
-  useEffect(() => {
-      const video = videoRef.current;
-      if (!video) return;
-
-      const onTimeUpdate = () => {
-          if (!isScrubbing) {
-              setCurrentTime(video.currentTime);
-          }
-      };
-      video.addEventListener('timeupdate', onTimeUpdate);
-      return () => video.removeEventListener('timeupdate', onTimeUpdate);
-  }, [isScrubbing]);
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value);
@@ -259,17 +194,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
         </div>
       )}
 
-      {/* Big Play Button Overlay - Only when Paused and Controls Visible (or initial) */}
-      {!isPlaying && !isLoading && showControls && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/10 z-20 pointer-events-none">
-          <button 
-            onClick={(e) => { e.stopPropagation(); togglePlay(); }}
-            className="w-16 h-16 sm:w-20 sm:h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:bg-indigo-600/90 shadow-2xl ring-1 ring-white/20 pointer-events-auto"
-          >
-             <Play className="w-6 h-6 sm:w-8 sm:h-8 text-white fill-white ml-2" />
-          </button>
-        </div>
-      )}
+      {/* Big Play Button Overlay */}
+      <VideoPlayOverlay 
+        isPlaying={isPlaying} 
+        isLoading={isLoading} 
+        showControls={showControls} 
+        onTogglePlay={(e) => { e.stopPropagation(); togglePlay(); }} 
+      />
 
       {/* Controls Bar */}
       <div 
@@ -281,18 +212,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
         onClick={(e) => e.stopPropagation()} // Prevent container click when interacting with bar
       >
         {/* Progress Bar with Scrubbing */}
-        <div 
-          ref={progressBarRef}
-          className="relative w-full h-1 sm:h-1.5 bg-white/30 rounded-full mb-3 sm:mb-4 cursor-pointer hover:h-2 sm:hover:h-2.5 transition-all group/progress"
-          onMouseDown={handleMouseDown}
-        >
-          <div 
-            className="h-full bg-indigo-500 rounded-full relative"
-            style={{ width: `${(currentTime / duration) * 100}%` }}
-          >
-            <div className={`absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full shadow-lg ${isScrubbing ? 'scale-100' : 'scale-0 group-hover/progress:scale-100'} transition-transform duration-200`} />
-          </div>
-        </div>
+        <VideoProgressBar 
+            currentTime={currentTime} 
+            duration={duration} 
+            videoRef={videoRef} 
+            setParentCurrentTime={setCurrentTime}
+        />
 
         <div className="flex items-center justify-between z-20 relative">
           <div className="flex items-center gap-2 sm:gap-6">
@@ -325,21 +250,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
                 </button>
              </div>
              
-             {/* Volume Control - Hidden on very small screens if needed, or compact */}
-             <div className="hidden xs:flex items-center gap-2 group/vol">
-                <button onClick={toggleMute} className="text-white/90 hover:text-indigo-400 transition-colors p-1">
-                  {isMuted || volume === 0 ? <VolumeX className="w-4 h-4 sm:w-5 sm:h-5"/> : <Volume2 className="w-4 h-4 sm:w-5 sm:h-5"/>}
-                </button>
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="1" 
-                  step="0.1" 
-                  value={isMuted ? 0 : volume} 
-                  onChange={handleVolumeChange}
-                  className="w-16 sm:w-0 overflow-hidden sm:group-hover/vol:w-20 transition-all duration-300 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full"
-                />
-             </div>
+             {/* Volume Control */}
+             <VideoVolumeControl 
+                volume={volume} 
+                isMuted={isMuted} 
+                onVolumeChange={handleVolumeChange} 
+                onToggleMute={toggleMute} 
+             />
 
              <div className="flex items-center gap-1 sm:gap-2 text-white text-[10px] sm:text-sm font-medium font-mono tracking-wider ml-1 sm:ml-2 select-none">
                 <span>{formatTime(currentTime)}</span>
@@ -350,53 +267,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
 
           <div className="flex items-center gap-2 sm:gap-4 relative">
             
-            {/* Settings Menu Trigger */}
-            <div className="relative">
-              <button 
-                onClick={() => setShowSettings(!showSettings)} 
-                className={`text-white/90 hover:text-indigo-400 transition-colors transform p-1 ${showSettings ? 'rotate-90 text-indigo-400' : ''}`}
-              >
-                <Settings className="w-4 h-4 sm:w-5 sm:h-5"/>
-              </button>
-              
-              {/* Settings Menu */}
-              {showSettings && (
-                <div className="absolute bottom-10 right-0 bg-white rounded-xl p-3 w-48 sm:w-56 shadow-2xl border border-gray-100 text-sm animate-in fade-in slide-in-from-bottom-2 z-50">
-                   {/* Speed Section */}
-                   <div className="pb-3 border-b border-gray-100 mb-3">
-                      <div className="px-2 py-1 text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Speed</div>
-                      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-                        {[0.5, 1, 1.5, 2].map(s => (
-                          <button 
-                            key={s}
-                            onClick={() => changeSpeed(s)}
-                            className={`flex-1 py-1.5 rounded-md text-[10px] sm:text-xs font-bold transition-all ${playbackSpeed === s ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
-                          >
-                            {s}x
-                          </button>
-                        ))}
-                      </div>
-                   </div>
-                   
-                   {/* Quality Section (Mock) */}
-                   <div>
-                      <div className="px-2 py-1 text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Quality</div>
-                      <div className="space-y-0.5">
-                        {['1080p', '720p', '480p'].map(q => (
-                           <button 
-                            key={q} 
-                            onClick={() => changeQuality(q)}
-                            className={`w-full text-left px-3 py-2 rounded-lg flex items-center justify-between transition-colors ${quality === q ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'}`}
-                           >
-                              <span>{q}</span>
-                              {quality === q && <div className="w-2 h-2 rounded-full bg-indigo-600" />}
-                           </button>
-                        ))}
-                      </div>
-                   </div>
-                </div>
-              )}
-            </div>
+            {/* Settings Menu */}
+            <VideoSettingsMenu 
+                showSettings={showSettings} 
+                setShowSettings={setShowSettings} 
+                playbackSpeed={playbackSpeed} 
+                onChangeSpeed={changeSpeed} 
+                quality={quality} 
+                onChangeQuality={changeQuality} 
+            />
 
             <button onClick={toggleFullscreen} className="text-white/90 hover:text-indigo-400 transition-colors p-1">
               {isFullscreen ? <Minimize className="w-4 h-4 sm:w-5 sm:h-5"/> : <Maximize className="w-4 h-4 sm:w-5 sm:h-5"/>}
