@@ -18,7 +18,7 @@ export default function ModulePage() {
     const [activeLectureId, setActiveLectureId] = useState(course.sections[0]?.lectures[0]?.id);
     const [isSidebarOpen, setSidebarOpen] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
-    const [activeTab, setActiveTab] = useState<'transcript' | 'notes' | 'downloads'>('transcript');
+    const [activeTab, setActiveTab] = useState<'description' | 'transcript' | 'notes' | 'downloads'>('description');
 
     const activeLecture = course.sections
         .flatMap(s => s.lectures)
@@ -98,23 +98,30 @@ export default function ModulePage() {
                                     {activeLecture?.title}
                                 </h1>
                                 
-                                {/* Tabs */}
-                                <div className="border-b border-gray-200 flex items-center gap-8 text-sm font-semibold text-gray-600 mb-6">
+                            {/* Tabs Interface */}
+                            <div className="mb-6">
+                                <div className="border-b border-gray-200 flex items-center gap-8 text-sm font-bold text-gray-600 mb-6 overflow-x-auto scrollbar-hide">
+                                    <button 
+                                        onClick={() => setActiveTab('description')}
+                                        className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === 'description' ? 'border-blue-600 text-blue-700' : 'border-transparent hover:text-gray-900'}`}
+                                    >
+                                        Description
+                                    </button>
                                     <button 
                                         onClick={() => setActiveTab('transcript')}
-                                        className={`pb-3 border-b-2 transition-colors ${activeTab === 'transcript' ? 'border-blue-600 text-blue-700' : 'border-transparent hover:text-gray-900'}`}
+                                        className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === 'transcript' ? 'border-blue-600 text-blue-700' : 'border-transparent hover:text-gray-900'}`}
                                     >
                                         Transcript
                                     </button>
                                     <button 
                                         onClick={() => setActiveTab('notes')}
-                                        className={`pb-3 border-b-2 transition-colors ${activeTab === 'notes' ? 'border-blue-600 text-blue-700' : 'border-transparent hover:text-gray-900'}`}
+                                        className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === 'notes' ? 'border-blue-600 text-blue-700' : 'border-transparent hover:text-gray-900'}`}
                                     >
                                         Notes
                                     </button>
                                     <button 
                                         onClick={() => setActiveTab('downloads')}
-                                        className={`pb-3 border-b-2 transition-colors ${activeTab === 'downloads' ? 'border-blue-600 text-blue-700' : 'border-transparent hover:text-gray-900'}`}
+                                        className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === 'downloads' ? 'border-blue-600 text-blue-700' : 'border-transparent hover:text-gray-900'}`}
                                     >
                                         Downloads
                                     </button>
@@ -122,6 +129,16 @@ export default function ModulePage() {
 
                                 {/* Tab Content */}
                                 <div className="min-h-[200px] text-gray-700 leading-relaxed text-[15px]">
+                                    {activeTab === 'description' && (
+                                        <div className="prose prose-indigo prose-lg max-w-none text-gray-600">
+                                            <h3 className="text-xl font-bold text-gray-900 mb-4">
+                                                About this lesson
+                                            </h3>
+                                            <p className="mb-4 text-base leading-relaxed">
+                                                {activeLecture?.description || "No description available for this lesson."}
+                                            </p>
+                                        </div>
+                                    )}
                                     {activeTab === 'transcript' && (
                                         <div className="space-y-4">
                                             <div className="flex gap-4">
@@ -149,26 +166,42 @@ export default function ModulePage() {
                                     )}
                                      {activeTab === 'downloads' && (
                                         <div className="space-y-3">
-                                            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                                                <div className="flex items-center gap-3">
-                                                    <FileText className="w-5 h-5 text-red-500" />
-                                                    <span className="font-medium">Lecture Slides.pdf</span>
+                                            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center group-hover:bg-red-100 transition-colors">
+                                                        <FileText className="w-5 h-5 text-red-500" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-medium text-gray-900">Lecture Slides.pdf</p>
+                                                        <p className="text-xs text-gray-500">2.4 MB • PDF Document</p>
+                                                    </div>
                                                 </div>
-                                                <Download className="w-4 h-4 text-gray-400" />
+                                                <button className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                                    <Download className="w-4 h-4 text-gray-500" />
+                                                </button>
                                             </div>
-                                            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                                                <div className="flex items-center gap-3">
-                                                    <FileText className="w-5 h-5 text-blue-500" />
-                                                    <span className="font-medium">Source Code.zip</span>
+                                            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors">
+                                                <div className="flex items-center gap-4">
+                                                     <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                                                        <FileText className="w-5 h-5 text-blue-500" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-medium text-gray-900">Source Code.zip</p>
+                                                         <p className="text-xs text-gray-500">156 KB • ZIP Archive</p>
+                                                    </div>
                                                 </div>
-                                                <Download className="w-4 h-4 text-gray-400" />
+                                                <button className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                                     <Download className="w-4 h-4 text-gray-500" />
+                                                </button>
                                             </div>
                                         </div>
                                     )}
                                 </div>
                             </div>
+                            </div>
                         </div>
                     </div>
+
 
                     {/* Footer Actions */}
                     <div className="border-t border-gray-200 px-6 py-4 bg-white flex items-center justify-between shrink-0">

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Play, FileText, CheckCircle2, Circle, X, Check } from 'lucide-react';
+import { ChevronDown, ChevronUp, Play, FileText, CheckCircle2, Circle, X, Check, HelpCircle, ClipboardList } from 'lucide-react'; // Added icons
 import { Section } from '@/types/coursedet';
 
 interface ModuleSidebarProps {
@@ -25,6 +25,33 @@ const ModuleSidebar: React.FC<ModuleSidebarProps> = ({ sections, activeLectureId
             setOpenSections(openSections.filter(sid => sid !== id));
         } else {
             setOpenSections([...openSections, id]);
+        }
+    };
+
+    const getIcon = (type: string) => {
+        switch (type) {
+            case 'video':
+                return <Play className="w-3 h-3 fill-gray-500" />;
+            case 'reading':
+            case 'article':
+                return <FileText className="w-3 h-3" />;
+            case 'quiz':
+                return <HelpCircle className="w-3 h-3" />;
+            case 'assignment':
+                return <ClipboardList className="w-3 h-3" />;
+            default:
+                return <FileText className="w-3 h-3" />;
+        }
+    };
+
+    const getLabel = (type: string) => {
+        switch (type) {
+            case 'video': return 'Video';
+            case 'article': return 'Reading';
+            case 'reading': return 'Reading';
+            case 'quiz': return 'Quiz';
+            case 'assignment': return 'Assignment';
+            default: return 'Item';
         }
     };
 
@@ -68,7 +95,7 @@ const ModuleSidebar: React.FC<ModuleSidebarProps> = ({ sections, activeLectureId
                             <div className="py-1">
                                 {section.lectures.map((lecture, lIdx) => {
                                     const isActive = lecture.id === activeLectureId;
-                                    const isCompleted = lIdx < 2; // Mock completed state for first 2 items
+                                    const isCompleted = false; // logic would go here
 
                                     return (
                                         <div 
@@ -95,8 +122,8 @@ const ModuleSidebar: React.FC<ModuleSidebarProps> = ({ sections, activeLectureId
                                                 </p>
                                                 <div className="flex items-center gap-2 text-[12px] text-gray-500">
                                                      <span className="flex items-center gap-1">
-                                                        {lecture.type === 'video' ? <Play className="w-3 h-3 fill-gray-500"/> : <FileText className="w-3 h-3"/>}
-                                                        {lecture.type === 'video' ? 'Video' : 'Reading'} • {lecture.duration}
+                                                        {getIcon(lecture.type)}
+                                                        {getLabel(lecture.type)} • {lecture.duration}
                                                      </span>
                                                 </div>
                                             </div>

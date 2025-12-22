@@ -51,16 +51,33 @@ export const SAMPLE_COURSE: Course = {
             title: "Introduction & Course Overview",
             lectures: [
                 { id: "l1", title: "How to Study Mathematics Effectively", duration: "05:10", isPreview: true, type: "video" },
-                { id: "l2", title: "Syllabus Overview – Class 8 Maths", duration: "04:00", isPreview: false, type: "article" }
+                { id: "l2", title: "Syllabus Overview – Class 8 Maths", duration: "04:00", isPreview: false, type: "article" },
+                { id: "q1", title: "Baseline Assessment Quiz", duration: "10 min", isPreview: false, type: "quiz" }
             ]
         },
         {
             id: "s2",
             title: "Rational Numbers",
             lectures: [
-                { id: "l3", title: "Introduction to Rational Numbers", duration: "12:30", isPreview: false, type: "video" },
-                { id: "l4", title: "Operations on Rational Numbers", duration: "18:45", isPreview: false, type: "video" },
-                { id: "l5", title: "Solved Examples & Practice Questions", duration: "10:00", isPreview: true, type: "video" }
+                { 
+                    id: "l3", 
+                    title: "Introduction to Rational Numbers", 
+                    duration: "12:30", 
+                    isPreview: false, 
+                    type: "video",
+                    description: "In this lecture, we will define rational numbers and explore their properties, difference from fractions, and representation on a number line."
+                },
+                { 
+                    id: "l4", 
+                    title: "Operations on Rational Numbers", 
+                    duration: "18:45", 
+                    isPreview: false, 
+                    type: "video",
+                    description: "Learn how to perform addition, subtraction, multiplication, and division on rational numbers with step-by-step examples."
+                },
+                { id: "a1", title: "Practice Problem Set 1", duration: "30 min", isPreview: false, type: "assignment", description: "Solve these practice problems to strengthen your understanding of rational numbers." },
+                { id: "l5", title: "Solved Examples & Practice Questions", duration: "10:00", isPreview: true, type: "video", description: "Watch solved examples to understand common problem-solving techniques." },
+                { id: "q2", title: "Rational Numbers Quiz", duration: "15 min", isPreview: false, type: "quiz", description: "Test your knowledge on rational numbers." }
             ]
         },
         {
@@ -68,7 +85,8 @@ export const SAMPLE_COURSE: Course = {
             title: "Algebraic Expressions & Linear Equations",
             lectures: [
                 { id: "l6", title: "Understanding Algebraic Expressions", duration: "15:20", isPreview: false, type: "video" },
-                { id: "l7", title: "Solving Linear Equations", duration: "20:10", isPreview: false, type: "video" }
+                { id: "l7", title: "Solving Linear Equations", duration: "20:10", isPreview: false, type: "video" },
+                { id: "a2", title: "Algebra Worksheet", duration: "45 min", isPreview: false, type: "assignment" }
             ]
         },
         {
@@ -77,6 +95,7 @@ export const SAMPLE_COURSE: Course = {
             lectures: [
                 { id: "l8", title: "Understanding Polygons", duration: "14:00", isPreview: false, type: "video" },
                 { id: "l9", title: "Area and Perimeter", duration: "22:00", isPreview: false, type: "video" },
+                { id: "q3", title: "Geometry Concept Check", duration: "20 min", isPreview: false, type: "quiz" },
                 { id: "l10", title: "Chapter Summary & Key Formulas", duration: "06:00", isPreview: false, type: "article" }
             ]
         }
