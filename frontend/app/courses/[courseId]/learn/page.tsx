@@ -88,7 +88,7 @@ export default function ModulePage() {
                             {/* Video Player Container */}
                             <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-black mb-8">
                                 <div className="aspect-video w-full">
-                                    <VideoPlayer src="mock-video.mp4" poster={course.thumbnail} />
+                                    <VideoPlayer src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" poster={course.thumbnail} />
                                 </div>
                             </div>
 
