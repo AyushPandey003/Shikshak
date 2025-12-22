@@ -72,7 +72,7 @@ export default function ModulePage() {
                     
                     {/* Content Scrollable Area */}
                     <div className="flex-1 overflow-y-auto scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-                        <div className="p-0 sm:p-6 lg:p-8 max-w-[1200px] mx-auto w-full">
+                        <div className="p-4 sm:p-6 lg:p-8 max-w-[1200px] mx-auto w-full">
                             
                             {/* Toggle Sidebar Button (if closed or mobile) */}
                             {!isSidebarOpen && (
@@ -86,7 +86,7 @@ export default function ModulePage() {
                             )}
                             
                             {/* Video Player Container */}
-                            <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-black mb-8">
+                            <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-black mb-6 sm:mb-8">
                                 <div className="aspect-video w-full">
                                     <VideoPlayer src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" poster={course.thumbnail} />
                                 </div>
@@ -94,13 +94,13 @@ export default function ModulePage() {
 
                             {/* Title & Actions */}
                             <div className="mb-6">
-                                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+                                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
                                     {activeLecture?.title}
                                 </h1>
                                 
                             {/* Tabs Interface */}
                             <div className="mb-6">
-                                <div className="border-b border-gray-200 flex items-center gap-8 text-sm font-bold text-gray-600 mb-6 overflow-x-auto scrollbar-hide">
+                                <div className="border-b border-gray-200 flex items-center gap-6 sm:gap-8 text-sm font-bold text-gray-600 mb-6 overflow-x-auto scrollbar-hide pb-1">
                                     <button 
                                         onClick={() => setActiveTab('description')}
                                         className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === 'description' ? 'border-blue-600 text-blue-700' : 'border-transparent hover:text-gray-900'}`}
@@ -131,27 +131,29 @@ export default function ModulePage() {
                                 <div className="min-h-[200px] text-gray-700 leading-relaxed text-[15px]">
                                     {activeTab === 'description' && (
                                         <div className="prose prose-indigo prose-lg max-w-none text-gray-600">
-                                            <h3 className="text-xl font-bold text-gray-900 mb-4">
+                                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">
                                                 About this lesson
                                             </h3>
-                                            <p className="mb-4 text-base leading-relaxed">
+                                            <p className="mb-4 text-[15px] sm:text-base leading-relaxed">
                                                 {activeLecture?.description || "No description available for this lesson."}
                                             </p>
                                         </div>
                                     )}
+                                    {/* ... (rest of tab content usually unchanged, but verify styles if needed) ... */}
+                                    {/* For brevity, assuming other tabs are fine, let's just make sure the block closes properly later */}
                                     {activeTab === 'transcript' && (
                                         <div className="space-y-4">
                                             <div className="flex gap-4">
                                                 <span className="text-xs text-blue-600 font-bold min-w-[30px] pt-1">0:00</span>
-                                                <p>Welcome to this lecture on {activeLecture?.title}. In this session, we will explore the fundamental concepts that form the building blocks of our module.</p>
+                                                <p className="text-sm sm:text-base">Welcome to this lecture on {activeLecture?.title}. In this session, we will explore the fundamental concepts that form the building blocks of our module.</p>
                                             </div>
                                             <div className="flex gap-4">
                                                 <span className="text-xs text-blue-600 font-bold min-w-[30px] pt-1">0:30</span>
-                                                <p>Often, students find this topic challenging because of the abstract nature. However, by using real-world examples, we simplify the understanding.</p>
+                                                <p className="text-sm sm:text-base">Often, students find this topic challenging because of the abstract nature. However, by using real-world examples, we simplify the understanding.</p>
                                             </div>
                                             <div className="flex gap-4">
                                                 <span className="text-xs text-blue-600 font-bold min-w-[30px] pt-1">1:15</span>
-                                                <p>Let's look at the first example displayed on the screen. Notice the pattern here?</p>
+                                                <p className="text-sm sm:text-base">Let's look at the first example displayed on the screen. Notice the pattern here?</p>
                                             </div>
                                         </div>
                                     )}
@@ -161,18 +163,18 @@ export default function ModulePage() {
                                                 <BookOpen className="w-5 h-5 text-yellow-600" />
                                                 <span>Your Notes</span>
                                             </div>
-                                            <p className="text-gray-600 italic">You haven't added any notes for this lecture yet. Click "Save note" to add one.</p>
+                                            <p className="text-gray-600 italic text-sm sm:text-base">You haven't added any notes for this lecture yet. Click "Save note" to add one.</p>
                                         </div>
                                     )}
                                      {activeTab === 'downloads' && (
                                         <div className="space-y-3">
-                                            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors">
-                                                <div className="flex items-center gap-4">
+                                            <div className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors">
+                                                <div className="flex items-center gap-3 sm:gap-4">
                                                     <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center group-hover:bg-red-100 transition-colors">
                                                         <FileText className="w-5 h-5 text-red-500" />
                                                     </div>
                                                     <div>
-                                                        <p className="font-medium text-gray-900">Lecture Slides.pdf</p>
+                                                        <p className="font-medium text-gray-900 text-sm sm:text-base">Lecture Slides.pdf</p>
                                                         <p className="text-xs text-gray-500">2.4 MB • PDF Document</p>
                                                     </div>
                                                 </div>
@@ -180,13 +182,13 @@ export default function ModulePage() {
                                                     <Download className="w-4 h-4 text-gray-500" />
                                                 </button>
                                             </div>
-                                            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors">
-                                                <div className="flex items-center gap-4">
+                                            <div className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors">
+                                                <div className="flex items-center gap-3 sm:gap-4">
                                                      <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center group-hover:bg-blue-100 transition-colors">
                                                         <FileText className="w-5 h-5 text-blue-500" />
                                                     </div>
                                                     <div>
-                                                        <p className="font-medium text-gray-900">Source Code.zip</p>
+                                                        <p className="font-medium text-gray-900 text-sm sm:text-base">Source Code.zip</p>
                                                          <p className="text-xs text-gray-500">156 KB • ZIP Archive</p>
                                                     </div>
                                                 </div>
@@ -204,20 +206,21 @@ export default function ModulePage() {
 
 
                     {/* Footer Actions */}
-                    <div className="border-t border-gray-200 px-6 py-4 bg-white flex items-center justify-between shrink-0">
-                        <div className="flex items-center gap-6">
+                    <div className="border-t border-gray-200 px-4 sm:px-6 py-4 bg-white flex flex-col-reverse sm:flex-row items-center justify-between gap-4 sm:gap-0 shrink-0">
+                        <div className="flex items-center justify-between w-full sm:w-auto sm:gap-6">
                             <button className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
-                                <ThumbsUp className="w-4 h-4" /> Like
+                                <ThumbsUp className="w-4 h-4" /> <span className="hidden sm:inline">Like</span>
                             </button>
                             <button className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors">
-                                <ThumbsDown className="w-4 h-4" /> Dislike
+                                <ThumbsDown className="w-4 h-4" /> <span className="hidden sm:inline">Dislike</span>
                             </button>
                             <button className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors">
-                                <Flag className="w-4 h-4" /> Report an issue
+                                <Flag className="w-4 h-4" /> <span className="hidden sm:inline">Report issue</span>
+                                <span className="sm:hidden">Report</span>
                             </button>
                         </div>
                         
-                        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-md hover:bg-blue-700 transition-colors shadow-sm">
+                        <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-md hover:bg-blue-700 transition-colors shadow-sm">
                             Go to next item <ArrowRight className="w-4 h-4" />
                         </button>
                     </div>
