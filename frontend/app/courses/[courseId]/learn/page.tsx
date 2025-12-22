@@ -47,12 +47,26 @@ export default function ModulePage() {
 
             <div className="flex flex-1 overflow-hidden relative">
                 
-                {/* Left Sidebar (Coursera style) */}
+                {/* Left Sidebar Logic */}
+                {/* Desktop: Collapsed State (Thin Strip) */}
+                {!isSidebarOpen && !isMobile && (
+                     <div className="hidden lg:flex flex-col w-[60px] bg-white border-r border-gray-200 z-30 shrink-0 items-center py-4 transition-all duration-300">
+                        <button 
+                            onClick={() => setSidebarOpen(true)}
+                            className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"
+                            title="Open Sidebar"
+                        >
+                            <Menu className="w-6 h-6" />
+                        </button>
+                     </div>
+                )}
+
+                {/* Actual Sidebar Content */}
                 <div 
                     className={`
                         absolute inset-y-0 left-0 w-[350px] bg-white z-30 transform transition-transform duration-300 ease-in-out border-r border-gray-200
-                        lg:relative lg:translate-x-0 lg:w-[350px] lg:shadow-none
-                        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                        lg:relative lg:shadow-none
+                        ${isSidebarOpen ? 'translate-x-0 lg:w-[350px]' : '-translate-x-full lg:hidden'}
                     `}
                 >
                     <ModuleSidebar 
@@ -74,16 +88,6 @@ export default function ModulePage() {
                     <div className="flex-1 overflow-y-auto scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                         <div className="p-4 sm:p-6 lg:p-8 max-w-[1200px] mx-auto w-full">
                             
-                            {/* Toggle Sidebar Button (if closed or mobile) */}
-                            {!isSidebarOpen && (
-                                <button 
-                                    onClick={() => setSidebarOpen(true)}
-                                    className="absolute left-4 top-4 z-20 p-2 bg-white shadow-md rounded-full border border-gray-200 hover:bg-gray-50 lg:block hidden"
-                                    title="Open Sidebar"
-                                >
-                                    <Menu className="w-5 h-5 text-gray-700" />
-                                </button>
-                            )}
                             
                             {/* Video Player Container */}
                             <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-black mb-6 sm:mb-8">
