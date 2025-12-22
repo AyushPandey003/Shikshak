@@ -12,7 +12,8 @@ export interface Lecture {
     title: string;
     duration: string;
     isPreview: boolean;
-    type: 'video' | 'article';
+    type: 'video' | 'article' | 'quiz' | 'assignment';
+    description?: string;
 }
 
 export interface Section {
