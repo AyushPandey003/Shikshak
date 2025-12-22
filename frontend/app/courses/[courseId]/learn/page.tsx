@@ -44,7 +44,7 @@ export default function ModulePage() {
     return (
         <div className="flex h-screen flex-col bg-gray-50 font-sans text-slate-900">
             {/* Using the standard Navbar at the top (white background usually) */}
-            <div className="z-40 shadow-sm relative h-[74px]">
+            <div className="z-50 shadow-sm relative h-[74px]">
                  <Navbar />
             </div>
 
@@ -59,7 +59,7 @@ export default function ModulePage() {
                 {/* Actual Sidebar Content */}
                 <div 
                     className={`
-                        absolute inset-y-0 left-0 w-[350px] bg-white z-30 transform transition-transform duration-300 ease-in-out border-r border-gray-200
+                        absolute inset-y-0 left-0 w-[350px] bg-white z-50 transform transition-transform duration-300 ease-in-out border-r border-gray-200
                         lg:relative lg:shadow-none
                         ${isSidebarOpen ? 'translate-x-0 lg:w-[350px]' : '-translate-x-full lg:hidden'}
                     `}
@@ -113,7 +113,7 @@ export default function ModulePage() {
                 {/* Mobile Sidebar Overlay */}
                  {isMobile && isSidebarOpen && (
                     <div 
-                        className="fixed inset-0 bg-black/50 z-20 lg:hidden backdrop-blur-sm"
+                        className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
                         onClick={() => setSidebarOpen(false)}
                     />
                 )}

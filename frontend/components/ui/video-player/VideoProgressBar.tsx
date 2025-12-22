@@ -3,13 +3,16 @@ import React, { useRef, useState, useEffect } from 'react';
 interface VideoProgressBarProps {
     currentTime: number;
     duration: number;
-    videoRef: React.RefObject<HTMLVideoElement>;
+    videoRef: React.RefObject<HTMLVideoElement | null>;
     setParentCurrentTime: (time: number) => void;
+    isScrubbing: boolean;
+    setIsScrubbing: (isScrubbing: boolean) => void;
 }
 
-const VideoProgressBar: React.FC<VideoProgressBarProps> = ({ currentTime, duration, videoRef, setParentCurrentTime }) => {
+const VideoProgressBar: React.FC<VideoProgressBarProps> = ({ currentTime, duration, videoRef, setParentCurrentTime, isScrubbing, setIsScrubbing }) => {
     const progressBarRef = useRef<HTMLDivElement>(null);
-    const [isScrubbing, setIsScrubbing] = useState(false);
+    // Local state removed, using props
+
 
     const handleSeek = (clientX: number) => {
         if (!progressBarRef.current || !videoRef.current) return;

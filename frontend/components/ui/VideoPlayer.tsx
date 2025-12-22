@@ -28,33 +28,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
   // Note: progressBarRef and isScrubbing state moved to VideoProgressBar component
   // We just need to handle updates from it.
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+  // Video Event Listeners - Managed in the main block now with isScrubbing dependency
+  // See below for the actual implementation in the merged block.
 
-    const onTimeUpdate = () => setCurrentTime(video.currentTime);
-    const onLoadedMetadata = () => {
-      setDuration(video.duration);
-      setIsLoading(false);
-    };
-    const onWaiting = () => setIsLoading(true);
-    const onCanPlay = () => setIsLoading(false);
-    const onEnded = () => setIsPlaying(false);
-
-    video.addEventListener('timeupdate', onTimeUpdate);
-    video.addEventListener('loadedmetadata', onLoadedMetadata);
-    video.addEventListener('waiting', onWaiting);
-    video.addEventListener('canplay', onCanPlay);
-    video.addEventListener('ended', onEnded);
-
-    return () => {
-      video.removeEventListener('timeupdate', onTimeUpdate);
-      video.removeEventListener('loadedmetadata', onLoadedMetadata);
-      video.removeEventListener('waiting', onWaiting);
-      video.removeEventListener('canplay', onCanPlay);
-      video.removeEventListener('ended', onEnded);
-    };
-  }, []);
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -127,7 +103,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
 
   // Controls Visibility State
   const [showControls, setShowControls] = useState(false);
+  const [isScrubbing, setIsScrubbing] = useState(false);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ... (handleUserActivity, handleContainerClick, handleMouseLeave, useEffect for controls visibility) kept same, just hoisting state above
 
   const handleUserActivity = () => {
     setShowControls(true);
@@ -168,6 +147,38 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
           if(controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
       }
   }, [isPlaying]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const onTimeUpdate = () => {
+        if (!isScrubbing) {
+            setCurrentTime(video.currentTime);
+        }
+    };
+    const onLoadedMetadata = () => {
+      setDuration(video.duration);
+      setIsLoading(false);
+    };
+    const onWaiting = () => setIsLoading(true);
+    const onCanPlay = () => setIsLoading(false);
+    const onEnded = () => setIsPlaying(false);
+
+    video.addEventListener('timeupdate', onTimeUpdate);
+    video.addEventListener('loadedmetadata', onLoadedMetadata);
+    video.addEventListener('waiting', onWaiting);
+    video.addEventListener('canplay', onCanPlay);
+    video.addEventListener('ended', onEnded);
+
+    return () => {
+      video.removeEventListener('timeupdate', onTimeUpdate);
+      video.removeEventListener('loadedmetadata', onLoadedMetadata);
+      video.removeEventListener('waiting', onWaiting);
+      video.removeEventListener('canplay', onCanPlay);
+      video.removeEventListener('ended', onEnded);
+    };
+  }, [isScrubbing]); // Dependency on isScrubbing is crucial
 
   return (
     <div 
@@ -217,6 +228,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
             duration={duration} 
             videoRef={videoRef} 
             setParentCurrentTime={setCurrentTime}
+            isScrubbing={isScrubbing}
+            setIsScrubbing={setIsScrubbing}
         />
 
         <div className="flex items-center justify-between z-20 relative">
