@@ -41,7 +41,7 @@ export default function ModulePage() {
     return (
         <div className="flex h-screen flex-col bg-gray-50 font-sans text-slate-900">
             {/* Using the standard Navbar at the top (white background usually) */}
-            <div className="z-40 shadow-sm relative">
+            <div className="z-40 shadow-sm relative h-[74px]">
                  <Navbar />
             </div>
 

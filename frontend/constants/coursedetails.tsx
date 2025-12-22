@@ -50,9 +50,30 @@ export const SAMPLE_COURSE: Course = {
             id: "s1",
             title: "Introduction & Course Overview",
             lectures: [
-                { id: "l1", title: "How to Study Mathematics Effectively", duration: "05:10", isPreview: true, type: "video" },
-                { id: "l2", title: "Syllabus Overview – Class 8 Maths", duration: "04:00", isPreview: false, type: "article" },
-                { id: "q1", title: "Baseline Assessment Quiz", duration: "10 min", isPreview: false, type: "quiz" }
+                { 
+                    id: "l1", 
+                    title: "How to Study Mathematics Effectively", 
+                    duration: "05:10", 
+                    isPreview: true, 
+                    type: "video",
+                    description: "Learn the secret techniques to master mathematics. This video covers effective note-taking, daily practice routines, and how to approach complex problems with a positive mindset."
+                },
+                { 
+                    id: "l2", 
+                    title: "Syllabus Overview – Class 8 Maths", 
+                    duration: "04:00", 
+                    isPreview: false, 
+                    type: "article",
+                    description: "A comprehensive breakdown of the Class 8 Mathematics syllabus. We will review the key chapters, weightage for exams, and the roadmap we will follow in this course."
+                },
+                { 
+                    id: "q1", 
+                    title: "Baseline Assessment Quiz", 
+                    duration: "10 min", 
+                    isPreview: false, 
+                    type: "quiz",
+                    description: "A short quiz to assess your current understanding of basic mathematical concepts from Class 7. This will help us tailor the learning experience for you."
+                }
             ]
         },
         {
@@ -65,7 +86,7 @@ export const SAMPLE_COURSE: Course = {
                     duration: "12:30", 
                     isPreview: false, 
                     type: "video",
-                    description: "In this lecture, we will define rational numbers and explore their properties, difference from fractions, and representation on a number line."
+                    description: "In this lecture, we will define rational numbers and explore their properties, difference from fractions, and representation on a number line. We will also discuss why rational numbers are important in real-world applications."
                 },
                 { 
                     id: "l4", 
@@ -73,30 +94,79 @@ export const SAMPLE_COURSE: Course = {
                     duration: "18:45", 
                     isPreview: false, 
                     type: "video",
-                    description: "Learn how to perform addition, subtraction, multiplication, and division on rational numbers with step-by-step examples."
+                    description: "Learn how to perform addition, subtraction, multiplication, and division on rational numbers with step-by-step examples. We will cover common pitfalls and how to avoid calculation errors."
                 },
-                { id: "a1", title: "Practice Problem Set 1", duration: "30 min", isPreview: false, type: "assignment", description: "Solve these practice problems to strengthen your understanding of rational numbers." },
-                { id: "l5", title: "Solved Examples & Practice Questions", duration: "10:00", isPreview: true, type: "video", description: "Watch solved examples to understand common problem-solving techniques." },
-                { id: "q2", title: "Rational Numbers Quiz", duration: "15 min", isPreview: false, type: "quiz", description: "Test your knowledge on rational numbers." }
+                { id: "a1", title: "Practice Problem Set 1", duration: "30 min", isPreview: false, type: "assignment", description: "Solve these practice problems to strengthen your understanding of rational numbers. Includes word problems and numerical questions." },
+                { id: "l5", title: "Solved Examples & Practice Questions", duration: "10:00", isPreview: true, type: "video", description: "Watch solved examples to understand common problem-solving techniques. We walk through difficult questions from past exam papers." },
+                { id: "q2", title: "Rational Numbers Quiz", duration: "15 min", isPreview: false, type: "quiz", description: "Test your knowledge on rational numbers. This quiz covers definitions, properties, and arithmetic operations." }
             ]
         },
         {
             id: "s3",
             title: "Algebraic Expressions & Linear Equations",
             lectures: [
-                { id: "l6", title: "Understanding Algebraic Expressions", duration: "15:20", isPreview: false, type: "video" },
-                { id: "l7", title: "Solving Linear Equations", duration: "20:10", isPreview: false, type: "video" },
-                { id: "a2", title: "Algebra Worksheet", duration: "45 min", isPreview: false, type: "assignment" }
+                { 
+                    id: "l6", 
+                    title: "Understanding Algebraic Expressions", 
+                    duration: "15:20", 
+                    isPreview: false, 
+                    type: "video",
+                    description: "Introduction to variables, constants, and terms. Learn how to form algebraic expressions from verbal statements and identify coefficients."
+                },
+                { 
+                    id: "l7", 
+                    title: "Solving Linear Equations", 
+                    duration: "20:10", 
+                    isPreview: false, 
+                    type: "video",
+                    description: "Master the art of solving linear equations in one variable. We discuss the balancing method and the transposition method with varying levels of difficulty."
+                },
+                { 
+                    id: "a2", 
+                    title: "Algebra Worksheet", 
+                    duration: "45 min", 
+                    isPreview: false, 
+                    type: "assignment",
+                    description: "Download and complete this worksheet to practice expanding expressions and solving equations. Solutions are provided for self-verification."
+                }
             ]
         },
         {
             id: "s4",
             title: "Geometry & Mensuration",
             lectures: [
-                { id: "l8", title: "Understanding Polygons", duration: "14:00", isPreview: false, type: "video" },
-                { id: "l9", title: "Area and Perimeter", duration: "22:00", isPreview: false, type: "video" },
-                { id: "q3", title: "Geometry Concept Check", duration: "20 min", isPreview: false, type: "quiz" },
-                { id: "l10", title: "Chapter Summary & Key Formulas", duration: "06:00", isPreview: false, type: "article" }
+                { 
+                    id: "l8", 
+                    title: "Understanding Polygons", 
+                    duration: "14:00", 
+                    isPreview: false, 
+                    type: "video",
+                    description: "Explore the world of polygons. We classify them based on sides and angles, and discuss convex vs concave polygons with visual aids."
+                },
+                { 
+                    id: "l9", 
+                    title: "Area and Perimeter", 
+                    duration: "22:00", 
+                    isPreview: false, 
+                    type: "video",
+                    description: "A deep dive into measuring 2D shapes. Learn the formulas for area and perimeter of triangles, rectangles, parallelograms, and circles, and how to apply them."
+                },
+                { 
+                    id: "q3", 
+                    title: "Geometry Concept Check", 
+                    duration: "20 min", 
+                    isPreview: false, 
+                    type: "quiz",
+                    description: "Challenge yourself with this geometry quiz. Questions focus on identifying shapes, calculating angles, and solving mensuration problems."
+                },
+                { 
+                    id: "l10", 
+                    title: "Chapter Summary & Key Formulas", 
+                    duration: "06:00", 
+                    isPreview: false, 
+                    type: "article",
+                    description: "A quick revision guide containing all the important definitions, theorems, and formulas from the Geometry unit. Perfect for last-minute exam prep."
+                }
             ]
         }
     ],
