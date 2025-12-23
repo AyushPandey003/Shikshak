@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText, Download, BookOpen } from 'lucide-react';
-import { Lecture } from '@/types/coursedet'; // Assuming types are here or I'll use any for now if not sure
+import { Lecture } from '@/types/coursedet';
+import { NotesSection } from '@/components/notes/NotesSection';
 
 interface CourseInfoTabsProps {
     activeTab: 'description' | 'transcript' | 'notes' | 'downloads';
@@ -69,12 +70,8 @@ const CourseInfoTabs: React.FC<CourseInfoTabsProps> = ({ activeTab, setActiveTab
                 )}
 
                 {activeTab === 'notes' && (
-                    <div className="bg-yellow-50 p-6 rounded-lg border border-yellow-100">
-                        <div className="flex items-center gap-2 font-bold text-gray-800 mb-3">
-                            <BookOpen className="w-5 h-5 text-yellow-600" />
-                            <span>Your Notes</span>
-                        </div>
-                        <p className="text-gray-600 italic text-sm sm:text-base">You haven't added any notes for this lecture yet. Click "Save note" to add one.</p>
+                    <div className="-mx-4 sm:-mx-6">
+                        <NotesSection />
                     </div>
                 )}
 
