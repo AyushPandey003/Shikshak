@@ -10,9 +10,29 @@ const courseSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        teacher_id: {
-            type: String,
+        teacher_details: {
+            type: Object,
             required: true,
+            id: {
+                type: String,
+                required: true,
+            },
+            name: {
+                type: String,
+                required: true,
+            },
+            qualification: {
+                type: String,
+                required: true,
+            },
+            class: {
+                type: String,
+                required: true,
+            },
+            experience: {
+                type: String,
+                required: true,
+            },
         },
         description: {
             type: String,
@@ -63,7 +83,19 @@ const courseSchema = new mongoose.Schema(
         ],
         students_id: [
             {
-                type: String,
+                type: Object,
+                id: {
+                    type: String,
+                    required: true,
+                },
+                name: {
+                    type: String,
+                    required: true,
+                },
+                email: {
+                    type: String,
+                    required: true,
+                },
             },
         ],
         reviews: [
@@ -72,6 +104,10 @@ const courseSchema = new mongoose.Schema(
                 ref: "Review",
             },
         ],
+        total_earned: {
+            type: Number,
+            default: 0,
+        },
     },
     { timestamps: true }
 );
