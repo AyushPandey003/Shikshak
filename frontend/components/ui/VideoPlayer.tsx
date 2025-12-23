@@ -124,11 +124,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster }) => {
     // If clicking on controls, don't toggle
     if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('input')) return;
     
-    // Toggle controls on click/tap
-    setShowControls(prev => !prev);
-    if (!showControls) {
-        // If we are showing them, set the auto-hide timer
-        handleUserActivity();
+    // Check if device supports hover (typically desktop)
+    const canHover = window.matchMedia('(hover: hover)').matches;
+
+    if (canHover) {
+       togglePlay();
+       setShowControls(true);
+       handleUserActivity();
+    } else {
+       // Mobile behavior: Toggle controls on tap
+       setShowControls(prev => !prev);
+       if (!showControls) {
+           handleUserActivity();
+       }
     }
   };
 

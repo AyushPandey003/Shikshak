@@ -79,6 +79,15 @@ export function NotesSection() {
     setIsModalOpen(false);
   };
 
+  const handleDeleteNote = () => {
+    if (editingNote) {
+      if (confirm('Are you sure you want to delete this note?')) {
+        setNotes(prev => prev.filter(n => n.id !== editingNote.id));
+        setIsModalOpen(false);
+      }
+    }
+  };
+
   const filteredNotes = notes.filter(note => 
     note.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
     note.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -144,6 +153,7 @@ export function NotesSection() {
           initialNote={editingNote || {}} 
           onSave={handleSaveNote}
           onClose={() => setIsModalOpen(false)}
+          onDelete={editingNote ? handleDeleteNote : undefined}
         />
       </Modal>
     </div>

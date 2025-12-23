@@ -2,21 +2,26 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Note, NotePriority, NoteColor } from '@/types/note';
 import { 
   Bold, Italic, Underline, Code, Link as LinkIcon, 
-  Quote, List, ListOrdered, Save, X 
+  Quote, List, ListOrdered, Save, X, Trash2 
 } from 'lucide-react';
 
 interface NoteEditorProps {
   initialNote?: Partial<Note>;
   onSave: (note: Partial<Note>) => void;
   onClose: () => void;
+  onDelete?: () => void;
 }
+
+// ... existing code ...
+
+
 
 const COLORS: NoteColor[] = ['white', 'yellow', 'green', 'blue', 'pink', 'purple'];
 const SUBJECTS = ['Computer Science', 'Mathematics', 'Physics', 'History', 'General'];
 const PRIORITIES: NotePriority[] = ['low', 'medium', 'high'];
 const FONT_SIZES = ['Small (14px)', 'Medium (16px)', 'Large (18px)'];
 
-export function NoteEditor({ initialNote, onSave, onClose }: NoteEditorProps) {
+export function NoteEditor({ initialNote, onSave, onClose, onDelete }: NoteEditorProps) {
   const [title, setTitle] = useState(initialNote?.title || '');
   const [subject, setSubject] = useState(initialNote?.subject || SUBJECTS[0]);
   const [priority, setPriority] = useState<NotePriority>(initialNote?.priority || 'medium');
@@ -98,6 +103,15 @@ export function NoteEditor({ initialNote, onSave, onClose }: NoteEditorProps) {
        <div className="flex items-center justify-between mb-8">
          <h2 className="text-2xl font-bold text-slate-900">Edit Note</h2>
          <div className="flex items-center gap-2">
+            {onDelete && (
+               <button 
+                 onClick={onDelete}
+                 className="p-2.5 hover:bg-red-50 text-red-500 rounded-lg transition-colors mr-2"
+                 title="Delete Note"
+               >
+                 <Trash2 size={20} />
+               </button>
+            )}
             <button 
               onClick={handleSave}
               className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"

@@ -95,7 +95,7 @@ const ModuleSidebar: React.FC<ModuleSidebarProps> = ({ sections, activeLectureId
                             <div className="py-1">
                                 {section.lectures.map((lecture, lIdx) => {
                                     const isActive = lecture.id === activeLectureId;
-                                    const isCompleted = false; // logic would go here
+                                    const isCompleted = true; // logic would go here
 
                                     return (
                                         <div 
