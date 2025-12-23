@@ -1,0 +1,84 @@
+# Azure Container Apps - Ingestion Worker Configuration
+# Deploy using: az containerapp create --yaml ingestion-worker.yaml
+
+name: ingestion-worker
+location: eastus
+type: Microsoft.App/containerApps
+
+properties:
+  managedEnvironmentId: /subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.App/managedEnvironments/{environment-name}
+  
+  configuration:
+    activeRevisionsMode: Single
+    
+    # No ingress - worker only processes messages from queue
+    
+    secrets:
+      - name: azure-openai-key
+        value: "${AZURE_OPENAI_API_KEY}"
+      - name: azure-storage-connection
+        value: "${AZURE_STORAGE_CONNECTION_STRING}"
+      - name: azure-servicebus-connection
+        value: "${AZURE_SERVICE_BUS_CONNECTION_STRING}"
+      - name: qdrant-api-key
+        value: "${QDRANT_API_KEY}"
+    
+    registries:
+      - server: your-registry.azurecr.io
+        username: your-registry
+        passwordSecretRef: acr-password
+
+  template:
+    containers:
+      - name: ingestion-worker
+        image: your-registry.azurecr.io/ingestion-worker:latest
+        
+        resources:
+          cpu: 1.0
+          memory: 2Gi
+        
+        env:
+          - name: NODE_ENV
+            value: production
+          - name: AZURE_OPENAI_API_KEY
+            secretRef: azure-openai-key
+          - name: AZURE_STORAGE_CONNECTION_STRING
+            secretRef: azure-storage-connection
+          - name: AZURE_SERVICE_BUS_CONNECTION_STRING
+            secretRef: azure-servicebus-connection
+          - name: QDRANT_URL
+            value: http://qdrant:6333
+          - name: QDRANT_API_KEY
+            secretRef: qdrant-api-key
+          - name: PROCESSING_TEMP_DIR
+            value: /tmp/processing
+          - name: PROCESSING_MAX_CONCURRENT
+            value: "3"
+          - name: WHISPER_MODEL
+            value: base
+          - name: WHISPER_DEVICE
+            value: cpu
+          - name: LOG_LEVEL
+            value: info
+        
+        volumeMounts:
+          - volumeName: processing-volume
+            mountPath: /tmp/processing
+    
+    volumes:
+      - name: processing-volume
+        storageType: EmptyDir
+    
+    # Scale based on Service Bus queue length
+    scale:
+      minReplicas: 0  # Scale to zero when no messages
+      maxReplicas: 5
+      rules:
+        - name: azure-servicebus-scale
+          azureQueue:
+            auth:
+              - secretRef: azure-servicebus-connection
+                triggerParameter: connection
+            metadata:
+              queueName: video-jobs
+              messageCount: "5"  # Scale up when > 5 messages

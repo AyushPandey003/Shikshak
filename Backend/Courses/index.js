@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import uploadRoutes from "./routes/upload.js";
 import paymentRoutes from "./routes/payment.js";
 import connectDB from "./db/index.js";
@@ -7,6 +8,12 @@ import moduleRoutes from "./routes/modules.js";
 import reviewsRoutes from "./routes/reviews.js";
 
 const app = express();
+
+// Enable CORS for frontend
+app.use(cors({
+  origin: ["http://localhost:3001"],
+  credentials: true
+}));
 
 app.use(express.json());
 

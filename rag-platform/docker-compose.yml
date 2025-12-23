@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # RAG API - Public facing API
+  rag-api:
+    build:
+      context: .
+      dockerfile: apps/rag-api/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - QDRANT_URL=http://qdrant:6333
+      - REDIS_URL=redis://redis:6379
+    env_file:
+      - .env
+    depends_on:
+      - qdrant
+      - redis
+    volumes:
+      - ./apps/rag-api/src:/app/apps/rag-api/src
+      - ./packages:/app/packages
+    networks:
+      - rag-network
+
+  # Ingestion Worker - Async processing
+  ingestion-worker:
+    build:
+      context: .
+      dockerfile: apps/ingestion-worker/Dockerfile
+    environment:
+      - NODE_ENV=development
+      - QDRANT_URL=http://qdrant:6333
+      - REDIS_URL=redis://redis:6379
+    env_file:
+      - .env
+    depends_on:
+      - qdrant
+      - redis
+    volumes:
+      - ./apps/ingestion-worker/src:/app/apps/ingestion-worker/src
+      - ./packages:/app/packages
+      - worker-temp:/tmp/processing
+    networks:
+      - rag-network
+
+  # Qdrant - Vector Database
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    networks:
+      - rag-network
+
+  # Redis - Caching & Job Queue
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - rag-network
+
+  # Azurite - Local Azure Storage Emulator
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - azurite-data:/data
+    command: azurite --loose --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0
+    networks:
+      - rag-network
+
+networks:
+  rag-network:
+    driver: bridge
+
+volumes:
+  qdrant-data:
+  redis-data:
+  azurite-data:
+  worker-temp:

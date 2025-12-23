@@ -1,0 +1,71 @@
+# Azure Container Apps - Qdrant Vector Database
+# Deploy using: az containerapp create --yaml qdrant.yaml
+
+name: qdrant
+location: eastus
+type: Microsoft.App/containerApps
+
+properties:
+  managedEnvironmentId: /subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.App/managedEnvironments/{environment-name}
+  
+  configuration:
+    activeRevisionsMode: Single
+    
+    # Internal ingress only - not exposed to internet
+    ingress:
+      external: false
+      targetPort: 6333
+      transport: http
+      traffic:
+        - latestRevision: true
+          weight: 100
+    
+    secrets:
+      - name: qdrant-api-key
+        value: "${QDRANT_API_KEY}"
+
+  template:
+    containers:
+      - name: qdrant
+        image: qdrant/qdrant:latest
+        
+        resources:
+          cpu: 0.5
+          memory: 2Gi
+        
+        env:
+          - name: QDRANT__SERVICE__API_KEY
+            secretRef: qdrant-api-key
+          - name: QDRANT__SERVICE__GRPC_PORT
+            value: "6334"
+          - name: QDRANT__STORAGE__STORAGE_PATH
+            value: /qdrant/storage
+        
+        volumeMounts:
+          - volumeName: qdrant-storage
+            mountPath: /qdrant/storage
+        
+        probes:
+          - type: Liveness
+            httpGet:
+              path: /healthz
+              port: 6333
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          
+          - type: Readiness
+            httpGet:
+              path: /healthz
+              port: 6333
+            initialDelaySeconds: 10
+            periodSeconds: 10
+    
+    volumes:
+      - name: qdrant-storage
+        storageType: AzureFile
+        storageName: qdrant-storage
+    
+    # Qdrant should always be running
+    scale:
+      minReplicas: 1
+      maxReplicas: 1

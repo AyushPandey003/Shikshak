@@ -1,0 +1,39 @@
+{
+    "name": "rag-platform",
+    "version": "1.0.0",
+    "description": "Industry-grade multimodal RAG platform for video, documents, and audio processing",
+    "private": true,
+    "keywords": [
+        "rag",
+        "ai",
+        "multimodal",
+        "azure",
+        "vector-database",
+        "embeddings"
+    ],
+    "scripts": {
+        "dev": "docker-compose up",
+        "dev:api": "pnpm --filter rag-api dev",
+        "dev:worker": "pnpm --filter ingestion-worker dev",
+        "build": "pnpm -r build",
+        "build:api": "pnpm --filter rag-api build",
+        "build:worker": "pnpm --filter ingestion-worker build",
+        "lint": "pnpm -r lint",
+        "test": "pnpm -r test",
+        "docker:build": "docker-compose build",
+        "docker:up": "docker-compose up -d",
+        "docker:down": "docker-compose down",
+        "docker:logs": "docker-compose logs -f",
+        "clean": "pnpm -r clean && rimraf node_modules"
+    },
+    "devDependencies": {
+        "@types/node": "^20.10.0",
+        "rimraf": "^5.0.5",
+        "typescript": "^5.3.0"
+    },
+    "engines": {
+        "node": ">=20.0.0",
+        "pnpm": ">=8.0.0"
+    },
+    "packageManager": "pnpm@8.15.0"
+}

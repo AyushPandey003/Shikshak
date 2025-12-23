@@ -5,9 +5,9 @@
   "description": "Shikshak monorepo",
   "scripts": {
     "prepare": "husky",
-    "frontend": "cd frontend && npm run dev",
-    "backend": "concurrently \"cd Backend/ApiGateway && npm run dev\" \"cd Backend/Auth && npm run dev\" \"cd Backend/Courses && npm run dev\"",
-    "dev": "concurrently \"cd frontend && npm run dev\" \"cd Backend/ApiGateway && npm run dev\" \"cd Backend/Auth && npm run dev\" \"cd Backend/Courses && npm run dev\""
+    "frontend": "cd frontend && pnpm run dev",
+    "backend": "concurrently \"cd Backend/ApiGateway && pnpm run dev\" \"cd Backend/Auth && pnpm run dev\" \"cd Backend/Courses && pnpm run dev\"",
+    "dev": "concurrently \"cd frontend && pnpm run dev\" \"cd Backend/ApiGateway && pnpm run dev\" \"cd Backend/Auth && pnpm run dev\" \"cd Backend/Courses && pnpm run dev\""
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

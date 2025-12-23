@@ -1,0 +1,15 @@
+{
+    "name": "shared",
+    "version": "1.0.0",
+    "description": "Shared types and utilities for RAG platform",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "clean": "rimraf dist"
+    },
+    "devDependencies": {
+        "rimraf": "^5.0.5",
+        "typescript": "^5.3.0"
+    }
+}

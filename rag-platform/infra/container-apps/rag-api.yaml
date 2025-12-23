@@ -1,0 +1,105 @@
+# Azure Container Apps - RAG API Configuration
+# Deploy using: az containerapp create --yaml rag-api.yaml
+
+name: rag-api
+location: eastus
+type: Microsoft.App/containerApps
+
+properties:
+  managedEnvironmentId: /subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.App/managedEnvironments/{environment-name}
+  
+  configuration:
+    activeRevisionsMode: Single
+    
+    # Ingress configuration
+    ingress:
+      external: true
+      targetPort: 3001
+      transport: http
+      traffic:
+        - latestRevision: true
+          weight: 100
+      corsPolicy:
+        allowedOrigins:
+          - "https://your-frontend.com"
+          - "http://localhost:3000"
+        allowedMethods:
+          - GET
+          - POST
+          - OPTIONS
+        allowedHeaders:
+          - "*"
+        exposeHeaders:
+          - "*"
+        maxAge: 3600
+        allowCredentials: true
+    
+    # Secrets (reference from Key Vault recommended)
+    secrets:
+      - name: azure-openai-key
+        value: "${AZURE_OPENAI_API_KEY}"
+      - name: azure-storage-connection
+        value: "${AZURE_STORAGE_CONNECTION_STRING}"
+      - name: qdrant-api-key
+        value: "${QDRANT_API_KEY}"
+      - name: jwt-secret
+        value: "${JWT_SECRET}"
+    
+    registries:
+      - server: your-registry.azurecr.io
+        username: your-registry
+        passwordSecretRef: acr-password
+
+  template:
+    containers:
+      - name: rag-api
+        image: your-registry.azurecr.io/rag-api:latest
+        
+        resources:
+          cpu: 0.5
+          memory: 1Gi
+        
+        env:
+          - name: NODE_ENV
+            value: production
+          - name: PORT
+            value: "3001"
+          - name: AZURE_OPENAI_API_KEY
+            secretRef: azure-openai-key
+          - name: AZURE_STORAGE_CONNECTION_STRING
+            secretRef: azure-storage-connection
+          - name: QDRANT_URL
+            value: http://qdrant:6333
+          - name: QDRANT_API_KEY
+            secretRef: qdrant-api-key
+          - name: JWT_SECRET
+            secretRef: jwt-secret
+          - name: LOG_LEVEL
+            value: info
+        
+        probes:
+          # Liveness probe
+          - type: Liveness
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          
+          # Readiness probe
+          - type: Readiness
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 5
+            periodSeconds: 10
+    
+    # Scale configuration
+    scale:
+      minReplicas: 0  # Scale to zero when idle
+      maxReplicas: 10
+      rules:
+        - name: http-scale
+          http:
+            metadata:
+              concurrentRequests: "50"
