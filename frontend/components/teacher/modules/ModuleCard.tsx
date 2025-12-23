@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronDown, Clock, GripVertical, Plus, Sparkles, Trash2, Pencil } from 'lucide-react';
-import { Module } from './types';
+import { Module, ContentItem } from './types';
 import { ContentItemRow } from './ContentItemRow';
 
 interface ModuleCardProps {
@@ -18,6 +18,8 @@ interface ModuleCardProps {
     onDeleteItem: (moduleId: string, itemId: string) => void;
     onAddItem: (moduleId: string) => void;
     onDescriptionChange: (id: string, description: string) => void;
+    onEditModule: (module: Module) => void;
+    onEditItem: (item: ContentItem, parentId: string) => void;
     onDragStart: (e: React.DragEvent, id: string, type: 'module' | 'item', parentId?: string) => void;
     onDragEnter: (e: React.DragEvent, id: string, type: 'module' | 'item', parentId?: string) => void;
     onDragEnd: () => void;
@@ -38,6 +40,8 @@ export function ModuleCard({
     onDeleteItem,
     onAddItem,
     onDescriptionChange,
+    onEditModule,
+    onEditItem,
     onDragStart,
     onDragEnter,
     onDragEnd
@@ -90,9 +94,9 @@ export function ModuleCard({
                             <span className="text-xs hidden md:flex items-center gap-1"><Clock size={14} /> 45m</span>
                             <div className="flex items-center gap-0.5 md:gap-1">
                                 <button 
-                                    onClick={(e) => { e.stopPropagation(); onStartConfirmEdit(module.id, module.title); }}
+                                    onClick={(e) => { e.stopPropagation(); onEditModule(module); }}
                                     className="p-1 md:p-1.5 hover:bg-blue-50 hover:text-blue-500 rounded text-gray-400 transition-colors"
-                                    title="Edit module title"
+                                    title="Edit module"
                                 >
                                     <Pencil size={14} className="md:w-4 md:h-4" />
                                 </button>
@@ -149,6 +153,7 @@ export function ModuleCard({
                             onEditValueChange={onEditValueChange}
                             onSaveEdit={(id, parentId) => onSaveEdit(id, 'item', parentId)}
                             onDelete={onDeleteItem}
+                            onEdit={onEditItem}
                             onDragStart={onDragStart}
                             onDragEnter={onDragEnter}
                             onDragEnd={onDragEnd}

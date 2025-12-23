@@ -12,6 +12,7 @@ interface ContentItemRowProps {
     onEditValueChange: (val: string) => void;
     onSaveEdit: (id: string, parentId: string) => void;
     onDelete: (moduleId: string, itemId: string) => void;
+    onEdit: (item: ContentItem, parentId: string) => void;
     onDragStart: (e: React.DragEvent, id: string, type: 'item', parentId: string) => void;
     onDragEnter: (e: React.DragEvent, id: string, type: 'item', parentId: string) => void;
     onDragEnd: () => void;
@@ -27,6 +28,7 @@ export function ContentItemRow({
     onEditValueChange,
     onSaveEdit,
     onDelete,
+    onEdit,
     onDragStart,
     onDragEnter,
     onDragEnd
@@ -70,7 +72,7 @@ export function ContentItemRow({
                         ) : (
                             <span 
                                 className="text-gray-900 text-xs md:text-sm truncate cursor-pointer hover:text-blue-600 hover:underline flex-1 min-w-0"
-                                onClick={() => onStartConfirmEdit(item.id, item.title)}
+                                onClick={() => onEdit(item, moduleId)}
                                 title="Click to edit"
                             >
                                 {item.title}
@@ -89,9 +91,9 @@ export function ContentItemRow({
                         
                         <div className="flex items-center gap-0.5">
                             <button 
-                            onClick={() => onStartConfirmEdit(item.id, item.title)}
+                            onClick={() => onEdit(item, moduleId)}
                             className="text-gray-300 hover:text-blue-500 transition-colors p-0.5 md:p-1"
-                            title="Edit item title"
+                            title="Edit item"
                             >
                                 <Pencil size={13} className="md:w-[15px] md:h-[15px]" />
                             </button>

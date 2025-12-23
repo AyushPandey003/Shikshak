@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { ModuleCard } from './ModuleCard';
-import { Module } from './types';
+import { Module, ContentItem } from './types';
 import { CheckCircle2, ChevronUp, Clock, Plus } from 'lucide-react';
 
 interface ModuleListProps {
@@ -18,6 +18,8 @@ interface ModuleListProps {
     onCollapseAll: () => void;
     onReorderModules: (modules: Module[]) => void;
     onDescriptionChange: (id: string, description: string) => void;
+    onEditModule: (module: Module) => void;
+    onEditItem: (item: ContentItem, parentId: string) => void;
 }
 
 export function ModuleList({
@@ -34,7 +36,9 @@ export function ModuleList({
     onAddModule,
     onCollapseAll,
     onReorderModules,
-    onDescriptionChange
+    onDescriptionChange,
+    onEditModule,
+    onEditItem
 }: ModuleListProps) {
 
     // Drag and Drop State
@@ -143,6 +147,8 @@ export function ModuleList({
                             onDeleteItem={onDeleteItem}
                             onAddItem={onAddItem}
                             onDescriptionChange={onDescriptionChange}
+                            onEditModule={onEditModule}
+                            onEditItem={onEditItem}
                             onDragStart={handleDragStart}
                             onDragEnter={handleDragEnter}
                             onDragEnd={handleDragEnd}

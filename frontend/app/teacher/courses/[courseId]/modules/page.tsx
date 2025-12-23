@@ -8,6 +8,8 @@ import { Module, SidebarRecommendation, ContentItem } from '@/components/teacher
 import { CreationSidebar } from '@/components/teacher/modules/CreationSidebar';
 import { ModuleList } from '@/components/teacher/modules/ModuleList';
 import { AddItemModal } from '@/components/teacher/modules/AddItemModal';
+import { EditModuleModal } from '@/components/teacher/modules/EditModuleModal';
+import { EditContentItemModal } from '@/components/teacher/modules/EditContentItemModal';
 
 // --- Mock Data ---
 const MOCK_RECOMMENDATIONS: SidebarRecommendation[] = [
@@ -97,6 +99,13 @@ export default function CreateModulePage() {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetModuleId, setTargetModuleId] = useState<string | null>(null);
+  
+  // Edit Modal State
+  const [isEditModuleModalOpen, setIsEditModuleModalOpen] = useState(false);
+  const [editingModule, setEditingModule] = useState<Module | null>(null);
+  const [isEditItemModalOpen, setIsEditItemModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
+  const [editingItemParentId, setEditingItemParentId] = useState<string | null>(null);
 
   // --- Handlers ---
 
@@ -203,6 +212,49 @@ export default function CreateModulePage() {
       setModules(modules.map(m => m.id === id ? { ...m, description } : m));
   };
 
+  // Edit Modal Handlers
+  const openEditModuleModal = (module: Module) => {
+      setEditingModule(module);
+      setIsEditModuleModalOpen(true);
+  };
+
+  const handleConfirmEditModule = (data: { title: string; description: string; duration: string }) => {
+      if (!editingModule) return;
+      setModules(modules.map(m => 
+          m.id === editingModule.id 
+              ? { ...m, title: data.title, description: data.description, duration: data.duration }
+              : m
+      ));
+      setIsEditModuleModalOpen(false);
+      setEditingModule(null);
+  };
+
+  const openEditItemModal = (item: ContentItem, parentId: string) => {
+      setEditingItem(item);
+      setEditingItemParentId(parentId);
+      setIsEditItemModalOpen(true);
+  };
+
+  const handleConfirmEditItem = (data: { title: string; type: ContentItem['type']; duration: string; file?: File }) => {
+      if (!editingItem || !editingItemParentId) return;
+      setModules(modules.map(m => {
+          if (m.id === editingItemParentId) {
+              return {
+                  ...m,
+                  items: m.items.map(i => 
+                      i.id === editingItem.id
+                          ? { ...i, title: data.title, type: data.type, duration: data.duration, file: data.file, fileName: data.file?.name || i.fileName }
+                          : i
+                  )
+              };
+          }
+          return m;
+      }));
+      setIsEditItemModalOpen(false);
+      setEditingItem(null);
+      setEditingItemParentId(null);
+  };
+
   return (
     <div className="flex h-full w-full overflow-hidden bg-white">
       
@@ -241,6 +293,8 @@ export default function CreateModulePage() {
             onCollapseAll={handleCollapseAll}
             onReorderModules={setModules}
             onDescriptionChange={handleDescriptionChange}
+            onEditModule={openEditModuleModal}
+            onEditItem={openEditItemModal}
           />
 
            {/* Mobile Footer Navbar */}
@@ -259,6 +313,20 @@ export default function CreateModulePage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onConfirm={handleConfirmAddItem}
+      />
+
+      <EditModuleModal
+        isOpen={isEditModuleModalOpen}
+        onClose={() => setIsEditModuleModalOpen(false)}
+        onConfirm={handleConfirmEditModule}
+        module={editingModule}
+      />
+
+      <EditContentItemModal
+        isOpen={isEditItemModalOpen}
+        onClose={() => setIsEditItemModalOpen(false)}
+        onConfirm={handleConfirmEditItem}
+        item={editingItem}
       />
 
     </div>
