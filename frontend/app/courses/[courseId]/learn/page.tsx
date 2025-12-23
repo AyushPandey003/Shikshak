@@ -81,7 +81,7 @@ export default function ModulePage() {
                     
                     {/* Content Scrollable Area */}
                     <div className="flex-1 overflow-y-auto scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-                        <div className="p-4 sm:p-6 lg:p-8 max-w-[1200px] mx-auto w-full">
+                        <div className="p-4 pt-0 sm:p-6 sm:pt-0 lg:p-8 lg:pt-0 max-w-[1200px] mx-auto w-full">
                             
                             {/* Video Player Container */}
                             <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-black mb-6 sm:mb-8">
