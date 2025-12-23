@@ -15,6 +15,10 @@ const authMiddleware = async (req, res, next) => {
     "/authentication/signout",      // Legacy format
     "/authentication/callback",     // OAuth callbacks
     "/authentication/error",        // Auth error pages
+    "/material/health",
+    "/material/reviews/get_reviews",
+    "/material/courses/get_all_general",
+    "/material/courses/get_course_by_id_general"
   ];
 
   const isPublicAuthRoute = publicAuthPaths.some(p => path.startsWith(p)) || path.startsWith("/courses/upload");

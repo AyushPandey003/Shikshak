@@ -1,14 +1,14 @@
 import { createProxyMiddleware } from "http-proxy-middleware";
 
-const courseProxy = createProxyMiddleware({
+const materialProxy = createProxyMiddleware({
   target: "http://localhost:4002",
   changeOrigin: true,
   pathRewrite: {
-    "^/courses": ""
+    "^/material": "/api"
   },
   onProxyReq(proxyReq, req) {
-    console.log(`[COURSES] ${req.method} ${req.originalUrl}`);
+    console.log(`[MATERIAL] ${req.method} ${req.originalUrl}`);
   }
 });
 
-export default courseProxy;
+export default materialProxy;

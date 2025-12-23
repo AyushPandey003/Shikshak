@@ -3,7 +3,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 
 import authProxy from "./routes/auth.js";
-import courseProxy from "./routes/courses.js";
+import materialProxy from "./routes/material.js";
 
 import authMiddleware from "./middleware/authMiddleware.js";
 
@@ -33,12 +33,13 @@ app.use((req, res, next) => {
     console.log(`[GATEWAY] Routing to auth proxy`);
     return authProxy(req, res, next);
   }
+  if (req.url.startsWith("/material")) {
+    console.log(`[GATEWAY] Routing to material proxy`);
+    return materialProxy(req, res, next);
+  }
   console.log(`[GATEWAY] Not matching /authentication, calling next()`);
   next();
 });
-
-// 🔐 Protected routes
-app.use("/courses", courseProxy);
 
 // Health check
 app.get("/", (req, res) => {
