@@ -136,7 +136,8 @@ const App: React.FC = () => {
   const handleLiveMessage = useCallback(async (message: LiveServerMessage) => {
     if (isFinishingRef.current) return;
     try {
-      const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+      const parts = message.serverContent?.modelTurn?.parts;
+      const base64Audio = parts && parts.length > 0 ? parts[0]?.inlineData?.data : undefined;
       if (base64Audio && outputAudioCtxRef.current) {
         setIsAiSpeaking(true);
         const ctx = outputAudioCtxRef.current;
