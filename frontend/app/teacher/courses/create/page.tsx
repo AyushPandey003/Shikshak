@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Info, LayoutGrid, Image as ImageIcon, Plus, Type, X, FileText, DollarSign, Timer } from "lucide-react";
+import { Info, LayoutGrid, Image as ImageIcon, Plus, Type, X, FileText, DollarSign, Timer, Menu } from "lucide-react";
 
 export default function CreateCoursePage() {
   const router = useRouter();
@@ -18,6 +18,7 @@ export default function CreateCoursePage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -47,10 +48,18 @@ export default function CreateCoursePage() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 relative">
       
+      {/* Mobile Backdrop */}
+      {isSidebarOpen && (
+        <div 
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Main Content Form */}
-      <div className="flex-1 px-6 py-6 md:px-12 md:py-8 overflow-y-auto">
+      <div className="flex-1 px-6 py-6 md:px-12 md:py-8 overflow-y-auto pb-20 md:pb-8">
         <div className="max-w-2xl mx-auto">
             <h1 className="text-2xl font-semibold text-gray-900 mb-2">Course information</h1>
             <p className="text-gray-500 mb-8 text-sm">
@@ -204,15 +213,23 @@ export default function CreateCoursePage() {
       </div>
 
       {/* Quick Tips Sidebar */}
-      <div className="w-full md:w-[500px] bg-white border-l border-gray-100 p-8 hidden md:block flex-shrink-0">
+      <div className={`fixed inset-y-0 right-0 z-50 w-[85vw] md:w-[500px] bg-white border-l border-gray-100 p-8 transform transition-transform duration-300 ease-in-out md:relative md:transform-none flex-shrink-0 ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
           <div className="flex items-center justify-between mb-8">
               <h2 className="text-lg font-semibold text-gray-900">Quick tips</h2>
-              <button className="text-gray-400 hover:text-gray-600">
+              <button 
+                onClick={() => setIsSidebarOpen(false)}
+                className="text-gray-400 hover:text-gray-600 md:hidden" // Close button only needed on mobile if sidebar is effectively always open on desktop
+              >
+                  <X size={20} />
+              </button>
+              {/* Desktop close button (visual only or if we want desktop toggle capability? Currently request is mobile) */}
+              {/* Keeping original X behavior for desktop if intent was to close tips? Original had it. */}
+               <button className="text-gray-400 hover:text-gray-600 hidden md:block">
                   <X size={20} />
               </button>
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-8 overflow-y-auto h-[calc(100vh-100px)] md:h-auto">
               
               <div className="flex gap-4">
                   <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
@@ -288,6 +305,17 @@ export default function CreateCoursePage() {
 
           </div>
       </div>
+
+       {/* Mobile Footer Navbar */}
+       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex items-center justify-end z-30 px-4">
+            <button 
+                onClick={() => setIsSidebarOpen(true)}
+                className="p-2 -mr-2 text-gray-600 hover:bg-gray-100 rounded-lg flex items-center gap-2"
+            >
+                <span className="text-sm font-medium">Quick Tips</span>
+                <Menu size={20} />
+            </button>
+       </div>
 
     </div>
   );
