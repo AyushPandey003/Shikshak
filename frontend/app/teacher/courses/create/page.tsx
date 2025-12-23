@@ -59,7 +59,7 @@ export default function CreateCoursePage() {
       )}
 
       {/* Main Content Form */}
-      <div className="flex-1 px-6 py-6 md:px-12 md:py-8 overflow-y-auto pb-20 md:pb-8">
+      <div className="flex-1 px-4 py-6 md:px-12 md:py-8 overflow-y-auto pb-20 md:pb-8">
         <div className="max-w-2xl mx-auto">
             <h1 className="text-2xl font-semibold text-gray-900 mb-2">Course information</h1>
             <p className="text-gray-500 mb-8 text-sm">

@@ -52,24 +52,24 @@ export function ModuleCard({
         onDragOver={(e) => e.preventDefault()}
     >
         {/* Module Header */}
-        <div className="bg-gray-50/50 p-4 border-b border-gray-100 flex items-start gap-3 group cursor-pointer hover:bg-gray-50 transition-colors">
-            <div className="mt-1 cursor-move text-gray-400 hover:text-gray-600" title="Drag to reorder">
-                <GripVertical size={20} />
+        <div className="bg-gray-50/50 p-2 md:p-4 border-b border-gray-100 flex items-start gap-1 md:gap-3 group cursor-pointer hover:bg-gray-50 transition-colors">
+            <div className="mt-1 cursor-move text-gray-400 hover:text-gray-600 flex-shrink-0" title="Drag to reorder">
+                <GripVertical size={18} className="md:w-5 md:h-5" />
             </div>
             
-            <button onClick={() => onToggle(module.id)} className="mt-1 text-gray-400 hover:text-blue-600 transition-colors">
-                {module.isExpanded ? <ChevronDown size={20} /> : <ChevronDown size={20} className="-rotate-90" />}
+            <button onClick={() => onToggle(module.id)} className="mt-1 text-gray-400 hover:text-blue-600 transition-colors flex-shrink-0">
+                {module.isExpanded ? <ChevronDown size={18} className="md:w-5 md:h-5" /> : <ChevronDown size={18} className="-rotate-90 md:w-5 md:h-5" />}
             </button>
             
-            <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <span className="font-bold text-gray-500 text-base flex-shrink-0">{index + 1}</span>
+            <div className="flex-1 min-w-0 overflow-hidden">
+                <div className="flex items-center justify-between gap-1 mb-1">
+                    <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-hidden">
+                        <span className="font-bold text-gray-500 text-sm md:text-base flex-shrink-0">{index + 1}</span>
                         
                         {editingId === module.id ? (
                             <input 
                                 autoFocus
-                                className="font-bold text-gray-900 text-base bg-white border border-blue-400 rounded px-1 outline-none w-full max-w-[180px] sm:max-w-md"
+                                className="font-bold text-gray-900 text-sm md:text-base bg-white border border-blue-400 rounded px-1 outline-none w-full"
                                 value={editValue}
                                 onChange={(e) => onEditValueChange(e.target.value)}
                                 onBlur={() => onSaveEdit(module.id, 'module')}
@@ -77,7 +77,7 @@ export function ModuleCard({
                             />
                         ) : (
                             <h3 
-                                className="font-bold text-gray-900 text-base hover:text-blue-600 cursor-text border border-transparent hover:border-gray-200 rounded px-1 transition-colors truncate"
+                                className="font-bold text-gray-900 text-sm md:text-base hover:text-blue-600 cursor-text border border-transparent hover:border-gray-200 rounded px-1 transition-colors truncate flex-1 min-w-0"
                                 onClick={(e) => { e.stopPropagation(); onStartConfirmEdit(module.id, module.title); }}
                                 title="Click to edit title"
                             >
@@ -86,33 +86,33 @@ export function ModuleCard({
                         )}
                     </div>
                     
-                    <div className="flex items-center gap-2 sm:gap-4 text-gray-400 flex-shrink-0">
-                            {module.duration && <span className="text-sm flex items-center gap-1"><Clock size={14}/> {module.duration}</span>}
-                            <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-0.5 md:gap-2 text-gray-400 flex-shrink-0">
+                            <span className="text-xs hidden md:flex items-center gap-1"><Clock size={14} /> 45m</span>
+                            <div className="flex items-center gap-0.5 md:gap-1">
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); onStartConfirmEdit(module.id, module.title); }}
-                                    className="p-1.5 hover:bg-blue-50 hover:text-blue-500 rounded text-gray-400 transition-colors"
+                                    className="p-1 md:p-1.5 hover:bg-blue-50 hover:text-blue-500 rounded text-gray-400 transition-colors"
                                     title="Edit module title"
                                 >
-                                    <Pencil size={16} />
+                                    <Pencil size={14} className="md:w-4 md:h-4" />
                                 </button>
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); onDeleteModule(module.id); }}
-                                    className="p-1.5 hover:bg-red-50 hover:text-red-500 rounded text-gray-400 transition-colors"
+                                    className="p-1 md:p-1.5 hover:bg-red-50 hover:text-red-500 rounded text-gray-400 transition-colors"
                                     title="Delete module"
                                 >
-                                    <Trash2 size={16} />
+                                    <Trash2 size={14} className="md:w-4 md:h-4" />
                                 </button>
                             </div>
                     </div>
                 </div>
-                <div className="text-xs text-gray-500 truncate max-w-md">{module.description || "No description added"}</div>
+                <div className="text-xs text-gray-500 truncate">{module.description || "No description added"}</div>
             </div>
         </div>
 
         {/* Module Content */}
         {module.isExpanded && (
-            <div className="p-4 bg-white">
+            <div className="p-2 md:p-4 bg-white">
                 
                 {/* Module Description Input */}
                 <div className="mb-6">

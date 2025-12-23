@@ -204,7 +204,7 @@ export default function CreateModulePage() {
   };
 
   return (
-    <div className="flex h-full overflow-hidden bg-white relative">
+    <div className="flex h-full w-full overflow-hidden bg-white">
       
       {/* Mobile Backdrop */}
       {isSidebarOpen && (
@@ -215,7 +215,7 @@ export default function CreateModulePage() {
       )}
 
       <CreationSidebar 
-        className={`fixed inset-y-0 left-0 z-50 w-[85vw] md:w-[320px] transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed inset-y-0 left-0 z-50 w-[85vw] md:w-[500px] md:relative transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
         onBack={() => router.back()}
         guidedSteps={guidedSteps}
         recommendations={recommendations}
@@ -224,7 +224,7 @@ export default function CreateModulePage() {
         courseTitle={courseTitle || undefined}
       />
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           
           <ModuleList 
             modules={modules}
@@ -243,19 +243,16 @@ export default function CreateModulePage() {
             onDescriptionChange={handleDescriptionChange}
           />
 
-          {/* Mobile Footer Navbar */}
-          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex items-center justify-between z-30 px-4">
-              <div className="flex items-center gap-3">
+           {/* Mobile Footer Navbar */}
+           <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex items-center justify-end z-30">
                 <button 
                     onClick={() => setIsSidebarOpen(true)}
-                    className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg flex items-center gap-2"
+                    className="p-2 -mr-2 text-gray-600 hover:bg-gray-100 rounded-lg flex items-center gap-2"
                 >
-                    <Menu size={20} />
                     <span className="text-sm font-medium">Tools</span>
+                    <Menu size={20} />
                 </button>
-              </div>
-              <div className="text-sm font-semibold text-gray-900">Course Builder</div>
-          </div>
+           </div>
       </div>
 
       <AddItemModal 

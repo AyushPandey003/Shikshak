@@ -25,7 +25,7 @@ export default function Topbar({ showSearch = true }: TopbarProps) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
   return (
-    <div className="h-20 w-full flex items-center px-6 justify-between">
+    <div className="h-20 w-full flex items-center px-3 md:px-6 justify-between">
       <div className="md:hidden flex items-center">
         <Logo />
       </div>
