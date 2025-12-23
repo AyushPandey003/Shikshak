@@ -14,22 +14,35 @@ interface CreationSidebarProps {
     guidedSteps: GuidedStep[];
     recommendations: SidebarRecommendation[];
     onAddRecommendation: (recId: string) => void;
+    className?: string;
+    onClose?: () => void;
 }
 
 export function CreationSidebar({ 
     onBack, 
     guidedSteps, 
     recommendations, 
-    onAddRecommendation 
+    onAddRecommendation,
+    className = '',
+    onClose
 }: CreationSidebarProps) {
   return (
-    <div className="w-[320px] flex-shrink-0 border-r border-gray-200 bg-gray-50 flex flex-col overflow-y-auto">
+    <div className={`w-full md:w-[320px] flex-shrink-0 border-r border-gray-200 bg-gray-50 flex flex-col overflow-y-auto h-full ${className}`}>
         {/* Header */}
         <div className="p-6 pb-2">
-            <button onClick={onBack} className="flex items-center gap-2 mb-6 text-gray-600 hover:text-gray-900 transition-colors">
-                <ArrowLeft size={18} />
-                <span className="text-sm font-medium">Back</span>
-            </button>
+            <div className="flex items-center justify-between mb-6">
+                <button onClick={onBack} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+                    <ArrowLeft size={18} />
+                    <span className="text-sm font-medium">Back</span>
+                </button>
+                {/* Mobile Close Button */}
+                <button 
+                    onClick={onClose}
+                    className="md:hidden p-2 -mr-2 text-gray-400 hover:text-gray-600"
+                >
+                    <X size={20} />
+                </button>
+            </div>
             <div className="flex items-center gap-3 mb-1">
                  <div className="w-8 h-8 bg-blue-100 rounded md-1 overflow-hidden flex items-center justify-center text-blue-600">
                     <BookOpen size={16} />

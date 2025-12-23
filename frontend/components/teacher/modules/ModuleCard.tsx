@@ -61,15 +61,15 @@ export function ModuleCard({
                 {module.isExpanded ? <ChevronDown size={20} /> : <ChevronDown size={20} className="-rotate-90" />}
             </button>
             
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2 flex-1">
-                        <span className="font-bold text-gray-500 text-base">{index + 1}</span>
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <span className="font-bold text-gray-500 text-base flex-shrink-0">{index + 1}</span>
                         
                         {editingId === module.id ? (
                             <input 
                                 autoFocus
-                                className="font-bold text-gray-900 text-base bg-white border border-blue-400 rounded px-1 outline-none w-full max-w-md"
+                                className="font-bold text-gray-900 text-base bg-white border border-blue-400 rounded px-1 outline-none w-full max-w-[180px] sm:max-w-md"
                                 value={editValue}
                                 onChange={(e) => onEditValueChange(e.target.value)}
                                 onBlur={() => onSaveEdit(module.id, 'module')}
@@ -77,7 +77,7 @@ export function ModuleCard({
                             />
                         ) : (
                             <h3 
-                                className="font-bold text-gray-900 text-base hover:text-blue-600 cursor-text border border-transparent hover:border-gray-200 rounded px-1 transition-colors"
+                                className="font-bold text-gray-900 text-base hover:text-blue-600 cursor-text border border-transparent hover:border-gray-200 rounded px-1 transition-colors truncate"
                                 onClick={(e) => { e.stopPropagation(); onStartConfirmEdit(module.id, module.title); }}
                                 title="Click to edit title"
                             >
@@ -86,7 +86,7 @@ export function ModuleCard({
                         )}
                     </div>
                     
-                    <div className="flex items-center gap-4 text-gray-400">
+                    <div className="flex items-center gap-2 sm:gap-4 text-gray-400 flex-shrink-0">
                             {module.duration && <span className="text-sm flex items-center gap-1"><Clock size={14}/> {module.duration}</span>}
                             <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button 

@@ -7,7 +7,11 @@ import { CiSearch } from "react-icons/ci";
 import Logo from "../ui/Logo";
 
 
-export default function Topbar() {
+interface TopbarProps {
+  showSearch?: boolean;
+}
+
+export default function Topbar({ showSearch = true }: TopbarProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -27,17 +31,19 @@ export default function Topbar() {
       </div>
       
       {/* search */}
-      <div className="w-full lg:max-w-lg md:max-w-3xs hidden md:flex">
-        <form onSubmit={(e) => e.preventDefault()} className="relative w-full">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xl"><CiSearch /></div>
-          <input
-            aria-label="Search"
-            placeholder="Search here"
-            className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none"
-            type="text"
-          />
-        </form>
-      </div>
+      {showSearch && (
+        <div className="w-full lg:max-w-lg md:max-w-3xs hidden md:flex">
+            <form onSubmit={(e) => e.preventDefault()} className="relative w-full">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-xl"><CiSearch /></div>
+            <input
+                aria-label="Search"
+                placeholder="Search here"
+                className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none"
+                type="text"
+            />
+            </form>
+        </div>
+      )}
 
       <div className="flex items-center">
         <div className="flex items-center text-indigo-600 text-2xl"><BiBell/></div>

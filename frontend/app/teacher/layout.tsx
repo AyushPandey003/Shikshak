@@ -11,13 +11,7 @@ export default function TeacherLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  // Check if we are on the module creation page
-  // Adjust the check string as needed to match the actual route
-  const isModulePage = pathname?.includes('/modules');
-
-  if (isModulePage) {
-     return <div className="h-screen w-full bg-white">{children}</div>;
-  }
+  const hideSearch = pathname?.includes('/modules') || pathname?.includes('/courses/create');
 
   return (
     <div className="min-h-screen w-full flex bg-zinc-100">
@@ -26,9 +20,11 @@ export default function TeacherLayout({
       </aside>
       <div className="flex flex-col flex-1 h-full">
         <header className="">
-          <Topbar />
+          <Topbar showSearch={!hideSearch} />
         </header>
-        <main className="">{children}</main>
+        <main className="flex-1 overflow-hidden h-full">
+            {children}
+        </main>
       </div>
     </div>
   );

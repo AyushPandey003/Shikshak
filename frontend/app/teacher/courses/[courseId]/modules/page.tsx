@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { Menu } from 'lucide-react';
 
 import { Module, SidebarRecommendation, ContentItem } from '@/components/teacher/modules/types';
 import { CreationSidebar } from '@/components/teacher/modules/CreationSidebar';
@@ -193,36 +194,66 @@ export default function CreateModulePage() {
       }
   };
 
+  // Mobile Sidebar State
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const handleDescriptionChange = (id: string, description: string) => {
       setModules(modules.map(m => m.id === id ? { ...m, description } : m));
   };
 
   return (
-    <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-white">
+    <div className="flex h-full overflow-hidden bg-white relative">
       
+      {/* Mobile Backdrop */}
+      {isSidebarOpen && (
+        <div 
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       <CreationSidebar 
+        className={`fixed inset-y-0 left-0 z-50 w-[85vw] md:w-[320px] transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         onBack={() => router.back()}
         guidedSteps={guidedSteps}
         recommendations={recommendations}
         onAddRecommendation={handleAddRecommendation}
+        onClose={() => setIsSidebarOpen(false)}
       />
 
-      <ModuleList 
-         modules={modules}
-         editingId={editingId}
-         editValue={editValue}
-         onToggleModule={handleToggleModule}
-         onStartEdit={startEditing}
-         onEditValueChange={setEditValue}
-         onSaveEdit={saveEdit}
-         onDeleteModule={handleDeleteModule}
-         onDeleteItem={handleDeleteItem}
-         onAddItem={openAddItemModal}
-         onAddModule={() => handleAddModule()}
-         onCollapseAll={handleCollapseAll}
-         onReorderModules={setModules}
-         onDescriptionChange={handleDescriptionChange}
-      />
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+          
+          <ModuleList 
+            modules={modules}
+            editingId={editingId}
+            editValue={editValue}
+            onToggleModule={handleToggleModule}
+            onStartEdit={startEditing}
+            onEditValueChange={setEditValue}
+            onSaveEdit={saveEdit}
+            onDeleteModule={handleDeleteModule}
+            onDeleteItem={handleDeleteItem}
+            onAddItem={openAddItemModal}
+            onAddModule={() => handleAddModule()}
+            onCollapseAll={handleCollapseAll}
+            onReorderModules={setModules}
+            onDescriptionChange={handleDescriptionChange}
+          />
+
+          {/* Mobile Footer Navbar */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex items-center justify-between z-30 px-4">
+              <div className="flex items-center gap-3">
+                <button 
+                    onClick={() => setIsSidebarOpen(true)}
+                    className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg flex items-center gap-2"
+                >
+                    <Menu size={20} />
+                    <span className="text-sm font-medium">Tools</span>
+                </button>
+              </div>
+              <div className="text-sm font-semibold text-gray-900">Course Builder</div>
+          </div>
+      </div>
 
       <AddItemModal 
         isOpen={isModalOpen}

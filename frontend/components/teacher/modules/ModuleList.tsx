@@ -99,10 +99,11 @@ export function ModuleList({
     };
 
     return (
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
             <div className="max-w-4xl mx-auto">
                 <div className="flex items-center justify-between mb-8">
-                    <h1 className="text-2xl font-bold text-gray-900">Recommended course content</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 hidden md:block">Recommended course content</h1>
+                    <h1 className="text-xl font-bold text-gray-900 md:hidden">Course Modules</h1>
                     <div className="flex gap-2">
                     {/* Empty for now, maybe save button */}
                     </div>
