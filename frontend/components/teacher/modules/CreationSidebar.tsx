@@ -16,6 +16,7 @@ interface CreationSidebarProps {
     onAddRecommendation: (recId: string) => void;
     className?: string;
     onClose?: () => void;
+    courseTitle?: string;
 }
 
 export function CreationSidebar({ 
@@ -24,7 +25,8 @@ export function CreationSidebar({
     recommendations, 
     onAddRecommendation,
     className = '',
-    onClose
+    onClose,
+    courseTitle
 }: CreationSidebarProps) {
   return (
     <div className={`w-full md:w-[320px] flex-shrink-0 border-r border-gray-200 bg-gray-50 flex flex-col overflow-y-auto h-full ${className}`}>
@@ -48,7 +50,7 @@ export function CreationSidebar({
                     <BookOpen size={16} />
                  </div>
                  <div>
-                     <h2 className="font-semibold text-gray-900 text-sm">Untitled Course</h2>
+                     <h2 className="font-semibold text-gray-900 text-sm">{courseTitle || 'Untitled Course'}</h2>
                      <span className="text-xs bg-yellow-600 text-white px-1.5 py-0.5 rounded text-[10px] font-medium">Draft</span>
                  </div>
             </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Menu } from 'lucide-react';
 
 import { Module, SidebarRecommendation, ContentItem } from '@/components/teacher/modules/types';
@@ -76,6 +76,8 @@ const INITIAL_MODULES: Module[] = [
 
 export default function CreateModulePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const courseTitle = searchParams.get('title');
   
   // --- State ---
   const [modules, setModules] = useState<Module[]>(INITIAL_MODULES);
@@ -219,6 +221,7 @@ export default function CreateModulePage() {
         recommendations={recommendations}
         onAddRecommendation={handleAddRecommendation}
         onClose={() => setIsSidebarOpen(false)}
+        courseTitle={courseTitle || undefined}
       />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">

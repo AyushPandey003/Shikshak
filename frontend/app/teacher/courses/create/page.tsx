@@ -42,7 +42,7 @@ export default function CreateCoursePage() {
     setTimeout(() => {
         // Redirect to module creation
         // Using mock ID '1' for now as per flow
-        router.push('/teacher/courses/1/modules');
+        router.push(`/teacher/courses/1/modules?title=${encodeURIComponent(course.title)}`);
     }, 1000);
   }
 
@@ -204,7 +204,7 @@ export default function CreateCoursePage() {
       </div>
 
       {/* Quick Tips Sidebar */}
-      <div className="w-full md:w-[480px] bg-white border-l border-gray-100 p-8 hidden md:block flex-shrink-0">
+      <div className="w-full md:w-[500px] bg-white border-l border-gray-100 p-8 hidden md:block flex-shrink-0">
           <div className="flex items-center justify-between mb-8">
               <h2 className="text-lg font-semibold text-gray-900">Quick tips</h2>
               <button className="text-gray-400 hover:text-gray-600">
