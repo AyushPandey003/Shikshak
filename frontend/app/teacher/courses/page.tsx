@@ -30,26 +30,43 @@ export default function Page() {
         });
 
         if (response.data) {
-          const mappedCourses: Course[] = response.data.map((c: any) => ({
-            id: c._id,
-            title: c.name,
-            instructor: {
-              id: c.teacher_details?.id || user.id,
-              name: c.teacher_details?.name || user.email?.split('@')[0] || "Instructor",
-              avatar: c.teacher_details?.avatar || user.photoUrl || "https://picsum.photos/seed/instructor/50/50"
-            },
-            price: c.price,
-            rating: c.rating || 0,
-            students: c.student_count || 0, // Backend might need to return this
-            image: c.thumbnail || "https://picsum.photos/seed/course/400/300",
-            subject: c.subject,
-            grade: "10th Class", // Placeholder as not in select
-            board: c.board,
-            tags: [c.pricing_category],
-            isBundle: false,
-            type: c.visibility === 'public' ? 'Public' : (c.visibility === 'private' ? 'Private' : 'Draft'),
-            // Note: Backend might rely on a 'status' or just visibility. 
-            // Assuming visibility covers Public/Private. Draft might be a separate status or visibility='draft'
+          const mappedCourses = await Promise.all(response.data.map(async (c: any) => {
+            let imageUrl = "https://picsum.photos/seed/course/400/300";
+
+            // If thumbnail is a blob name (doesn't start with http), fetch SAS URL
+            if (c.thumbnail && !c.thumbnail.startsWith("http")) {
+              try {
+                // Use encodeURIComponent to handle spaces or special chars safe
+                const sasRes = await axios.get(`http://localhost:4000/material/upload/${encodeURIComponent(c.thumbnail)}`);
+                if (sasRes.data && sasRes.data.url) {
+                  imageUrl = sasRes.data.url;
+                }
+              } catch (err: any) {
+                console.error(`Failed to fetch SAS for ${c.thumbnail}:`, err.response?.status, err.response?.data || err.message);
+              }
+            } else if (c.thumbnail) {
+              imageUrl = c.thumbnail;
+            }
+
+            return {
+              id: c._id,
+              title: c.name,
+              instructor: {
+                id: c.teacher_details?.id || user.id,
+                name: c.teacher_details?.name || user.email?.split('@')[0] || "Instructor",
+                avatar: c.teacher_details?.avatar || user.photoUrl || "https://picsum.photos/seed/instructor/50/50"
+              },
+              price: c.price,
+              rating: c.rating || 0,
+              students: c.student_count || 0,
+              image: imageUrl,
+              subject: c.subject,
+              grade: "10th Class", // Placeholder
+              board: c.board,
+              tags: [c.pricing_category],
+              isBundle: false,
+              type: c.visibility === 'public' ? 'Public' : (c.visibility === 'private' ? 'Private' : 'Draft'),
+            };
           }));
           setCourses(mappedCourses);
         }

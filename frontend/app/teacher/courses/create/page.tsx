@@ -50,8 +50,8 @@ export default function CreateCoursePage() {
         withCredentials: true
       });
       console.log("Upload response:", res.data);
-      if (res.data && res.data.url) {
-        setThumbnailUrl(res.data.url);
+      if (res.data && res.data.blobName) {
+        setThumbnailUrl(res.data.blobName);
       }
     } catch (error) {
       console.error("Error uploading thumbnail:", error);
