@@ -2,6 +2,7 @@ import { Module } from "../models/modules.model.js";
 import { Course } from "../models/courses.model.js";
 import { Video } from "../models/video.model.js";
 import { Notes } from "../models/notes.model.js";
+import { produceModuleCreated, disconnectProducer } from "../infra/module.producer.js";
 
 // Create Module
 export const createModule = async (req, res) => {
@@ -29,6 +30,9 @@ export const createModule = async (req, res) => {
         // Add module to course
         course.module_id.push(savedModule._id);
         await course.save();
+
+        await produceModuleCreated(savedModule._id, course_id);
+        await disconnectProducer();
 
         res.status(201).json(savedModule);
     } catch (error) {
