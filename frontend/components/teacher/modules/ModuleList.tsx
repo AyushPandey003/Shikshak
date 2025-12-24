@@ -107,7 +107,7 @@ export function ModuleList({
     };
 
     return (
-        <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 md:p-8 w-full min-w-0">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 md:p-8 w-full min-w-0 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
             <div className="w-full max-w-4xl mx-auto min-w-0">
                 <div className="flex items-center justify-between mb-4 md:mb-8">
                     <h1 className="text-xl md:text-2xl font-bold md:font-bold text-gray-900 hidden md:block">Recommended course content</h1>

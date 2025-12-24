@@ -29,7 +29,7 @@ export function CreationSidebar({
     courseTitle
 }: CreationSidebarProps) {
   return (
-    <div className={`w-full md:w-[360px] flex-shrink-0 border-r border-gray-200 bg-gray-50 flex flex-col overflow-y-auto h-full ${className}`}>
+    <div className={`w-full md:w-[360px] flex-shrink-0 border-r border-gray-200 bg-gray-50 flex flex-col overflow-y-auto h-full [&::-webkit-scrollbar]:hidden [scrollbar-width:none] ${className}`}>
         {/* Header */}
         <div className="p-6 pb-2">
             <div className="flex items-center justify-between mb-6">
