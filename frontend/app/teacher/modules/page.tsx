@@ -137,6 +137,12 @@ function ModulesContent() {
         }
     };
 
+    const handleSaveCourse = () => {
+        // Since changes are auto-saved, we can just notify and redirect
+        // alert("Course saved successfully!");
+        router.push('/teacher/courses');
+    };
+
     // Module operations
     const handleToggleModule = (id: string) => {
         setModules(modules.map(m => m.id === id ? { ...m, isExpanded: !m.isExpanded } : m));
@@ -445,7 +451,17 @@ function ModulesContent() {
             )}
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+                {!sidebarVisible && (
+                    <button
+                        onClick={() => setSidebarVisible(true)}
+                        className="absolute top-4 left-4 z-20 bg-white border border-gray-200 shadow-sm p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-all flex items-center gap-2"
+                        title="Open Guide"
+                    >
+                        <Menu size={20} />
+                        <span className="text-sm font-medium hidden md:inline">Open Guide</span>
+                    </button>
+                )}
                 <ModuleList
                     modules={modules}
                     editingId={editingId}
@@ -464,6 +480,7 @@ function ModulesContent() {
                     onEditModule={handleEditModule}
                     onEditItem={handleEditItem}
                     onDeleteCourse={handleDeleteCourseInit}
+                    onSaveCourse={handleSaveCourse}
                 />
 
                 {/* Mobile Footer Navbar */}

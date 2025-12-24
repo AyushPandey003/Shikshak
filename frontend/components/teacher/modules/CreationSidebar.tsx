@@ -33,9 +33,9 @@ export function CreationSidebar({
         {/* Header */}
         <div className="p-6 pb-2">
             <div className="flex items-center justify-between mb-6">
-                <button onClick={onBack} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
-                    <ArrowLeft size={18} />
-                    <span className="text-sm font-medium">Back</span>
+                <button onClick={onBack} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors">
+                    <X size={20} />
+                    <span className="text-sm font-medium">Close Guide</span>
                 </button>
                 {/* Mobile Close Button */}
                 <button 

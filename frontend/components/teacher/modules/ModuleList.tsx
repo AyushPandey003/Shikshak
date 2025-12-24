@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { ModuleCard } from './ModuleCard';
 import { Module, ContentItem } from './types';
-import { CheckCircle2, ChevronUp, Clock, Plus, Trash2 } from 'lucide-react';
+import { CheckCircle2, ChevronUp, Clock, Plus, Trash2, Save } from 'lucide-react';
 
 interface ModuleListProps {
     modules: Module[];
@@ -21,6 +21,7 @@ interface ModuleListProps {
     onEditModule: (module: Module) => void;
     onEditItem: (item: ContentItem, parentId: string) => void;
     onDeleteCourse: () => void;
+    onSaveCourse: () => void;
 }
 
 export function ModuleList({
@@ -40,7 +41,8 @@ export function ModuleList({
     onDescriptionChange,
     onEditModule,
     onEditItem,
-    onDeleteCourse
+    onDeleteCourse,
+    onSaveCourse
 }: ModuleListProps) {
 
     // Drag and Drop State
@@ -116,7 +118,14 @@ export function ModuleList({
                             className="flex items-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
                         >
                             <Trash2 size={16} />
-                            <span className="hidden sm:inline">Delete Course</span>
+                            <span>Delete Course</span>
+                        </button>
+                        <button 
+                            onClick={onSaveCourse}
+                            className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors shadow-sm"
+                        >
+                            <Save size={16} />
+                            <span>Save Course</span>
                         </button>
                     </div>
                 </div>
