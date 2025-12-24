@@ -1,13 +1,14 @@
 import React from 'react';
-import { Heart, ShoppingCart, User, BookOpen, GraduationCap } from 'lucide-react';
+import { Heart, ShoppingCart, User, BookOpen, GraduationCap, Pencil } from 'lucide-react';
 import { Course } from '@/types/course';
 import Link from 'next/link';
 
 interface CourseCardProps {
   course: Course;
+  isTeacher?: boolean;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher }) => {
   return (
     <Link href={`/courses/${course.id}`} className="group bg-white rounded-xl shadow-sm border cursor-pointer border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full relative">
 
@@ -23,8 +24,23 @@ const CourseCard: React.FC<CourseCardProps> = ({ course }) => {
           {course.board}
         </div>
 
+        {/* Edit Button for Teachers */}
+        {isTeacher && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = `/teacher/modules?courseId=${course.id}`;
+            }}
+            className="absolute top-3 right-3 z-20 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
+            title="Edit Course Content"
+          >
+            <Pencil size={16} className="text-gray-700" />
+          </button>
+        )}
+
         {/* Badge: Best Seller */}
-        {course.tags?.includes('Best Seller') && (
+        {!isTeacher && course.tags?.includes('Best Seller') && (
           <div className="absolute top-0 right-4 bg-brand-500 text-white text-[10px] font-bold py-1 px-1.5 rounded-b-md shadow-md z-10 uppercase tracking-wide writing-mode-vertical">
             Best Seller
           </div>

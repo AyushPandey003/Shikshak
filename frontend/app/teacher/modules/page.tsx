@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Menu } from 'lucide-react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { Menu, AlertTriangle } from 'lucide-react';
 import axios from 'axios';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { ModuleList } from '@/components/teacher/modules/ModuleList';
 import { EditModuleModal } from '@/components/teacher/modules/EditModuleModal';
 import { AddItemModal } from '@/components/teacher/modules/AddItemModal';
@@ -10,17 +11,22 @@ import { EditContentItemModal } from '@/components/teacher/modules/EditContentIt
 import { CreationSidebar } from '@/components/teacher/modules/CreationSidebar';
 import { Module, ContentItem, GuidedStep, SidebarRecommendation } from '@/components/teacher/modules/types';
 
-const COURSE_ID = "694b63a3f3db0f50ded6f3e7"; 
 const API_URL = "http://localhost:4000/material/module";
 const UPLOAD_URL = "http://localhost:4000/material/upload";
+const COURSE_API_URL = "http://localhost:4000/material/courses";
 
 // Configure axios defaults to send credentials
 axios.defaults.withCredentials = true;
 
-export default function ModulesPage() {
+function ModulesContent() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    // Default to a fallback if no ID provided, or handle error. 
+    // Ideally we should redirect if no ID.
+    const COURSE_ID = searchParams.get('courseId') || "694b63a3f3db0f50ded6f3e7"; 
+    
     const [modules, setModules] = useState<Module[]>([]);
     const [loading, setLoading] = useState(true);
-
 
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editValue, setEditValue] = useState('');
@@ -29,6 +35,8 @@ export default function ModulesPage() {
     const [editModuleModalOpen, setEditModuleModalOpen] = useState(false);
     const [addItemModalOpen, setAddItemModalOpen] = useState(false);
     const [editItemModalOpen, setEditItemModalOpen] = useState(false);
+    const [deleteCourseModalOpen, setDeleteCourseModalOpen] = useState(false);
+    
     const [currentModule, setCurrentModule] = useState<Module | null>(null);
     const [currentItem, setCurrentItem] = useState<{ item: ContentItem; parentId: string } | null>(null);
     const [currentModuleForItem, setCurrentModuleForItem] = useState<string | null>(null);
@@ -63,8 +71,10 @@ export default function ModulesPage() {
 
     // Fetch modules on load
     useEffect(() => {
-        fetchModules();
-    }, []);
+        if (COURSE_ID) {
+            fetchModules();
+        }
+    }, [COURSE_ID]);
 
     const fetchModules = async () => {
         try {
@@ -106,6 +116,24 @@ export default function ModulesPage() {
             // alert("Failed to fetch modules");
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Course operations
+    const handleDeleteCourseInit = () => {
+        setDeleteCourseModalOpen(true);
+    };
+
+    const handleConfirmDeleteCourse = async () => {
+        try {
+            await axios.post(`${COURSE_API_URL}/delete_course`, {
+                course_id: COURSE_ID
+            });
+            router.push('/teacher/courses');
+        } catch (error) {
+            console.error("Error deleting course:", error);
+            alert("Failed to delete course");
+            setDeleteCourseModalOpen(false);
         }
     };
 
@@ -435,6 +463,7 @@ export default function ModulesPage() {
                     onDescriptionChange={handleDescriptionChange}
                     onEditModule={handleEditModule}
                     onEditItem={handleEditItem}
+                    onDeleteCourse={handleDeleteCourseInit}
                 />
 
                 {/* Mobile Footer Navbar */}
@@ -478,6 +507,45 @@ export default function ModulesPage() {
                 onConfirm={handleSaveItemEdit}
                 item={currentItem?.item || null}
             />
+
+            {/* Delete Course Warning Modal */}
+            {deleteCourseModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 transform transition-all scale-100 opacity-100">
+                        <div className="flex flex-col items-center text-center">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-600">
+                                <AlertTriangle size={24} />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Course?</h3>
+                            <p className="text-gray-500 mb-6 text-sm">
+                                Are you sure you want to delete this course? This action cannot be undone and all modules/content will be lost.
+                            </p>
+                            <div className="flex items-center gap-3 w-full">
+                                <button
+                                    onClick={() => setDeleteCourseModalOpen(false)}
+                                    className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleConfirmDeleteCourse}
+                                    className="flex-1 px-4 py-2.5 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
+                                >
+                                    Delete Course
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
+    );
+}
+
+export default function ModulesPage() {
+    return (
+        <Suspense fallback={<div className="flex h-full items-center justify-center">Loading...</div>}>
+            <ModulesContent />
+        </Suspense>
     );
 }
