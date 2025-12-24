@@ -1,0 +1,18 @@
+node_modules/
+
+# Environment files - NEVER commit these
+
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+pnpm-lock.yaml
+
+.env    
+
+
+Backend/Auth/.env
+Backend/Auth/.env
+
+package-lock.json

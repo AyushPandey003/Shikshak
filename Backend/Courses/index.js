@@ -4,6 +4,8 @@ import connectDB from "./db/index.js";
 import coursesRoutes from "./routes/courses.js";
 import moduleRoutes from "./routes/modules.js";
 import reviewsRoutes from "./routes/reviews.js";
+import { produceModuleCreated } from "./infra/module.producer.js";
+import { disconnectProducer } from "./infra/module.producer.js";
 
 const app = express();
 
@@ -12,7 +14,7 @@ app.use(express.json());
 connectDB();
 
 // Health check
-app.get("/api/health", (req, res) => {
+app.get("/api/health", async (req, res) => {
   console.log("[COURSES] Health check");
   res.send("Courses Service running 🚀");
 });

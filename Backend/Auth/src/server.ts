@@ -7,6 +7,7 @@ import { auth } from './auth';
 import { toNodeHandler } from "better-auth/node";
 import { getUser, handleUpdateProfile } from './controllers/userController';
 import { setCorsHeaders } from './utils/httpUtils';
+import '../infra/startConsumer.js';
 
 dotenv.config();
 
