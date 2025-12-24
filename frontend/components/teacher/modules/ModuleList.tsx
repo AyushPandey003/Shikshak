@@ -118,14 +118,14 @@ export function ModuleList({
                             className="flex items-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
                         >
                             <Trash2 size={16} />
-                            <span>Delete Course</span>
+                            <span className="hidden sm:inline">Delete Course</span>
                         </button>
                         <button 
                             onClick={onSaveCourse}
                             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
                         >
                             <Save size={16} />
-                            <span>Save Course</span>
+                            <span className="hidden sm:inline">Save Course</span>
                         </button>
                     </div>
                 </div>
