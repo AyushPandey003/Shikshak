@@ -14,8 +14,6 @@ import { AiOutlineVideoCameraAdd } from "react-icons/ai";
 const navItems = [
   { href: "/teacher/dashboard", label: "Dashboard", icon: MdDashboard },
   { href: "/teacher/courses", label: "Courses", icon: MdClass },
-  { href: "/teacher/calendar", label: "Calendar", icon: MdCalendarToday },
-  { href: "/teacher/messages", label: "Messages", icon: MdMessage },
   { href: "/teacher/courses/create", label: "Compose", icon: AiOutlineVideoCameraAdd },
 ];
 
