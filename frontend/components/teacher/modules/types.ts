@@ -14,6 +14,7 @@ export interface ContentItem {
   source?: string;
   file?: File; // For uploaded files
   fileName?: string; // For display purposes
+  azureId?: string; // Azure Blob ID
 }
 
 export interface Module {
@@ -27,20 +28,20 @@ export interface Module {
 }
 
 export interface CreationSidebarProps {
-    onBack: () => void;
-    guidedSteps: GuidedStep[];
-    recommendations: SidebarRecommendation[];
-    onAddRecommendation: (recId: string) => void;
-    className?: string; // For adding custom classes
-    onClose?: () => void; // For closing the sidebar (mobile)
-    courseTitle?: string;
+  onBack: () => void;
+  guidedSteps: GuidedStep[];
+  recommendations: SidebarRecommendation[];
+  onAddRecommendation: (recId: string) => void;
+  className?: string; // For adding custom classes
+  onClose?: () => void; // For closing the sidebar (mobile)
+  courseTitle?: string;
 }
 
 export interface SidebarRecommendation {
-   id: string;
-   title: string;
-   source: string;
-   rating: number;
-   reviews: string;
-   modules: Module[];
+  id: string;
+  title: string;
+  source: string;
+  rating: number;
+  reviews: string;
+  modules: Module[];
 }

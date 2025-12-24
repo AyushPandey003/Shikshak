@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
+import axios from 'axios';
 import { ModuleList } from '@/components/teacher/modules/ModuleList';
 import { EditModuleModal } from '@/components/teacher/modules/EditModuleModal';
 import { AddItemModal } from '@/components/teacher/modules/AddItemModal';
@@ -9,59 +10,21 @@ import { EditContentItemModal } from '@/components/teacher/modules/EditContentIt
 import { CreationSidebar } from '@/components/teacher/modules/CreationSidebar';
 import { Module, ContentItem, GuidedStep, SidebarRecommendation } from '@/components/teacher/modules/types';
 
+const COURSE_ID = "694b63a3f3db0f50ded6f3e7"; 
+const API_URL = "http://localhost:4000/material/module";
+const UPLOAD_URL = "http://localhost:4000/material/upload";
+
+// Configure axios defaults to send credentials
+axios.defaults.withCredentials = true;
+
 export default function ModulesPage() {
-    const [modules, setModules] = useState<Module[]>([
-        {
-            id: '1',
-            title: 'Introduction to the Course',
-            description: 'Get started with the basics and course overview',
-            duration: '45m',
-            items: [
-                {
-                    id: '1-1',
-                    type: 'video',
-                    title: 'Welcome Video',
-                    duration: '10m',
-                    fileName: 'welcome.mp4'
-                },
-                {
-                    id: '1-2',
-                    type: 'reading',
-                    title: 'Course Syllabus',
-                    duration: '5m',
-                    fileName: 'syllabus.md'
-                }
-            ],
-            isExpanded: true,
-            learningObjectives: ['Understand course structure', 'Set learning goals']
-        },
-        {
-            id: '2',
-            title: 'Core Concepts',
-            description: 'Deep dive into fundamental concepts',
-            duration: '90m',
-            items: [
-                {
-                    id: '2-1',
-                    type: 'video',
-                    title: 'Concept Overview',
-                    duration: '30m',
-                    fileName: 'concepts.mp4'
-                },
-                {
-                    id: '2-2',
-                    type: 'quiz',
-                    title: 'Comprehension Quiz',
-                    duration: '15m'
-                }
-            ],
-            isExpanded: false
-        }
-    ]);
+    const [modules, setModules] = useState<Module[]>([]);
+    const [loading, setLoading] = useState(true);
+
 
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editValue, setEditValue] = useState('');
-    
+
     // Modal states
     const [editModuleModalOpen, setEditModuleModalOpen] = useState(false);
     const [addItemModalOpen, setAddItemModalOpen] = useState(false);
@@ -97,6 +60,55 @@ export default function ModulesPage() {
         }
     ]);
 
+
+    // Fetch modules on load
+    useEffect(() => {
+        fetchModules();
+    }, []);
+
+    const fetchModules = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.post(`${API_URL}/get_all_module`, {
+                course_id: COURSE_ID
+            });
+
+            if (response.data) {
+                // Map backend data to frontend Module type
+                const mappedModules: Module[] = response.data.map((m: any) => ({
+                    id: m._id,
+                    title: m.title,
+                    description: '', // Backend doesn't support description yet
+                    duration: '', // Backend doesn't support duration yet
+                    isExpanded: false,
+                    items: [
+                        ...(m.video_id || []).map((v: any) => ({
+                            id: v._id,
+                            type: 'video',
+                            title: v.title,
+                            duration: '10m', // Placeholder
+                            azureId: v.azure_id
+                        })),
+                        ...(m.notes_id || []).map((n: any) => ({
+                            id: n._id,
+                            type: 'reading',
+                            title: 'Module Notes', // Notes don't have titles in backend
+                            duration: '5m', // Placeholder
+                            azureId: n.azure_id
+                        }))
+                    ],
+                    learningObjectives: []
+                }));
+                setModules(mappedModules);
+            }
+        } catch (error) {
+            console.error("Error fetching modules:", error);
+            // alert("Failed to fetch modules");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Module operations
     const handleToggleModule = (id: string) => {
         setModules(modules.map(m => m.id === id ? { ...m, isExpanded: !m.isExpanded } : m));
@@ -107,22 +119,43 @@ export default function ModulesPage() {
         setModules(modules.map(m => ({ ...m, isExpanded: allCollapsed })));
     };
 
-    const handleAddModule = () => {
-        const newModule: Module = {
-            id: `module-${Date.now()}`,
-            title: `Module ${modules.length + 1}`,
-            description: '',
-            duration: '45m',
-            items: [],
-            isExpanded: true,
-            learningObjectives: []
-        };
-        setModules([...modules, newModule]);
+    const handleAddModule = async () => {
+        try {
+            const tempTitle = `Module ${modules.length + 1}`;
+            const response = await axios.post(`${API_URL}/create_module`, {
+                course_id: COURSE_ID,
+                title: tempTitle
+            });
+
+            if (response.data) {
+                const newModule: Module = {
+                    id: response.data._id,
+                    title: response.data.title,
+                    description: '',
+                    duration: '',
+                    items: [],
+                    isExpanded: true,
+                    learningObjectives: []
+                };
+                setModules([...modules, newModule]);
+            }
+        } catch (error: any) {
+            console.error("Error creating module:", error);
+            alert(`Failed to create module: ${error.response?.data?.message || error.message}`);
+        }
     };
 
-    const handleDeleteModule = (id: string) => {
+    const handleDeleteModule = async (id: string) => {
         if (confirm('Are you sure you want to delete this module?')) {
-            setModules(modules.filter(m => m.id !== id));
+            try {
+                await axios.post(`${API_URL}/delete_module`, {
+                    module_id: id
+                });
+                setModules(modules.filter(m => m.id !== id));
+            } catch (error) {
+                console.error("Error deleting module:", error);
+                alert("Failed to delete module");
+            }
         }
     };
 
@@ -131,13 +164,23 @@ export default function ModulesPage() {
         setEditModuleModalOpen(true);
     };
 
-    const handleSaveModuleEdit = (data: { title: string; description: string; duration: string }) => {
+    const handleSaveModuleEdit = async (data: { title: string; description: string; duration: string }) => {
         if (currentModule) {
-            setModules(modules.map(m => 
-                m.id === currentModule.id 
-                    ? { ...m, title: data.title, description: data.description, duration: data.duration }
-                    : m
-            ));
+            try {
+                await axios.post(`${API_URL}/edit_module`, {
+                    module_id: currentModule.id,
+                    title: data.title
+                });
+
+                setModules(modules.map(m =>
+                    m.id === currentModule.id
+                        ? { ...m, title: data.title, description: data.description, duration: data.duration }
+                        : m
+                ));
+            } catch (error) {
+                console.error("Error editing module:", error);
+                alert("Failed to edit module");
+            }
         }
         setEditModuleModalOpen(false);
         setCurrentModule(null);
@@ -153,30 +196,107 @@ export default function ModulesPage() {
         setAddItemModalOpen(true);
     };
 
-    const handleConfirmAddItem = (data: { title: string; type: ContentItem['type']; duration: string; file?: File }) => {
-        if (currentModuleForItem) {
-            const newItem: ContentItem = {
-                id: `item-${Date.now()}`,
-                type: data.type,
-                title: data.title,
-                duration: data.duration,
-                fileName: data.file?.name
-            };
-            
-            setModules(modules.map(m => 
-                m.id === currentModuleForItem 
-                    ? { ...m, items: [...m.items, newItem] }
-                    : m
-            ));
+
+    const handleConfirmAddItem = async (data: { title: string; type: ContentItem['type']; duration: string; file?: File }) => {
+        if (!currentModuleForItem) return;
+
+        try {
+            let azureId = '';
+
+            // 1. Upload File if present
+            if (data.file) {
+                const formData = new FormData();
+                formData.append('file', data.file);
+
+                // Assuming gateway forwards /material/upload to /api/upload
+                const uploadResponse = await axios.post(UPLOAD_URL, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+
+                if (uploadResponse.data && uploadResponse.data.blobName) {
+                    azureId = uploadResponse.data.blobName;
+                } else {
+                    throw new Error("Upload failed: No blob name received");
+                }
+            }
+
+            // 2. Call specific API based on type
+            let newItem: ContentItem | null = null;
+
+            if (data.type === 'video') {
+                if (!azureId) {
+                    alert("A video file is required");
+                    return;
+                }
+                const response = await axios.post(`${API_URL}/add_video`, {
+                    module_id: currentModuleForItem,
+                    azure_id: azureId,
+                    title: data.title
+                });
+
+                // Map backend video to frontend item
+                newItem = {
+                    id: response.data._id,
+                    type: 'video',
+                    title: response.data.title,
+                    duration: data.duration || '0m', // Backend doesn't store duration yet
+                    fileName: data.file?.name,
+                    azureId: azureId
+                };
+
+            } else if (data.type === 'reading') { // Notes
+                if (!azureId) {
+                    alert("A document file is required for notes");
+                    return;
+                }
+                const response = await axios.post(`${API_URL}/add_notes`, {
+                    module_id: currentModuleForItem,
+                    azure_id: azureId
+                });
+
+                newItem = {
+                    id: response.data._id,
+                    type: 'reading',
+                    title: data.title, // Backend doesn't store title for notes, but we keep it in UI
+                    duration: data.duration || '5m',
+                    fileName: data.file?.name,
+                    azureId: azureId
+                };
+            } else {
+                // Fallback for other types (Quiz/Assignment) - Local only for now as no API
+                newItem = {
+                    id: `item-${Date.now()}`,
+                    type: data.type,
+                    title: data.title,
+                    duration: data.duration,
+                    fileName: data.file?.name
+                };
+            }
+
+            if (newItem) {
+                const itemToAdd = newItem; // Capture for closure if needed, though clean here
+                setModules(modules.map(m =>
+                    m.id === currentModuleForItem
+                        ? { ...m, items: [...m.items, itemToAdd] }
+                        : m
+                ));
+            }
+
+        } catch (error: any) {
+            console.error("Error adding item:", error);
+            alert(`Failed to add item: ${error.response?.data?.message || error.message}`);
         }
+
         setAddItemModalOpen(false);
         setCurrentModuleForItem(null);
     };
 
     const handleDeleteItem = (moduleId: string, itemId: string) => {
         if (confirm('Are you sure you want to delete this item?')) {
-            setModules(modules.map(m => 
-                m.id === moduleId 
+            setModules(modules.map(m =>
+                m.id === moduleId
                     ? { ...m, items: m.items.filter(i => i.id !== itemId) }
                     : m
             ));
@@ -190,16 +310,16 @@ export default function ModulesPage() {
 
     const handleSaveItemEdit = (data: { title: string; type: ContentItem['type']; duration: string; file?: File }) => {
         if (currentItem) {
-            setModules(modules.map(m => 
-                m.id === currentItem.parentId 
+            setModules(modules.map(m =>
+                m.id === currentItem.parentId
                     ? {
                         ...m,
-                        items: m.items.map(i => 
+                        items: m.items.map(i =>
                             i.id === currentItem.item.id
-                                ? { 
-                                    ...i, 
-                                    title: data.title, 
-                                    type: data.type, 
+                                ? {
+                                    ...i,
+                                    title: data.title,
+                                    type: data.type,
                                     duration: data.duration,
                                     fileName: data.file?.name || i.fileName
                                 }
@@ -219,22 +339,33 @@ export default function ModulesPage() {
         setEditValue(title);
     };
 
-    const handleSaveEdit = (id: string, type: 'module' | 'item', parentId?: string) => {
+    const handleSaveEdit = async (id: string, type: 'module' | 'item', parentId?: string) => {
         if (!editValue.trim()) {
             setEditingId(null);
             return;
         }
 
         if (type === 'module') {
-            setModules(modules.map(m => 
-                m.id === id ? { ...m, title: editValue } : m
-            ));
+            try {
+                await axios.post(`${API_URL}/edit_module`, {
+                    module_id: id,
+                    title: editValue
+                });
+                setModules(modules.map(m =>
+                    m.id === id ? { ...m, title: editValue } : m
+                ));
+            } catch (error) {
+                console.error("Error editing module inline:", error);
+                alert("Failed to update module name");
+            }
         } else if (type === 'item' && parentId) {
-            setModules(modules.map(m => 
-                m.id === parentId 
+            // TODO: Implement item edit API (e.g. edit video title) if available
+            // For now, only local update
+            setModules(modules.map(m =>
+                m.id === parentId
                     ? {
                         ...m,
-                        items: m.items.map(i => 
+                        items: m.items.map(i =>
                             i.id === id ? { ...i, title: editValue } : i
                         )
                     }
@@ -266,7 +397,7 @@ export default function ModulesPage() {
         <div className="flex h-full w-full overflow-hidden bg-white">
             {/* Mobile Backdrop */}
             {isSidebarOpen && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/50 z-40 md:hidden"
                     onClick={() => setIsSidebarOpen(false)}
                 />
@@ -308,7 +439,7 @@ export default function ModulesPage() {
 
                 {/* Mobile Footer Navbar */}
                 <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex items-center justify-end z-30">
-                    <button 
+                    <button
                         onClick={() => setIsSidebarOpen(true)}
                         className="p-2 -mr-2 text-gray-600 hover:bg-gray-100 rounded-lg flex items-center gap-2"
                     >

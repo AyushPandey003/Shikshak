@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { BookOpen, FileQuestion, HelpCircle, Video, FileText } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { ContentItem } from './types';
+import axios from 'axios';
+
+const UPLOAD_URL = "http://localhost:4000/material/upload"; // Or pass as prop
 
 interface EditContentItemModalProps {
     isOpen: boolean;
@@ -11,6 +14,8 @@ interface EditContentItemModalProps {
 }
 
 export function EditContentItemModal({ isOpen, onClose, onConfirm, item }: EditContentItemModalProps) {
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
     const [formData, setFormData] = useState<{
         title: string;
         type: ContentItem['type'];
@@ -31,6 +36,15 @@ export function EditContentItemModal({ isOpen, onClose, onConfirm, item }: EditC
                 duration: item.duration || '',
                 file: undefined
             });
+
+            if (item.azureId) {
+                // Fetch SAS URL for preview
+                axios.get(`${UPLOAD_URL}/${item.azureId}`)
+                    .then(res => setPreviewUrl(res.data.url))
+                    .catch(err => console.error("Failed to load preview", err));
+            } else {
+                setPreviewUrl(null);
+            }
         }
     }, [isOpen, item]);
 
@@ -60,9 +74,9 @@ export function EditContentItemModal({ isOpen, onClose, onConfirm, item }: EditC
     };
 
     return (
-        <Modal 
-            isOpen={isOpen} 
-            onClose={onClose} 
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
             title="Edit Content Item"
             size="md"
         >
@@ -74,11 +88,10 @@ export function EditContentItemModal({ isOpen, onClose, onConfirm, item }: EditC
                             <button
                                 key={type}
                                 onClick={() => setFormData({ ...formData, type })}
-                                className={`p-3 border-2 rounded-lg flex flex-col items-center gap-2 transition-all ${
-                                    formData.type === type 
-                                        ? 'border-blue-500 bg-blue-50' 
+                                className={`p-3 border-2 rounded-lg flex flex-col items-center gap-2 transition-all ${formData.type === type
+                                        ? 'border-blue-500 bg-blue-50'
                                         : 'border-gray-200 hover:border-gray-300'
-                                }`}
+                                    }`}
                             >
                                 {getTypeIcon(type)}
                                 <span className="text-xs font-medium capitalize">{type}</span>
@@ -130,6 +143,32 @@ export function EditContentItemModal({ isOpen, onClose, onConfirm, item }: EditC
                         <p className="mt-1 text-xs text-green-600">New file: {formData.file.name}</p>
                     )}
                 </div>
+
+                {/* Preview Section */}
+                {previewUrl && (
+                    <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Content Preview</label>
+                        {formData.type === 'video' ? (
+                            <video
+                                src={previewUrl}
+                                controls
+                                className="w-full rounded-md shadow-sm max-h-[300px] bg-black"
+                            />
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <FileText className="text-gray-500" size={20} />
+                                <a
+                                    href={previewUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline text-sm font-medium"
+                                >
+                                    View Uploaded Document
+                                </a>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className="px-6 py-4 bg-gray-50 flex items-center justify-end gap-3 border-t">
