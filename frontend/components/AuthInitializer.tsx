@@ -6,6 +6,9 @@ import { AuthUser } from '@/types/auth';
 import axios from 'axios';
 
 
+
+
+
 export default function AuthInitializer() {
     const { data: session, isPending } = authClient.useSession();
     const { setSession, setAuthLoading, clearAuth, setProfile } = useAppStore();
@@ -16,7 +19,7 @@ export default function AuthInitializer() {
             const res = await axios.get('http://localhost:4000/authentication/get_user', {
                 withCredentials: true, // Include cookies for session auth
             });
-
+            // console.log("getting", res);
             const userData = res.data;
             const authUser: AuthUser = {
                 id: userData._id || userData.id,
@@ -34,6 +37,7 @@ export default function AuthInitializer() {
                         name: userData.name,
                         phoneNumber: userData.phoneNumber,
                         role: userData.role,
+                        id: userData._id,
                         teacherDetails: userData.role === 'teacher' ? {
                             subjects: userData.subjects || [],
                             qualifications: userData.qualifications || [],

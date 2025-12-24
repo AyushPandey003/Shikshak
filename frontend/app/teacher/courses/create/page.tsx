@@ -1,13 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import axios from "axios";
+import { useAppStore } from "@/store/useAppStore"
+
+
+
+
 
 export default function CreateCoursePage() {
   const [course, setCourse] = useState({
     title: "",
     subject: "",
     description: "",
+    board: "",
     price: "",
     duration: "",
     visibility: "public",
@@ -15,6 +22,42 @@ export default function CreateCoursePage() {
   });
   const [isLoading, SetIsLoading] = useState(false)
   const [preview, setPreview] = useState<string | null>(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState("");
+
+  const { profile } = useAppStore();
+
+  // console.log(profile);
+
+
+
+  const sendDetails = async () => {
+    try {
+
+      axios.post("http://localhost:4000/material/courses/create_course", {
+        name: course.title,
+        subject: course.subject,
+        teacher_details: {
+          id: profile?.id,
+          name: profile?.name,
+          qualification: profile?.teacherDetails?.qualifications.join(","),
+          class: profile?.teacherDetails?.classes.join(","),
+          experience: profile?.teacherDetails?.experiences,
+        },
+        description: course.description,
+        price: course.price,
+        duration: course.duration,
+        visibility: course.visibility,
+        thumbnail: thumbnailUrl,
+        board: course.board,
+        price_category: Number(course.price) > 0 ? 'paid' : 'free',
+
+      }, { withCredentials: true })
+      console.log("Course created successfully")
+    }
+    catch (error) {
+      console.log("Invalid details")
+    }
+  }
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -23,12 +66,30 @@ export default function CreateCoursePage() {
     setCourse((prev) => ({ ...prev, [name]: value }));
   }
 
-  function handleThumbnail(e: React.ChangeEvent<HTMLInputElement>) {
+
+
+  async function handleThumbnail(e: React.ChangeEvent<HTMLInputElement>) {
+    console.log(e.target.files)
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setCourse((prev) => ({ ...prev, thumbnail: file }));
     setPreview(URL.createObjectURL(file));
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await axios.post("http://localhost:4000/material/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true
+      })
+      console.log("Upload response:", res.data);
+
+    } catch (error) {
+      console.error("Error uploading thumbnail:", error);
+    }
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -41,12 +102,13 @@ export default function CreateCoursePage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-sm font-semibold">{course.visibility == "public" ? "Publishing": "Drafting"} course...</p>
+        <p className="text-sm font-semibold">{course.visibility == "public" ? "Publishing" : "Drafting"} course...</p>
       </div>
     );
   }
-  
+
   return (
+
     <div className="p-5 md:p-5">
       <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm p-6 md:p-8">
         {/* Header */}
@@ -58,7 +120,7 @@ export default function CreateCoursePage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Thumbnail Upload */}
+          {/* Thumbnail Upload */}
           <div>
             <label className="block text-sm font-medium mb-2">
               Course Thumbnail
@@ -112,6 +174,20 @@ export default function CreateCoursePage() {
               type="text"
               name="subject"
               value={course.subject}
+              onChange={handleChange}
+              placeholder="e.g. Computer Science"
+              className="w-full border rounded-lg px-3 py-2 border-zinc-200 focus:outline-none"
+            />
+          </div>
+          {/* Subject */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Board
+            </label>
+            <input
+              type="text"
+              name="board"
+              value={course.board}
               onChange={handleChange}
               placeholder="e.g. Computer Science"
               className="w-full border rounded-lg px-3 py-2 border-zinc-200 focus:outline-none"
@@ -191,6 +267,7 @@ export default function CreateCoursePage() {
             <button
               type="submit"
               className="px-5 py-2 bg-blue-600 text-white text-sm font-semibold"
+              onClick={sendDetails}
             >
               Publish Course
             </button>

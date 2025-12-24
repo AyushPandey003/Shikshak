@@ -15,6 +15,7 @@ export interface AuthUser {
 
 // Common fields for all users
 export interface BaseProfile {
+    id: string;
     name: string;
     phoneNumber: string;
 }

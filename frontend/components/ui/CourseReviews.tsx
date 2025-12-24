@@ -5,11 +5,12 @@ import { STATIC_REVIEWS } from '@/constants/coursedetails';
 
 interface CourseReviewsProps {
     courseTitle: string;
+    reviewsList?: Review[];
 }
 
-const CourseReviews: React.FC<CourseReviewsProps> = ({ courseTitle }) => {
-    // Simulating state for future backend integration
-    const [reviews] = useState<Review[]>(STATIC_REVIEWS);
+const CourseReviews: React.FC<CourseReviewsProps> = ({ courseTitle, reviewsList }) => {
+    // Use provided reviews or fallback to static
+    const reviews = reviewsList && reviewsList.length > 0 ? reviewsList : STATIC_REVIEWS;
 
     return (
         <div className="mb-12">
