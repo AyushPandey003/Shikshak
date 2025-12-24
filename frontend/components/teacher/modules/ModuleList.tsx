@@ -122,7 +122,7 @@ export function ModuleList({
                         </button>
                         <button 
                             onClick={onSaveCourse}
-                            className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors shadow-sm"
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
                         >
                             <Save size={16} />
                             <span>Save Course</span>
