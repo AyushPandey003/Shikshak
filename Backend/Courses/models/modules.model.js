@@ -18,7 +18,15 @@ const moduleSchema = new mongoose.Schema(
         notes_id: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: "Notes",
-        }]
+        }],
+        description: {
+            type: String,
+            required: true,
+        },
+        duration: {
+            type: String,
+            required: true,
+        },
     },
     { timestamps: true }
 );

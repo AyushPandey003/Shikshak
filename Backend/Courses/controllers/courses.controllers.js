@@ -6,7 +6,7 @@ import { Notes } from "../models/notes.model.js";
 
 export const createCourse = async (req, res) => {
     try {
-        const { name, subject, teacher_details, description, price, duration, visibility, thumbnail, board, pricing_category } = req.body;
+        const { name, subject, teacher_details, description, price, duration, visibility, thumbnail, board, pricing_category, language, course_outcomes } = req.body;
 
         const newCourse = new Course({
             name,
@@ -18,7 +18,9 @@ export const createCourse = async (req, res) => {
             visibility,
             thumbnail,
             board,
-            pricing_category
+            pricing_category,
+            language,
+            course_outcomes
         });
 
         const savedCourse = await newCourse.save();
@@ -85,7 +87,7 @@ export const getCourseByIdGeneral = async (req, res) => {
         if (!course_id) {
             return res.status(400).json({ message: "Course ID is required" });
         }
-        const course = await Course.findOne({ _id: course_id, visibility: "public" }).select("name subject teacher_details description price duration visibility thumbnail rating board pricing_category module_id reviews").populate("module_id reviews");
+        const course = await Course.findOne({ _id: course_id, visibility: "public" }).select("name subject teacher_details description price duration visibility thumbnail rating board pricing_category module_id reviews language course_outcomes").populate("module_id reviews");
         if (!course) return res.status(404).json({ message: "Course not found or private" });
         res.status(200).json(course);
     } catch (error) {
@@ -128,10 +130,10 @@ export const getCourseById = async (req, res) => {
 
         let course;
         if(user_role === "teacher"){
-            course = await Course.findOne({ _id: course_id, "teacher_details.id" : user_id }).select("name subject teacher_details description price duration visibility thumbnail rating student_count board pricing_category module_id reviews total_earned").populate("module_id reviews");
+            course = await Course.findOne({ _id: course_id, "teacher_details.id" : user_id }).select("name subject teacher_details description price duration visibility thumbnail rating student_count board pricing_category module_id reviews total_earned language course_outcomes").populate("module_id reviews");
 
         }else if(user_role === "student"){
-            course = await Course.findOne({ _id: course_id, "students_id.id" : user_id }).select("name subject teacher_details description price duration visibility thumbnail rating board pricing_category module_id reviews").populate("module_id reviews");
+            course = await Course.findOne({ _id: course_id, "students_id.id" : user_id }).select("name subject teacher_details description price duration visibility thumbnail rating board pricing_category module_id reviews language course_outcomes").populate("module_id reviews");
 
         }else{
             return res.status(400).json({ message: "Invalid User Role" });

@@ -108,6 +108,16 @@ const courseSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        language: {
+            type: String,
+            required: true,
+        },
+        course_outcomes: [
+            {
+                type: String,
+                required: true,
+            },
+        ]
     },
     { timestamps: true }
 );

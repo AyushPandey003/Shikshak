@@ -6,7 +6,7 @@ import { Notes } from "../models/notes.model.js";
 // Create Module
 export const createModule = async (req, res) => {
     try {
-        const { course_id, title } = req.body;
+        const { course_id, title, description, duration } = req.body;
 
         if (!course_id || !title) {
             return res.status(400).json({ message: "Course ID and Title are required" });
@@ -20,6 +20,8 @@ export const createModule = async (req, res) => {
         const newModule = new Module({
             course_id,
             title,
+            description,
+            duration,
         });
 
         const savedModule = await newModule.save();
@@ -182,4 +184,58 @@ export const addNotes = async (req, res) => {
     }
 };
 
+// Delete Video
+export const deleteVideo = async (req, res) => {
+    try {
+        const { video_id } = req.body;
 
+        if (!video_id) {
+            return res.status(400).json({ message: "Video ID is required" });
+        }
+
+        const videoToDelete = await Video.findById(video_id);
+        if (!videoToDelete) {
+            return res.status(404).json({ message: "Video not found" });
+        }
+
+        // Remove video from module
+        await Module.findByIdAndUpdate(videoToDelete.module_id, {
+            $pull: { video_id: video_id }
+        });
+
+        await Video.findByIdAndDelete(video_id);
+
+        res.status(200).json({ message: "Video deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting video:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+// Delete Notes
+export const deleteNotes = async (req, res) => {
+    try {
+        const { notes_id } = req.body;
+
+        if (!notes_id) {
+            return res.status(400).json({ message: "Notes ID is required" });
+        }
+
+        const notesToDelete = await Notes.findById(notes_id);
+        if (!notesToDelete) {
+            return res.status(404).json({ message: "Notes not found" });
+        }
+
+        // Remove notes from module
+        await Module.findByIdAndUpdate(notesToDelete.module_id, {
+            $pull: { notes_id: notes_id }
+        });
+
+        await Notes.findByIdAndDelete(notes_id);
+
+        res.status(200).json({ message: "Notes deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting notes:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
