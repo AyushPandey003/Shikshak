@@ -9,13 +9,15 @@ import Logo from "../ui/Logo";
 
 import { useAppStore } from "@/store/useAppStore";
 import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { SearchBar } from "../ui/SearchBar";
 
 export default function Topbar() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const { user, clearAuth } = useAppStore();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -40,8 +42,12 @@ export default function Topbar() {
       </div>
 
       {/* search */}
-      {/* search removed */}
-      <div className="hidden md:flex flex-1"></div>
+      {/* search */}
+      <div className="hidden md:flex flex-1 justify-center px-8">
+        {pathname === '/teacher/courses' && (
+          <SearchBar placeholder="Search courses..." />
+        )}
+      </div>
 
       <div className="flex items-center">
         <div className="flex items-center text-indigo-600 text-2xl"><BiBell /></div>
