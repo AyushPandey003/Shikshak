@@ -17,6 +17,10 @@ const NotesSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
+        title: {
+            type: String,
+            required: true,
+        },
     },
     { timestamps: true }
 );
