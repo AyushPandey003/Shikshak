@@ -1,16 +1,120 @@
 'use client'
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import CourseSidebar from '@/components/layout/CourseSidebar';
 import MobileAction from '@/components/layout/MobileAction';
 import CourseCurriculum from '@/components/ui/CourseCurriculum';
 import CourseReviews from '@/components/ui/CourseReviews';
-import { SAMPLE_COURSE, ICONS } from '@/constants/coursedetails';
+// import { SAMPLE_COURSE, ICONS } from '@/constants/coursedetails';
 import { Star, Award, Globe, AlertCircle, Play, CheckCircle2 } from 'lucide-react';
+import axios from 'axios';
+import { Course, Review } from '@/types/coursedet';
 
-const App: React.FC = () => {
-    const course = SAMPLE_COURSE;
+const CourseDetailPage: React.FC = () => {
+    const params = useParams();
+    const courseId = params.courseId as string;
+    const [course, setCourse] = useState<Course | null>(null);
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCourse = async () => {
+            if (!courseId) return;
+            try {
+                // Using the specific endpoint for general info
+                const res = await axios.post("http://localhost:4000/material/courses/get_course_by_id_general", {
+                    course_id: courseId
+                }, { withCredentials: true });
+
+                const data = res.data;
+                console.log("Course details:", data);
+
+                // Map API data to UI structure
+                // Note: Providing fallbacks for fields not present in general info endpoint
+                const mappedCourse: Course = {
+                    id: data._id,
+                    title: data.name,
+                    subtitle: data.description ? data.description.replace(/<[^>]*>?/gm, '').substring(0, 150) + "..." : "Master this course with clear concepts and practice.",
+                    category: [data.board || "General", data.subject || "Subject", "Class"],
+                    lastUpdated: "Recently", // This field doesn't exist in backend response yet
+                    language: "English",
+                    rating: data.rating || 4.5,
+                    totalRatings: data.reviews?.length || 0,
+                    students: 0, // Not in general info
+                    price: data.price,
+                    originalPrice: data.price ? Math.floor(data.price * 1.3) : 0, // Mock original price
+                    discountEnding: "2 days",
+                    thumbnail: data.thumbnail,
+                    videoPreview: "", // Not available in API
+                    whatYouWillLearn: [ // Placeholder as API doesn't return this yet
+                        "Comprehensive understanding of the syllabus",
+                        "Problem-solving techniques and shortcuts",
+                        "Conceptual clarity through examples"
+                    ],
+                    requirements: ["Basic understanding of the subject"],
+                    description: data.description || "<p>No description available.</p>",
+                    sections: data.module_id ? data.module_id.map((m: any, index: number) => ({
+                        id: m._id,
+                        title: m.title,
+                        lectures: [] // Videos not populated deeply yet
+                    })) : [],
+                    instructors: [{
+                        id: data.teacher_details?.id || "inst-1",
+                        name: data.teacher_details?.name || "Instructor",
+                        title: data.teacher_details?.qualification || "Educator",
+                        avatar: "https://ui-avatars.com/api/?name=" + (data.teacher_details?.name || "Instructor") + "&background=random",
+                        rating: 4.8,
+                        students: 1000,
+                        courses: 5,
+                        bio: data.teacher_details?.experience ? `${data.teacher_details.experience} years of experience.` : "Passionate educator dedicated to student success."
+                    }]
+                };
+
+                const mappedReviews: Review[] = data.reviews ? data.reviews.map((r: any) => ({
+                    id: r._id,
+                    author: "Student",
+                    initials: "S",
+                    rating: r.rating || 5,
+                    timeAgo: new Date(r.createdAt).toLocaleDateString(),
+                    content: r.comment || ""
+                })) : [];
+
+                setCourse(mappedCourse);
+                setReviews(mappedReviews);
+            } catch (error) {
+                console.error("Failed to fetch course", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchCourse();
+    }, [courseId]);
+
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-white">
+                <Navbar />
+                <div className="flex items-center justify-center h-[calc(100vh-80px)]">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!course) {
+        return (
+            <div className="min-h-screen bg-white">
+                <Navbar />
+                <div className="flex flex-col items-center justify-center h-[calc(100vh-80px)]">
+                    <h2 className="text-2xl font-bold text-gray-900">Course not found</h2>
+                    <p className="text-gray-500 mt-2">The course you are looking for does not exist.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-white font-sans text-gray-900">
@@ -96,7 +200,7 @@ const App: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                             {course.whatYouWillLearn.map((item, idx) => (
                                 <div key={idx} className="flex items-start text-sm text-gray-700 leading-relaxed gap-3">
-                                    <CheckCircle2 className="w-5 h-5 text-gray-900 flex-shrink-0 mt-0.5" />
+                                    <CheckCircle2 className="w-5 h-5 text-gray-900 shrink-0 mt-0.5" />
                                     <span>{item}</span>
                                 </div>
                             ))}
@@ -115,7 +219,7 @@ const App: React.FC = () => {
                         <ul className="space-y-3 text-gray-700 text-sm list-inside">
                             {course.requirements.map((req, i) => (
                                 <li key={i} className="flex items-start gap-3 pl-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-900 mt-2 flex-shrink-0" />
+                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-900 mt-2 shrink-0" />
                                     <span className="leading-relaxed">{req}</span>
                                 </li>
                             ))}
@@ -148,7 +252,7 @@ const App: React.FC = () => {
                     </div>
 
                     {/* Reviews */}
-                    <CourseReviews courseTitle={course.title} />
+                    <CourseReviews courseTitle={course.title} reviewsList={reviews} />
 
                 </div>
 
@@ -162,4 +266,4 @@ const App: React.FC = () => {
     );
 };
 
-export default App;
+export default CourseDetailPage;

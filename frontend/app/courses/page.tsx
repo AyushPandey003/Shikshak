@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import CourseCard from '@/components/ui/CourseCard';
 import FilterBar from '@/components/layout/FilterBar';
-import { MOCK_COURSES, CLASSES, BOARDS, SUBJECTS } from '@/constants/allcourses';
-import { TabOption, SortOption } from '@/types/course';
+import { CLASSES, BOARDS, SUBJECTS } from '@/constants/allcourses';
+import { TabOption, SortOption, Course } from '@/types/course';
+import axios from 'axios';
 
 interface FilterState {
   grades: string[];
@@ -16,12 +17,73 @@ interface FilterState {
 export default function CoursesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<TabOption>('All');
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [filters, setFilters] = useState<FilterState>({
     grades: [],
     boards: [],
     subjects: []
   });
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(
+          "http://localhost:4000/material/courses/get_all_general",
+          {
+            withCredentials: true,
+          }
+        );
+
+        console.log("received", res.data);
+        let fetchedData: any[] = [];
+        if (Array.isArray(res.data)) {
+          fetchedData = res.data;
+        } else if (res.data && Array.isArray(res.data.courses)) {
+          fetchedData = res.data.courses;
+        } else {
+          console.error("Unexpected data format:", res.data);
+          fetchedData = [];
+        }
+
+        const mappedCourses: Course[] = fetchedData.map((c: any) => ({
+          id: c._id || c.id,
+          title: c.name || "Untitled Course",
+          instructor: {
+            id: c.teacher_details?.id || 'inst-1',
+            name: c.teacher_details?.name || 'Instructor',
+            avatar: c.teacher_details?.avatar || 'https://ui-avatars.com/api/?name=Instructor'
+          },
+          price: c.price || 0,
+          originalPrice: c.price || 0,
+          rating: c.rating || 4.5,
+          students: c.students_count || 0,
+          image: c.thumbnail || "https://picsum.photos/300/200",
+          subject: c.subject || "General",
+          grade: c.class || "General", // Backend data might be missing this
+          board: c.board || "CBSE",
+          tags: [],
+          isBundle: false
+        }));
+
+        setCourses(mappedCourses);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  // Use hardcoded options
+  const availableClasses = CLASSES;
+  const availableBoards = BOARDS;
+  const availableSubjects = SUBJECTS;
+
 
   const [sortOption, setSortOption] = useState<SortOption>('relevance');
 
@@ -51,21 +113,21 @@ export default function CoursesPage() {
   }, []);
 
   const filteredCourses = useMemo(() => {
-    let result = [...MOCK_COURSES];
+    let result = [...courses];
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(c =>
-        c.title.toLowerCase().includes(q) ||
-        c.instructor.name.toLowerCase().includes(q) ||
-        c.subject.toLowerCase().includes(q)
+        c.title?.toLowerCase().includes(q) ||
+        c.instructor?.name?.toLowerCase().includes(q) ||
+        c.subject?.toLowerCase().includes(q)
       );
     }
 
     if (activeTab !== 'All') {
       if (activeTab === 'Paid') result = result.filter(c => c.price > 0);
       if (activeTab === 'Free') result = result.filter(c => c.price === 0);
-      if (activeTab === 'Sale') result = result.filter(c => c.tags.includes('Sale'));
+      if (activeTab === 'Sale') result = result.filter(c => c.tags?.includes('Sale'));
       if (activeTab === 'Bundle') result = result.filter(c => c.isBundle);
     }
 
@@ -93,15 +155,15 @@ export default function CoursesPage() {
         result.sort((a, b) => b.price - a.price);
         break;
       case 'rating':
-        result.sort((a, b) => b.rating - a.rating);
+        result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         break;
       default:
-        // Relevance
+        // Relevance - keep original order or refine
         break;
     }
 
     return result;
-  }, [searchQuery, activeTab, filters, sortOption]);
+  }, [courses, searchQuery, activeTab, filters, sortOption]);
 
   return (
     <div className='h-[100dvh] flex flex-col overflow-hidden bg-gray-50 font-sans'>
@@ -125,19 +187,23 @@ export default function CoursesPage() {
             resultCount={filteredCourses.length}
             sortOption={sortOption}
             setSortOption={setSortOption}
-            availableClasses={CLASSES}
-            availableBoards={BOARDS}
-            availableSubjects={SUBJECTS}
+            availableClasses={availableClasses}
+            availableBoards={availableBoards}
+            availableSubjects={availableSubjects}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
           />
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-12 pb-12 scroll-smooth">
-          {filteredCourses.length > 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
+            </div>
+          ) : filteredCourses.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredCourses.map(course => (
-                <CourseCard key={course.id} course={course} />
+              {filteredCourses.map((course, id) => (
+                <CourseCard key={id} course={course} />
               ))}
             </div>
           ) : (
