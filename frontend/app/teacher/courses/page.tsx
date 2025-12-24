@@ -2,148 +2,68 @@
 
 import CourseCard from "@/components/ui/CourseCard";
 import { Course } from "@/types/course";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAppStore } from "@/store/useAppStore";
+import axios from "axios";
 
 type Option = "All" | "Public" | "Private" | "Draft";
 
 export default function Page() {
   const [activeTab, setActiveTab] = useState<Option>("Public");
 
-  const myCourse: Course[] = [
-    {
-      id: "1",
-      title: "My Course — Mathematics Essentials",
-      instructor: {
-        id: "mi1",
-        name: "My Courses Instructor",
-        avatar: "https://picsum.photos/seed/myinstructor/50/50",
-      },
-      price: 499,
-      rating: 4.8,
-      students: 1200,
-      image: "https://picsum.photos/seed/mycourse1/400/300",
-      subject: "Mathematics",
-      grade: "10th Class",
-      board: "CBSE",
-      tags: ["My Course"],
-      isBundle: false,
-      type: "Public",
-    },
-    {
-      id: "2",
-      title: "My Course — Physics Fundamentals",
-      instructor: {
-        id: "mi1",
-        name: "My Courses Instructor",
-        avatar: "https://picsum.photos/seed/myinstructor/50/50",
-      },
-      price: 0,
-      rating: 4.7,
-      students: 3400,
-      image: "https://picsum.photos/seed/mycourse2/400/300",
-      subject: "Physics",
-      grade: "9th Class",
-      board: "ICSE",
-      tags: ["Free"],
-      isBundle: false,
-      type: "Public",
-    },
-    {
-      id: "3",
-      title: "My Course — English Communication",
-      instructor: {
-        id: "mi1",
-        name: "My Courses Instructor",
-        avatar: "https://picsum.photos/seed/myinstructor/50/50",
-      },
-      price: 299,
-      rating: 4.5,
-      students: 800,
-      image: "https://picsum.photos/seed/mycourse3/400/300",
-      subject: "English",
-      grade: "8th Class",
-      board: "State Board",
-      tags: [],
-      isBundle: false,
-      type: "Public",
-    },
-    {
-      id: "4",
-      title: "My Course — Advanced Algebra (Private)",
-      instructor: {
-        id: "mi1",
-        name: "My Courses Instructor",
-        avatar: "https://picsum.photos/seed/myinstructor/50/50",
-      },
-      price: 799,
-      rating: 4.9,
-      students: 420,
-      image: "https://picsum.photos/seed/mycourse4/400/300",
-      subject: "Mathematics",
-      grade: "11th Class",
-      board: "CBSE",
-      tags: ["Advanced"],
-      isBundle: false,
-      type: "Private",
-    },
-    {
-      id: "5",
-      title: "My Course — Chemistry Lab Practice (Private)",
-      instructor: {
-        id: "mi1",
-        name: "My Courses Instructor",
-        avatar: "https://picsum.photos/seed/myinstructor/50/50",
-      },
-      price: 1299,
-      rating: 4.6,
-      students: 210,
-      image: "https://picsum.photos/seed/mycourse5/400/300",
-      subject: "Chemistry",
-      grade: "12th Class",
-      board: "CBSE",
-      tags: ["Lab"],
-      isBundle: false,
-      type: "Private",
-    },
-    {
-      id: "6",
-      title: "My Course — Draft: Economics Intro",
-      instructor: {
-        id: "mi1",
-        name: "My Courses Instructor",
-        avatar: "https://picsum.photos/seed/myinstructor/50/50",
-      },
-      price: 0,
-      rating: 0,
-      students: 0,
-      image: "https://picsum.photos/seed/mycourse6/400/300",
-      subject: "Economics",
-      grade: "12th Class",
-      board: "CBSE",
-      tags: [],
-      isBundle: false,
-      type: "Draft",
-    },
-    {
-      id: "7",
-      title: "My Course — Draft: Biology Notes",
-      instructor: {
-        id: "mi1",
-        name: "My Courses Instructor",
-        avatar: "https://picsum.photos/seed/myinstructor/50/50",
-      },
-      price: 0,
-      rating: 0,
-      students: 0,
-      image: "https://picsum.photos/seed/mycourse7/400/300",
-      subject: "Biology",
-      grade: "11th Class",
-      board: "CBSE",
-      tags: ["Draft"],
-      isBundle: false,
-      type: "Draft",
-    },
-  ];
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const { user } = useAppStore();
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      if (!user) return;
+      try {
+        setLoading(true);
+        // Using "teacher" role hardcoded as this is the teacher dashboard
+        const response = await axios.post("http://localhost:4000/material/courses/get_all", {
+          user_id: user.id,
+          user_role: "teacher"
+        }, {
+          withCredentials: true
+        });
+
+        if (response.data) {
+          const mappedCourses: Course[] = response.data.map((c: any) => ({
+            id: c._id,
+            title: c.name,
+            instructor: {
+              id: c.teacher_details?.id || user.id,
+              name: c.teacher_details?.name || user.email?.split('@')[0] || "Instructor",
+              avatar: c.teacher_details?.avatar || user.photoUrl || "https://picsum.photos/seed/instructor/50/50"
+            },
+            price: c.price,
+            rating: c.rating || 0,
+            students: c.student_count || 0, // Backend might need to return this
+            image: c.thumbnail || "https://picsum.photos/seed/course/400/300",
+            subject: c.subject,
+            grade: "10th Class", // Placeholder as not in select
+            board: c.board,
+            tags: [c.pricing_category],
+            isBundle: false,
+            type: c.visibility === 'public' ? 'Public' : (c.visibility === 'private' ? 'Private' : 'Draft'),
+            // Note: Backend might rely on a 'status' or just visibility. 
+            // Assuming visibility covers Public/Private. Draft might be a separate status or visibility='draft'
+          }));
+          setCourses(mappedCourses);
+        }
+      } catch (error) {
+        console.error("Failed to fetch courses", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, [user]);
+
+  const myCourse: Course[] = courses;
 
   const tabs: Option[] = ["All", "Public", "Private", "Draft"];
   const filteredCourses =
@@ -162,11 +82,10 @@ export default function Page() {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 text-sm font-medium transition-all whitespace-nowrap w-fit ${
-                    activeTab === tab
-                      ? "text-indigo-600 bg-white shadow-md"
-                      : "text-gray-500 hover:text-brand-500 hover:bg-gray-50"
-                  }`}
+                  className={`px-4 py-2 text-sm font-medium transition-all whitespace-nowrap w-fit ${activeTab === tab
+                    ? "text-indigo-600 bg-white shadow-md"
+                    : "text-gray-500 hover:text-brand-500 hover:bg-gray-50"
+                    }`}
                 >
                   {tab == "All" ? "All" : tab}
                 </button>

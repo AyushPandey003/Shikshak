@@ -7,9 +7,10 @@ interface EditModuleModalProps {
     onClose: () => void;
     onConfirm: (data: { title: string; description: string; duration: string }) => void;
     module: Module | null;
+    onDelete?: (id: string) => void;
 }
 
-export function EditModuleModal({ isOpen, onClose, onConfirm, module }: EditModuleModalProps) {
+export function EditModuleModal({ isOpen, onClose, onConfirm, module, onDelete }: EditModuleModalProps) {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -37,9 +38,9 @@ export function EditModuleModal({ isOpen, onClose, onConfirm, module }: EditModu
     };
 
     return (
-        <Modal 
-            isOpen={isOpen} 
-            onClose={onClose} 
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
             title="Edit Module"
             size="md"
         >
@@ -98,6 +99,22 @@ export function EditModuleModal({ isOpen, onClose, onConfirm, module }: EditModu
                     Save Changes
                 </button>
             </div>
+            {onDelete && module && (
+                <div className="px-6 py-4 bg-red-50 border-t border-red-100 flex justify-between items-center">
+                    <span className="text-sm text-red-600">Danger Zone</span>
+                    <button
+                        onClick={() => {
+                            if (confirm("Are you sure you want to delete this module? This action cannot be undone.")) {
+                                onDelete(module.id);
+                                onClose();
+                            }
+                        }}
+                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                        Delete Module
+                    </button>
+                </div>
+            )}
         </Modal>
     );
 }
