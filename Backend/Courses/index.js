@@ -1,3 +1,13 @@
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load centralized environment configuration
+dotenv.config({ path: path.resolve(__dirname, '../../.config/.env') });
+
 import express from "express";
 import uploadRoutes from "./routes/upload.js";
 import connectDB from "./db/index.js";
@@ -34,7 +44,7 @@ app.use("/api/module", moduleRoutes);
 // reviews routes
 app.use("/api/reviews", reviewsRoutes);
 
-const PORT = 4002;
+const PORT = process.env.PORT_COURSES || 4002;
 app.listen(PORT, () => {
   console.log(`Courses Service running on port ${PORT}`);
 });

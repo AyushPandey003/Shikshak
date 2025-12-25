@@ -25,7 +25,7 @@ async function subscribeToTopics() {
     console.log("Subscribing to topics: module_created, payment_done");
     await consumer.subscribe({
       topics: ["module_created", "payment_done"],
-      fromBeginning: true
+      fromBeginning: false
     });
     console.log("✓ Subscribed to topics: module_created, payment_done");
   } catch (error) {
