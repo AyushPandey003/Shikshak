@@ -1,6 +1,6 @@
 // infra/email.consumer.js
 import { kafka } from "./client.js";
-import { sendModuleNotificationEmail } from "./emailService.js";
+import { getCourseData, getUserAndCourseData, sendModuleNotification, sendPaymentConfirmation } from "./emailService.js";
 
 const consumer = kafka.consumer({
   groupId: "email-group",
@@ -60,27 +60,40 @@ async function startConsumer() {
           console.log(`Key: ${message.key?.toString()}`);
           console.log(`Event Type: ${eventtype}`);
 
+
           if (eventtype === 'module_created') {
             const { module_id, course_id } = payload;
             console.log(`Module ID: ${module_id}`);
             console.log(`Course ID: ${course_id}`);
 
-            // const emails = [];
-            // find emails and send to below function in array
-            // await sendEmail(emails);
-
-            console.log(`✅ Email sent for module_id=${module_id}`);
+            // Fetch data
+            const data = await getCourseData(module_id);
+            if (data) {
+              const { students, module, course } = data;
+              if (students && students.length > 0) {
+                await sendModuleNotification(students, module, course);
+                console.log(`✅ Email sent for module_id=${module_id} to ${students.length} students`);
+              } else {
+                console.log(`ℹ️ No students to notify for module_id=${module_id}`);
+              }
+            } else {
+              console.warn(`⚠️ Could not fetch data for module_id=${module_id}`);
+            }
 
           } else if (eventtype === 'payment_done') {
             const { course_id, user_id } = payload;
             console.log(`Course ID: ${course_id}`);
             console.log(`User ID: ${user_id}`);
 
-            // const emails = [];
-            // find emails and send to below function in array
-            // await sendEmail(emails);
-
-            console.log(`✅ Payment email processed for user_id=${user_id}`);
+            // Fetch data
+            const data = await getUserAndCourseData(user_id, course_id);
+            if (data) {
+              const { user, course } = data;
+              await sendPaymentConfirmation(user, course);
+              console.log(`✅ Payment email processed for user_id=${user_id}`);
+            } else {
+              console.warn(`⚠️ Could not fetch data for payment: user_id=${user_id}, course_id=${course_id}`);
+            }
 
           } else {
             console.warn(`⚠️ Unknown event type: ${eventtype}`);

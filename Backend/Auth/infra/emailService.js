@@ -62,20 +62,14 @@ export async function sendEmailViaGmail({ to, subject, body }) {
 }
 
 /**
- * Sends module notification email to enrolled students
- * @param {string} module_id - The ID of the created module
- * @param {string} course_id - The ID of the course
+ * Fetches course and module data for a given module_id
  */
-export async function sendModuleNotificationEmail(module_id, course_id) {
-    // Import mongoose to query the database
+export async function getCourseData(module_id) {
     const mongoose = await import("mongoose");
-
-    // Connect to Courses database to get course and module details
     const coursesDbUri = process.env.COURSES_MONGO_URI || "mongodb://localhost:27017/shikshak_courses";
     const coursesConnection = mongoose.createConnection(coursesDbUri);
 
     try {
-        // Define schemas for the courses database
         const courseSchema = new mongoose.Schema({
             name: String,
             students_id: [{
@@ -97,29 +91,87 @@ export async function sendModuleNotificationEmail(module_id, course_id) {
         const Course = coursesConnection.model("Course", courseSchema);
         const Module = coursesConnection.model("Module", moduleSchema);
 
-        // Fetch module and course details
         const module = await Module.findById(module_id);
+        if (!module) return null;
+
+        const course = await Course.findById(module.course_id);
+        if (!course) return null;
+
+        return {
+            course: {
+                name: course.name,
+                teacher_name: course.teacher_details?.name
+            },
+            module: {
+                title: module.title,
+                description: module.description
+            },
+            students: course.students_id || []
+        };
+    } finally {
+        await coursesConnection.close();
+    }
+}
+
+/**
+ * Fetches user and course data for a given user_id and course_id
+ */
+export async function getUserAndCourseData(user_id, course_id) {
+    const mongoose = await import("mongoose");
+
+    // Connections
+    const coursesDbUri = process.env.COURSES_MONGO_URI || "mongodb://localhost:27017/shikshak_courses";
+    const authDbUri = process.env.MONGO_URI || "mongodb://localhost:27017/shikshak_auth"; // Assuming auth DB URI
+
+    const coursesConnection = mongoose.createConnection(coursesDbUri);
+    const authConnection = mongoose.createConnection(authDbUri);
+
+    try {
+        // Course Schema
+        const courseSchema = new mongoose.Schema({
+            name: String,
+            price: Number, // Assuming price exists
+        });
+        const Course = coursesConnection.model("Course", courseSchema);
+
+        // User Schema
+        const userSchema = new mongoose.Schema({
+            name: String,
+            email: String,
+        }, { collection: 'user' });
+        const User = authConnection.model("User", userSchema);
+
         const course = await Course.findById(course_id);
+        const user = await User.findById(user_id);
 
-        if (!module || !course) {
-            console.log(`⚠️ Module or Course not found. Module ID: ${module_id}, Course ID: ${course_id}`);
-            return;
-        }
+        if (!course || !user) return null;
 
-        const enrolledStudents = course.students_id || [];
+        return {
+            course: {
+                name: course.name,
+                price: course.price
+            },
+            user: {
+                name: user.name,
+                email: user.email
+            }
+        };
+    } finally {
+        await coursesConnection.close();
+        await authConnection.close();
+    }
+}
 
-        if (enrolledStudents.length === 0) {
-            console.log(`ℹ️ No enrolled students for course: ${course.name}`);
-            return;
-        }
+/**
+ * Sends module notification emails to a list of students
+ */
+export async function sendModuleNotification(students, module, course) {
+    console.log(`📧 Sending emails to ${students.length} students for module: ${module.title}`);
 
-        console.log(`📧 Sending emails to ${enrolledStudents.length} enrolled students...`);
+    for (const student of students) {
+        if (!student.email) continue;
 
-        // Send email to each enrolled student
-        for (const student of enrolledStudents) {
-            if (!student.email) continue;
-
-            const emailBody = `
+        const emailBody = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2563eb;">🎓 New Module Added!</h2>
           <p>Hi ${student.name || "Student"},</p>
@@ -128,28 +180,61 @@ export async function sendModuleNotificationEmail(module_id, course_id) {
             <h3 style="color: #1f2937; margin: 0 0 8px 0;">${module.title}</h3>
             <p style="color: #6b7280; margin: 0 0 8px 0;">${module.description || "No description available"}</p>
             <p style="color: #4b5563; margin: 0;"><strong>Course:</strong> ${course.name}</p>
-            <p style="color: #4b5563; margin: 0;"><strong>Instructor:</strong> ${course.teacher_details?.name || "Unknown"}</p>
+            <p style="color: #4b5563; margin: 0;"><strong>Instructor:</strong> ${course.teacher_name || "Unknown"}</p>
           </div>
           <p>Log in to Shikshak to start learning!</p>
           <p style="color: #6b7280; font-size: 14px;">Best regards,<br>The Shikshak Team</p>
         </div>
       `;
 
-            try {
-                await sendEmailViaGmail({
-                    to: student.email,
-                    subject: `📚 New Module: ${module.title} - ${course.name}`,
-                    body: emailBody,
-                });
-            } catch (emailError) {
-                console.error(`Failed to send to ${student.email}:`, emailError.message);
-            }
+        try {
+            await sendEmailViaGmail({
+                to: student.email,
+                subject: `📚 New Module: ${module.title} - ${course.name}`,
+                body: emailBody,
+            });
+        } catch (emailError) {
+            console.error(`Failed to send to ${student.email}:`, emailError.message);
         }
-
-        console.log(`✅ Finished sending notification emails for module: ${module.title}`);
-    } finally {
-        await coursesConnection.close();
     }
 }
 
-export default { sendEmailViaGmail, sendModuleNotificationEmail };
+/**
+ * Sends payment confirmation email
+ */
+export async function sendPaymentConfirmation(user, course) {
+    if (!user.email) return;
+
+    console.log(`📧 Sending payment confirmation to ${user.email} for course: ${course.name}`);
+
+    const emailBody = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #10b981;">🎉 Enrollment Successful!</h2>
+          <p>Hi ${user.name},</p>
+          <p>You have successfully enrolled in <strong>${course.name}</strong>.</p>
+          <div style="background-color: #ecfdf5; padding: 16px; border-radius: 8px; margin: 16px 0;">
+            <p style="color: #065f46; margin: 0;">We are excited to have you on board! You can now access all the course materials.</p>
+          </div>
+          <p>Log in to your dashboard to start learning.</p>
+          <p style="color: #6b7280; font-size: 14px;">Happy Learning,<br>The Shikshak Team</p>
+        </div>
+      `;
+
+    try {
+        await sendEmailViaGmail({
+            to: user.email,
+            subject: `✅ Enrollment Confirmed: ${course.name}`,
+            body: emailBody,
+        });
+    } catch (error) {
+        console.error(`Failed to send payment email to ${user.email}:`, error.message);
+    }
+}
+
+export default {
+    sendEmailViaGmail,
+    getCourseData,
+    getUserAndCourseData,
+    sendModuleNotification,
+    sendPaymentConfirmation
+};
