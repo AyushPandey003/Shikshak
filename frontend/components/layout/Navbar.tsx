@@ -37,9 +37,10 @@ const Navbar: React.FC = () => {
   }, []);
 
   const navLinks = [
+    { name: 'Dashboard', href: '/student/dashboard' },
     { name: 'Courses', href: '/courses' },
-    { name: 'What we offer', href: '/#offer' },
-    { name: 'Support', href: '/#support' },
+    { name: 'What we offer', href: '/offer' },
+    { name: 'Support', href: '/support' },
   ];
 
   // Determine if we should show the solid navbar style
@@ -52,13 +53,15 @@ const Navbar: React.FC = () => {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out border-b ${isSolid
-          ? 'bg-white border-slate-200 shadow-sm py-2'
-          : 'bg-white/50 backdrop-blur-md border-slate-200/60 shadow-sm py-4'
-          }`}
+        className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ease-in-out rounded-full ${isSolid
+          ? 'bg-white border text-base border-slate-200 shadow-sm py-1.5'
+          : 'bg-white/50 backdrop-blur-md border border-slate-200/60 shadow-sm py-2.5'
+          }
+          w-[95%] md:w-[70%] hover:md:w-[90%]
+          `}
       >
-        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-14">
+        <div className="w-full px-4 sm:px-6">
+          <div className="flex items-center justify-between h-12">
 
             {/* Logo Section */}
             <div className="shrink-0">
@@ -68,16 +71,16 @@ const Navbar: React.FC = () => {
             </div>
 
             {/* Desktop Navigation Links - Centered via justify-between */}
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="hidden md:flex items-center space-x-2">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link
                     key={link.name}
                     href={link.href}
-                    className={`font-medium text-sm transition-colors relative after:content-[''] after:absolute after:w-full after:h-0.5 after:bottom-[-4px] after:left-0 after:bg-blue-600 after:transition-transform after:duration-300 ${isActive
-                      ? 'text-blue-600 after:scale-x-100 after:origin-bottom-left'
-                      : 'text-slate-600 hover:text-blue-600 after:scale-x-0 after:origin-bottom-right hover:after:scale-x-100 hover:after:origin-bottom-left'
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${isActive
+                      ? 'bg-[#FF6B6B] text-white shadow-md'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-[#FF6B6B]'
                       }`}
                   >
                     {link.name}
@@ -87,29 +90,33 @@ const Navbar: React.FC = () => {
             </div>
 
             {/* Desktop Right Actions (Auth) */}
-            <div className="hidden md:flex items-center relative z-50">
+            <div className="hidden md:flex items-center relative z-50 gap-4">
               {session ? (
                 <div className="relative">
                   <button
                     onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                    className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 px-2 py-1.5 rounded-full transition-colors border border-slate-200 pr-4"
+                    className="flex items-center gap-3 bg-white hover:bg-gray-50 pl-2 pr-4 py-1.5 rounded-full transition-all border border-gray-200 shadow-sm hover:shadow-md"
                   >
                     {session.user?.image ? (
-                      <img src={session.user.image} alt={session.user.name || 'User'} className="w-8 h-8 rounded-full object-cover" />
+                      <img src={session.user.image} alt={session.user.name || 'User'} className="w-8 h-8 rounded-full object-cover border border-gray-200" />
                     ) : (
-                      <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
-                        <User size={18} />
+                      <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 text-white rounded-full flex items-center justify-center shadow-inner">
+                        <User size={16} />
                       </div>
                     )}
-                    <span className="text-sm font-medium text-slate-700 max-w-[100px] truncate">{session.user?.name || 'User'}</span>
-                    <ChevronDown size={14} className={`text-slate-500 transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
+                    <span className="text-sm font-semibold text-gray-700 max-w-[100px] truncate">{session.user?.name || 'User'}</span>
+                    <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
 
                   {isProfileMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-100 rounded-lg shadow-lg py-1">
+                    <div className="absolute right-0 top-full mt-3 w-56 bg-white border border-gray-100 rounded-2xl shadow-xl py-2 overflow-hidden ring-1 ring-black/5">
+                      <div className="px-4 py-3 border-b border-gray-50">
+                        <p className="text-sm font-medium text-gray-900 truncate">{session.user?.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{session.user?.email}</p>
+                      </div>
                       <Link
                         href="/profile"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                         onClick={() => setIsProfileMenuOpen(false)}
                       >
                         <User size={16} />
@@ -117,7 +124,7 @@ const Navbar: React.FC = () => {
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="flex items-center cursor-pointer gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        className="flex items-center cursor-pointer gap-3 w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
                       >
                         <LogOut size={16} />
                         Sign Out
@@ -128,9 +135,9 @@ const Navbar: React.FC = () => {
               ) : (
                 <Link
                   href="/auth/login"
-                  className="bg-blue-600 text-white hover:bg-blue-700 px-5 py-2.5 rounded-lg font-medium text-sm transition-all shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                  className="bg-[#FF6B6B] text-white hover:bg-[#ff8585] px-6 py-2.5 rounded-full font-medium text-sm transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
                 >
-                  Login/Signup
+                  Get Started
                 </Link>
               )}
             </div>
@@ -139,10 +146,10 @@ const Navbar: React.FC = () => {
             <div className="flex md:hidden items-center space-x-4">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-slate-600 hover:text-blue-600 p-2 focus:outline-none"
+                className="p-2 text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors focus:outline-none"
                 aria-label="Toggle menu"
               >
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
             </div>
           </div>
@@ -150,20 +157,20 @@ const Navbar: React.FC = () => {
 
         {/* Mobile Navigation Dropdown */}
         <div
-          className={`md:hidden absolute top-full left-0 right-0 bg-white border-b border-slate-100 shadow-lg transition-all duration-300 ease-in-out origin-top overflow-hidden ${isMobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+          className={`md:hidden absolute top-full left-4 right-4 mt-2 bg-white/90 backdrop-blur-xl border border-gray-200/50 rounded-3xl shadow-2xl transition-all duration-300 ease-in-out origin-top overflow-hidden ${isMobileMenuOpen ? 'max-h-[500px] opacity-100 scale-100' : 'max-h-0 opacity-0 scale-95'
             }`}
         >
           <div className="px-4 py-6 space-y-4">
-            <div className="space-y-1 pt-2">
+            <div className="space-y-1">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link
                     key={link.name}
                     href={link.href}
-                    className={`block px-3 py-3 rounded-lg text-base font-medium ${isActive
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-slate-700 hover:bg-blue-50 hover:text-blue-600'
+                    className={`block px-4 py-3 rounded-2xl text-base font-medium transition-all ${isActive
+                      ? 'bg-[#FF6B6B] text-white shadow-lg'
+                      : 'text-gray-600 hover:bg-gray-100'
                       }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -173,42 +180,37 @@ const Navbar: React.FC = () => {
               })}
             </div>
 
-            <div className="pt-4 border-t border-slate-100">
+            <div className="pt-4 border-t border-gray-100">
               {session ? (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3 px-3">
-                    {session.user?.image ? (
-                      <img src={session.user.image} alt={session.user.name || 'User'} className="w-10 h-10 rounded-full object-cover" />
+                  <div className="flex items-center gap-3 px-2 pb-2">
+                     {session.user?.image ? (
+                      <img src={session.user.image} alt="User" className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100" />
                     ) : (
-                      <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 text-white rounded-full flex items-center justify-center shadow-inner">
                         <User size={20} />
                       </div>
                     )}
-                    <span className="font-medium text-slate-900">{session.user?.name || 'User'}</span>
+                    <div>
+                      <p className="font-semibold text-gray-900">{session.user?.name}</p>
+                      <p className="text-xs text-gray-500">{session.user?.email}</p>
+                    </div>
                   </div>
-                  <Link
-                    href="/profile"
-                    className="flex items-center gap-2 px-3 py-2 text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <User size={20} />
-                    Profile
-                  </Link>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-left"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl font-medium transition-colors"
                   >
-                    <LogOut size={20} />
+                    <LogOut size={18} />
                     Sign Out
                   </button>
                 </div>
               ) : (
                 <Link
                   href="/auth/login"
-                  className="flex items-center justify-center w-full bg-blue-600 text-white hover:bg-blue-700 px-4 py-3 rounded-lg font-medium text-base transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                  className="flex items-center justify-center w-full bg-[#FF6B6B] text-white hover:bg-[#ff8585] px-4 py-3.5 rounded-2xl font-semibold text-base transition-all shadow-lg"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Login/Signup
+                  Get Started
                 </Link>
               )}
             </div>

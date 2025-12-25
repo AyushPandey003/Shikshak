@@ -12,6 +12,11 @@ interface AuthSlice {
     setProfile: (profile: UserProfile) => void;
     clearAuth: () => void;
     setAuthLoading: (loading: boolean) => void;
+    
+    // UI State
+    isSidebarOpen: boolean;
+    toggleSidebar: () => void;
+    closeSidebar: () => void;
 }
 
 
@@ -32,5 +37,8 @@ export const useAppStore = create<AppState>((set) => ({
     clearAuth: () => set({ user: null, session: null, profile: null }),
     setAuthLoading: (loading) => set({ isAuthLoading: loading }),
 
-    // ... Future Course Actions can go here easily
+    // --- Slice 2: UI State ---
+    isSidebarOpen: false,
+    toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+    closeSidebar: () => set({ isSidebarOpen: false }),
 }));
