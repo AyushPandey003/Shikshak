@@ -4,8 +4,8 @@ import connectDB from "./db/index.js";
 import coursesRoutes from "./routes/courses.js";
 import moduleRoutes from "./routes/modules.js";
 import reviewsRoutes from "./routes/reviews.js";
-import { produceModuleCreated } from "./infra/module.producer.js";
-import { disconnectProducer } from "./infra/module.producer.js";
+import { produceMaterialCreated } from "./infra/material.producer.js";
+import { disconnectMaterialProducer } from "./infra/material.producer.js";
 import "./infra/startConsumer.js";
 
 const app = express();
@@ -17,6 +17,8 @@ connectDB();
 // Health check
 app.get("/api/health", async (req, res) => {
   console.log("[COURSES] Health check");
+  await produceMaterialCreated("1", "1", 'video_created');
+  await disconnectMaterialProducer();
   res.send("Courses Service running 🚀");
 });
 
