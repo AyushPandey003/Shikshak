@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { ModuleCard } from './ModuleCard';
 import { Module, ContentItem } from './types';
-import { CheckCircle2, ChevronUp, Clock, Plus } from 'lucide-react';
+import { CheckCircle2, ChevronUp, Clock, Plus, Trash2, Save } from 'lucide-react';
 
 interface ModuleListProps {
     modules: Module[];
@@ -20,6 +20,8 @@ interface ModuleListProps {
     onDescriptionChange: (id: string, description: string) => void;
     onEditModule: (module: Module) => void;
     onEditItem: (item: ContentItem, parentId: string) => void;
+    onDeleteCourse: () => void;
+    onSaveCourse: () => void;
 }
 
 export function ModuleList({
@@ -38,7 +40,9 @@ export function ModuleList({
     onReorderModules,
     onDescriptionChange,
     onEditModule,
-    onEditItem
+    onEditItem,
+    onDeleteCourse,
+    onSaveCourse
 }: ModuleListProps) {
 
     // Drag and Drop State
@@ -103,13 +107,26 @@ export function ModuleList({
     };
 
     return (
-        <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 md:p-8 w-full min-w-0">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 md:p-8 w-full min-w-0 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
             <div className="w-full max-w-4xl mx-auto min-w-0">
                 <div className="flex items-center justify-between mb-4 md:mb-8">
                     <h1 className="text-xl md:text-2xl font-bold md:font-bold text-gray-900 hidden md:block">Recommended course content</h1>
                     <h1 className="text-xl font-semibold text-gray-900 md:hidden">Course Modules</h1>
                     <div className="flex gap-2">
-                    {/* Empty for now, maybe save button */}
+                        <button 
+                            onClick={onDeleteCourse}
+                            className="flex items-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
+                        >
+                            <Trash2 size={16} />
+                            <span className="hidden sm:inline">Delete Course</span>
+                        </button>
+                        <button 
+                            onClick={onSaveCourse}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
+                        >
+                            <Save size={16} />
+                            <span className="hidden sm:inline">Save Course</span>
+                        </button>
                     </div>
                 </div>
 

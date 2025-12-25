@@ -8,15 +8,19 @@ export default function TeacherLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="min-h-screen w-full flex bg-zinc-100">
-      <aside className="hidden md:block">
+
+    <div className="min-h-screen w-full flex flex-col bg-white">
+      {/* Topbar (Global Header) */}
+      <header className="sticky top-0 z-[50] w-full bg-white">
+        <Topbar />
+      </header>
+
+      {/* Main Layout Area */}
+      <div className="flex flex-1 relative">
         <Sidebar />
-      </aside>
-      <div className="flex flex-col flex-1 h-full">
-        <header className="">
-          <Topbar />
-        </header>
-        <main className="">{children}</main>
+        <main className="flex-1 w-full bg-white">
+          {children}
+        </main>
       </div>
     </div>
   );

@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import axios from "axios";
-import { useAppStore } from "@/store/useAppStore"
-
-
-
-
+import { useAppStore } from "@/store/useAppStore";
+import { useRouter } from "next/navigation";
 
 export default function CreateCoursePage() {
+  const router = useRouter();
+  const { user, profile } = useAppStore();
+
   const [course, setCourse] = useState({
     title: "",
     subject: "",
@@ -18,46 +18,13 @@ export default function CreateCoursePage() {
     price: "",
     duration: "",
     visibility: "public",
-    thumbnail: null as File | null,
+    language: "English",
+    course_outcomes: "",
   });
-  const [isLoading, SetIsLoading] = useState(false)
+
+  const [isLoading, setIsLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState("");
-
-  const { profile } = useAppStore();
-
-  // console.log(profile);
-
-
-
-  const sendDetails = async () => {
-    try {
-
-      axios.post("http://localhost:4000/material/courses/create_course", {
-        name: course.title,
-        subject: course.subject,
-        teacher_details: {
-          id: profile?.id,
-          name: profile?.name,
-          qualification: profile?.teacherDetails?.qualifications.join(","),
-          class: profile?.teacherDetails?.classes.join(","),
-          experience: profile?.teacherDetails?.experiences,
-        },
-        description: course.description,
-        price: course.price,
-        duration: course.duration,
-        visibility: course.visibility,
-        thumbnail: thumbnailUrl,
-        board: course.board,
-        price_category: Number(course.price) > 0 ? 'paid' : 'free',
-
-      }, { withCredentials: true })
-      console.log("Course created successfully")
-    }
-    catch (error) {
-      console.log("Invalid details")
-    }
-  }
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -66,10 +33,7 @@ export default function CreateCoursePage() {
     setCourse((prev) => ({ ...prev, [name]: value }));
   }
 
-
-
   async function handleThumbnail(e: React.ChangeEvent<HTMLInputElement>) {
-    console.log(e.target.files)
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -84,127 +48,182 @@ export default function CreateCoursePage() {
           "Content-Type": "multipart/form-data",
         },
         withCredentials: true
-      })
+      });
       console.log("Upload response:", res.data);
-
+      if (res.data && res.data.blobName) {
+        setThumbnailUrl(res.data.blobName);
+      }
     } catch (error) {
       console.error("Error uploading thumbnail:", error);
+      alert("Failed to upload thumbnail");
     }
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    SetIsLoading(true);
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // api call -- TODO
-    console.log(course);
+    setIsLoading(true);
+
+    if (!user || !profile) {
+      alert("User profile not loaded. Please try again.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const payload = {
+        name: course.title,
+        subject: course.subject,
+        teacher_details: {
+          id: user.id || "unknown", // Use Auth ID as fallback
+          name: profile?.name || user.email?.split('@')[0] || "Instructor",
+          qualification: profile?.teacherDetails?.qualifications?.join(",") || "N/A",
+          class: profile?.teacherDetails?.classes?.join(",") || "N/A",
+          experience: profile?.teacherDetails?.experiences || "N/A",
+        },
+        description: course.description,
+        price: Number(course.price) || 0,
+        duration: course.duration,
+        visibility: course.visibility,
+        thumbnail: thumbnailUrl,
+        board: course.board,
+        pricing_category: Number(course.price) > 0 ? 'paid' : 'free',
+        language: course.language,
+        course_outcomes: course.course_outcomes.split('\n').filter(line => line.trim() !== "")
+      };
+
+      console.log("Sending payload:", payload);
+
+      await axios.post("http://localhost:4000/material/courses/create_course", payload, {
+        withCredentials: true
+      });
+
+      alert("Course created successfully!");
+      router.push("/teacher/courses");
+
+    } catch (error: any) {
+      console.error("Error creating course:", error);
+      alert(`Failed to create course: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-sm font-semibold">{course.visibility == "public" ? "Publishing" : "Drafting"} course...</p>
+        <p className="text-sm font-semibold">Publishing course...</p>
       </div>
     );
   }
 
   return (
-
     <div className="p-5 md:p-5">
       <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm p-6 md:p-8">
-        {/* Header */}
         <div className="mb-6">
           <p className="text-xl font-semibold">
             Fill in the details to publish your course
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Thumbnail Upload */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              Course Thumbnail
+              Course Thumbnail <span className="text-red-500">*</span>
             </label>
-
             <div className="flex items-center gap-4 w-full">
               <label className="cursor-pointer w-full border border-dashed rounded-lg px-4 py-6 text-sm text-zinc-500 hover:border-black">
                 Upload Image
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleThumbnail}
-                  className="hidden"
-                />
+                <input type="file" accept="image/*" onChange={handleThumbnail} className="hidden" />
               </label>
-
               {preview && (
                 <div className="relative w-32 h-20 rounded overflow-hidden border">
-                  <Image
-                    src={preview}
-                    alt="Thumbnail preview"
-                    fill
-                    className="object-cover"
-                  />
+                  <Image src={preview} alt="Thumbnail preview" fill className="object-cover" />
                 </div>
               )}
             </div>
           </div>
 
-          {/* Course Name */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Course Name
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={course.title}
-              onChange={handleChange}
-              placeholder="e.g. Complete Web Development"
-              className="w-full border rounded-lg px-3 py-2 focus:outline-none border-zinc-200"
-            />
+          {/* Basic Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Course Name <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                name="title"
+                value={course.title}
+                onChange={handleChange}
+                required
+                placeholder="e.g. Complete Web Development"
+                className="w-full border rounded-lg px-3 py-2 focus:outline-none border-zinc-200"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Subject <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                name="subject"
+                value={course.subject}
+                onChange={handleChange}
+                required
+                placeholder="e.g. Computer Science"
+                className="w-full border rounded-lg px-3 py-2 border-zinc-200 focus:outline-none"
+              />
+            </div>
           </div>
 
-          {/* Subject */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Subject
-            </label>
-            <input
-              type="text"
-              name="subject"
-              value={course.subject}
-              onChange={handleChange}
-              placeholder="e.g. Computer Science"
-              className="w-full border rounded-lg px-3 py-2 border-zinc-200 focus:outline-none"
-            />
-          </div>
-          {/* Subject */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Board
-            </label>
-            <input
-              type="text"
-              name="board"
-              value={course.board}
-              onChange={handleChange}
-              placeholder="e.g. Computer Science"
-              className="w-full border rounded-lg px-3 py-2 border-zinc-200 focus:outline-none"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Board <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                name="board"
+                value={course.board}
+                onChange={handleChange}
+                required
+                placeholder="e.g. CBSE, ICSE"
+                className="w-full border rounded-lg px-3 py-2 border-zinc-200 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Language <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                name="language"
+                value={course.language}
+                onChange={handleChange}
+                required
+                placeholder="e.g. English"
+                className="w-full border rounded-lg px-3 py-2 border-zinc-200 focus:outline-none"
+              />
+            </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Description
-            </label>
+            <label className="block text-sm font-medium mb-1">Description <span className="text-red-500">*</span></label>
             <textarea
               name="description"
               value={course.description}
               onChange={handleChange}
               rows={4}
+              required
               placeholder="Describe what students will learn..."
+              className="w-full border rounded-lg px-3 py-2 border-zinc-200 focus:outline-none"
+            />
+          </div>
+
+          {/* Course Outcomes */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Course Outcomes (Per line) <span className="text-red-500">*</span></label>
+            <textarea
+              name="course_outcomes"
+              value={course.course_outcomes}
+              onChange={handleChange}
+              rows={4}
+              required
+              placeholder="Students will learn A...&#10;Students will learn B..."
               className="w-full border rounded-lg px-3 py-2 border-zinc-200 focus:outline-none"
             />
           </div>
@@ -212,29 +231,27 @@ export default function CreateCoursePage() {
           {/* Price & Duration */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Price (₹)
-              </label>
+              <label className="block text-sm font-medium mb-1">Price (₹) <span className="text-red-500">*</span></label>
               <input
                 type="number"
                 name="price"
                 value={course.price}
                 onChange={handleChange}
+                required
                 placeholder="0"
                 className="w-full border rounded-lg px-3 py-2 border-zinc-200 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Duration
-              </label>
+              <label className="block text-sm font-medium mb-1">Duration <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 name="duration"
                 value={course.duration}
                 onChange={handleChange}
-                placeholder="In weeks"
+                required
+                placeholder="e.g. 10 weeks"
                 className="w-full border rounded-lg px-3 py-2 border-zinc-200 focus:outline-none"
               />
             </div>
@@ -242,9 +259,7 @@ export default function CreateCoursePage() {
 
           {/* Visibility */}
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Visibility
-            </label>
+            <label className="block text-sm font-medium mb-1">Visibility</label>
             <select
               name="visibility"
               value={course.visibility}
@@ -259,15 +274,8 @@ export default function CreateCoursePage() {
           {/* Actions */}
           <div className="flex justify-center gap-3 pt-4">
             <button
-              type="button"
-              className="px-4 py-2 border text-sm font-semibold"
-            >
-              Save as Draft
-            </button>
-            <button
               type="submit"
-              className="px-5 py-2 bg-blue-600 text-white text-sm font-semibold"
-              onClick={sendDetails}
+              className="px-5 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 w-full md:w-auto"
             >
               Publish Course
             </button>

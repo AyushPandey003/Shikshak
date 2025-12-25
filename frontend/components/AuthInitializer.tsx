@@ -24,6 +24,7 @@ export default function AuthInitializer() {
             const authUser: AuthUser = {
                 id: userData._id || userData.id,
                 email: userData.email,
+                name: userData.name,
                 accessToken: "", // Cookie based auth
                 photoUrl: userData.image || "",
             };
@@ -70,6 +71,7 @@ export default function AuthInitializer() {
             const authUser: AuthUser = {
                 id: session.user.id,
                 email: session.user.email,
+                name: session.user.name,
                 accessToken: "",
                 photoUrl: session.user.image || "",
             };
