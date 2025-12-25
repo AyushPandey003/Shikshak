@@ -29,7 +29,7 @@ export function CreationSidebar({
     courseTitle
 }: CreationSidebarProps) {
   return (
-    <div className={`w-full md:w-[360px] flex-shrink-0 border-r border-gray-200 bg-gray-50 flex flex-col overflow-y-auto h-full [&::-webkit-scrollbar]:hidden [scrollbar-width:none] ${className}`}>
+    <div className={`w-full md:w-[360px] flex-shrink-0 border-r border-gray-200 bg-gray-100 flex flex-col overflow-y-auto h-full [&::-webkit-scrollbar]:hidden [scrollbar-width:none] ${className}`}>
         {/* Header */}
         <div className="p-6 pb-2">
             <div className="flex items-center justify-between mb-6">
@@ -46,9 +46,7 @@ export function CreationSidebar({
                 </button>
             </div>
             <div className="flex items-center gap-3 mb-1">
-                 <div className="w-8 h-8 bg-blue-100 rounded md-1 overflow-hidden flex items-center justify-center text-blue-600">
-                    <BookOpen size={16} />
-                 </div>
+                 <img src="/logo.png" alt="Course Logo" className="w-8 h-8 object-contain" />
                  <div>
                      <h2 className="font-semibold text-gray-900 text-sm">{courseTitle || 'Untitled Course'}</h2>
                      <span className="text-xs bg-yellow-600 text-white px-1.5 py-0.5 rounded text-[10px] font-medium">Draft</span>

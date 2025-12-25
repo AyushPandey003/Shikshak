@@ -11,6 +11,8 @@ import {
 import { IoSchool } from "react-icons/io5";
 import { AiOutlineVideoCameraAdd } from "react-icons/ai";
 
+import { useAppStore } from "@/store/useAppStore";
+
 const navItems = [
   { href: "/teacher/dashboard", label: "Dashboard", icon: MdDashboard },
   { href: "/teacher/courses", label: "Courses", icon: MdClass },
@@ -19,46 +21,57 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname() || "/";
+  const { isSidebarOpen, closeSidebar } = useAppStore();
 
   return (
-    <aside className="h-screen w-48 bg-white sticky left-0 top-0">
-      <div className="h-full flex flex-col">
-        {/* Logo / Brand */}
-        <div className="px-6 py-6 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-md bg-indigo-600 text-white flex items-center justify-center font-bold">
-            <IoSchool />
-          </div>
-          <div>
-            <div className="text-lg font-semibold">Shishak</div>
-            <div className="text-xs text-zinc-400">Teacher portal</div>
-          </div>
-        </div>
+    <>
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[90] md:hidden"
+          onClick={closeSidebar}
+        />
+      )}
 
-        {/* Navigation */}
-        <nav className="px-2 py-4 flex-1 overflow-y-auto">
-          <ul className="space-y-1">
-            {navItems.map((item) => {
-              const active = pathname === item.href;
-              const Icon = item.icon;
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={`flex items-center gap-3 px-4 py-2 rounded-md text-sm font-medium hover:bg-zinc-50 ${
-                      active ? "bg-indigo-50 text-indigo-600" : "text-zinc-700"
-                    }`}
-                  >
-                    <span className="text-xl">
-                      <Icon />
-                    </span>
-                    <span>{item.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-      </div>
-    </aside>
+      <aside 
+        className={`h-[calc(100vh-4rem)] w-64 bg-gray-50 border-r border-gray-100 flex flex-col
+          fixed md:sticky top-16 left-0 z-[40]
+          transition-transform duration-300 ease-in-out
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        `}
+      >
+        <div className="h-full flex flex-col">
+          {/* Logo removed (moved to Topbar) */}
+
+          {/* Navigation */}
+          <nav className="px-4 py-4 flex-1 overflow-y-auto">
+            <ul className="space-y-2">
+              {navItems.map((item) => {
+                const active = pathname === item.href;
+                const Icon = item.icon;
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                        active 
+                          ? "bg-[#FF6B6B] text-white shadow-md shadow-orange-100" 
+                          : "text-gray-600 hover:bg-orange-50 hover:text-[#FF6B6B]"
+                      }`}
+                      onClick={() => closeSidebar()} // Close on navigation (mobile)
+                    >
+                      <span className="text-xl">
+                        <Icon />
+                      </span>
+                      <span>{item.label}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        </div>
+      </aside>
+    </>
   );
 }

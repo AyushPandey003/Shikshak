@@ -180,3 +180,5 @@ export const MOCK_COURSES: Course[] = [
     type: "Public"
   }
 ];
+
+
