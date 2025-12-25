@@ -3,6 +3,7 @@ import { Course } from "../models/courses.model.js";
 import { Video } from "../models/video.model.js";
 import { Notes } from "../models/notes.model.js";
 import { produceModuleCreated, disconnectProducer } from "../infra/module.producer.js";
+import { produceMaterialCreated, disconnectMaterialProducer } from "../infra/material.producer.js";
 
 export const createModule = async (req, res) => {
     try {
@@ -143,6 +144,9 @@ export const addVideo = async (req, res) => {
         module.video_id.push(savedVideo._id);
         await module.save();
 
+        await produceMaterialCreated(savedVideo._id.toString(), module_id, 'video_created');
+        await disconnectMaterialProducer();
+
         res.status(201).json(savedVideo);
     } catch (error) {
         console.error("Error adding video:", error);
@@ -176,6 +180,9 @@ export const addNotes = async (req, res) => {
 
         module.notes_id.push(savedNotes._id);
         await module.save();
+
+        await produceMaterialCreated(savedNotes._id.toString(), module_id, 'notes_created');
+        await disconnectMaterialProducer();
 
         res.status(201).json(savedNotes);
     } catch (error) {

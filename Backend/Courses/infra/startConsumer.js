@@ -1,4 +1,4 @@
 // infra/startConsumer.js
-import "./add_course.consumer.js";
+import "./material.consumer.js";
 
-console.log("Course Consumer Service Started");
+console.log("Material Consumer Service Started!");
