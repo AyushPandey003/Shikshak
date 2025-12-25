@@ -44,4 +44,4 @@ init();
 
 
 
-// docker exec -it Kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
+//  exec -it Kafkadocker /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list

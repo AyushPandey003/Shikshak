@@ -6,9 +6,10 @@ import Link from 'next/link';
 interface CourseCardProps {
   course: Course;
   isTeacher?: boolean;
+  onEdit?: (course: Course) => void;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, onEdit }) => {
   return (
     <Link href={`/courses/${course.id}`} className="group bg-white rounded-xl shadow-sm border cursor-pointer border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full relative">
 
@@ -26,17 +27,21 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher }) => {
 
         {/* Edit Button for Teachers */}
         {isTeacher && (
-          <button
+            <button
             onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              window.location.href = `/teacher/modules?courseId=${course.id}`;
+                e.preventDefault();
+                e.stopPropagation();
+                if (onEdit) {
+                    onEdit(course);
+                } else {
+                    window.location.href = `/teacher/modules?courseId=${course.id}`;
+                }
             }}
             className="absolute top-3 right-3 z-20 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
             title="Edit Course Content"
-          >
+            >
             <Pencil size={16} className="text-gray-700" />
-          </button>
+            </button>
         )}
 
         {/* Badge: Best Seller */}
