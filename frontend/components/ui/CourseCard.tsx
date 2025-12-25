@@ -34,12 +34,10 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, onEdit, onDe
                 e.stopPropagation();
                 if (onEdit) {
                     onEdit(course);
-                } else {
-                    window.location.href = `/teacher/modules?courseId=${course.id}`;
                 }
             }}
             className="absolute top-3 right-3 z-20 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
-            title="Edit Course Content"
+            title="Edit Course Details"
             >
             <Pencil size={16} className="text-gray-700" />
             </button>
@@ -82,15 +80,20 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, onEdit, onDe
 
         {/* Footer Stats & Price */}
         <div className="flex items-center justify-between mt-auto pt-1">
-          <div className="flex items-center gap-4 text-xs text-gray-400 font-medium">
-            <div className="flex items-center gap-1">
-              <Heart size={12} className="fill-gray-300 text-gray-300" />
-              <span>{course.rating}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <User size={12} className="fill-gray-300 text-gray-300" />
-              <span>{course.students}</span>
-            </div>
+          <div>
+            {isTeacher && (
+                <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.location.href = `/teacher/modules?courseId=${course.id}`;
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-100 transition-colors text-xs font-semibold"
+                >
+                <BookOpen size={14} />
+                Add Contents
+                </button>
+            )}
           </div>
 
           <div className="flex items-end gap-3">
