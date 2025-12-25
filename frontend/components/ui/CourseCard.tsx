@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, ShoppingCart, User, BookOpen, GraduationCap, Pencil } from 'lucide-react';
+import { Heart, ShoppingCart, User, BookOpen, GraduationCap, Pencil, Trash2 } from 'lucide-react';
 import { Course } from '@/types/course';
 import Link from 'next/link';
 
@@ -7,9 +7,10 @@ interface CourseCardProps {
   course: Course;
   isTeacher?: boolean;
   onEdit?: (course: Course) => void;
+  onDelete?: (course: Course) => void;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, onEdit }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, onEdit, onDelete }) => {
   return (
     <Link href={`/courses/${course.id}`} className="group bg-white rounded-xl shadow-sm border cursor-pointer border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full relative">
 
@@ -92,15 +93,30 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, onEdit }) =>
             </div>
           </div>
 
-          <div className="flex flex-col items-end">
-            <span className="text-xl font-bold text-brand-500">
-              {course.price === 0 ? 'Free' : `₹${course.price}`}
-            </span>
-            {course.originalPrice && (
-              <span className="text-xs text-gray-400 line-through">
-                ₹{course.originalPrice}
-              </span>
-            )}
+          <div className="flex items-end gap-3">
+             {isTeacher && (
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (onDelete) onDelete(course);
+                  }}
+                  className="p-1.5 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                  title="Delete Course"
+                >
+                  <Trash2 size={16} />
+                </button>
+             )}
+            <div className="flex flex-col items-end">
+                <span className="text-xl font-bold text-brand-500">
+                {course.price === 0 ? 'Free' : `₹${course.price}`}
+                </span>
+                {course.originalPrice && (
+                <span className="text-xs text-gray-400 line-through">
+                    ₹{course.originalPrice}
+                </span>
+                )}
+            </div>
           </div>
         </div>
       </div>
