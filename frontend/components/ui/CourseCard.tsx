@@ -1,14 +1,16 @@
 import React from 'react';
-import { Heart, ShoppingCart, User, BookOpen, GraduationCap, Pencil } from 'lucide-react';
+import { Heart, ShoppingCart, User, BookOpen, GraduationCap, Pencil, Trash2 } from 'lucide-react';
 import { Course } from '@/types/course';
 import Link from 'next/link';
 
 interface CourseCardProps {
   course: Course;
   isTeacher?: boolean;
+  onEdit?: (course: Course) => void;
+  onDelete?: (course: Course) => void;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, onEdit, onDelete }) => {
   return (
     <Link href={`/courses/${course.id}`} className="group bg-white rounded-xl shadow-sm border cursor-pointer border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full relative">
 
@@ -26,17 +28,19 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher }) => {
 
         {/* Edit Button for Teachers */}
         {isTeacher && (
-          <button
+            <button
             onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              window.location.href = `/teacher/modules?courseId=${course.id}`;
+                e.preventDefault();
+                e.stopPropagation();
+                if (onEdit) {
+                    onEdit(course);
+                }
             }}
             className="absolute top-3 right-3 z-20 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
-            title="Edit Course Content"
-          >
+            title="Edit Course Details"
+            >
             <Pencil size={16} className="text-gray-700" />
-          </button>
+            </button>
         )}
 
         {/* Badge: Best Seller */}
@@ -76,26 +80,46 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher }) => {
 
         {/* Footer Stats & Price */}
         <div className="flex items-center justify-between mt-auto pt-1">
-          <div className="flex items-center gap-4 text-xs text-gray-400 font-medium">
-            <div className="flex items-center gap-1">
-              <Heart size={12} className="fill-gray-300 text-gray-300" />
-              <span>{course.rating}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <User size={12} className="fill-gray-300 text-gray-300" />
-              <span>{course.students}</span>
-            </div>
+          <div>
+            {isTeacher && (
+                <button
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.location.href = `/teacher/modules?courseId=${course.id}`;
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-100 transition-colors text-xs font-semibold"
+                >
+                <BookOpen size={14} />
+                Add Contents
+                </button>
+            )}
           </div>
 
-          <div className="flex flex-col items-end">
-            <span className="text-xl font-bold text-brand-500">
-              {course.price === 0 ? 'Free' : `₹${course.price}`}
-            </span>
-            {course.originalPrice && (
-              <span className="text-xs text-gray-400 line-through">
-                ₹{course.originalPrice}
-              </span>
-            )}
+          <div className="flex items-end gap-3">
+             {isTeacher && (
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (onDelete) onDelete(course);
+                  }}
+                  className="p-1.5 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                  title="Delete Course"
+                >
+                  <Trash2 size={16} />
+                </button>
+             )}
+            <div className="flex flex-col items-end">
+                <span className="text-xl font-bold text-brand-500">
+                {course.price === 0 ? 'Free' : `₹${course.price}`}
+                </span>
+                {course.originalPrice && (
+                <span className="text-xs text-gray-400 line-through">
+                    ₹{course.originalPrice}
+                </span>
+                )}
+            </div>
           </div>
         </div>
       </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import CourseCard from "@/components/ui/CourseCard";
+import { EditCourseModal } from "@/components/teacher/courses/EditCourseModal";
+import { DeleteConfirmationModal } from "@/components/teacher/courses/DeleteConfirmationModal";
 import { Course } from "@/types/course";
 import { useState, useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
@@ -15,6 +17,36 @@ export default function Page() {
   const { user } = useAppStore();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Edit Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+
+  // Delete Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
+
+  const handleEdit = (course: Course) => {
+    setEditingCourse(course);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = (course: Course) => {
+    setDeletingCourse(course);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    // Just close the modal and do nothing as requested
+    setIsDeleteModalOpen(false);
+    setDeletingCourse(null);
+  };
+
+  const handleSaveCourse = async (updatedCourse: Partial<Course>) => {
+    // Dummy update for frontend only as requested
+    setCourses(prev => prev.map(c => c.id === updatedCourse.id ? { ...c, ...updatedCourse } : c));
+    // In real app: await axios.post(...)
+  };
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -130,11 +162,31 @@ export default function Page() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 w-full">
             {/* cards */}
             {filteredCourses.map((course) => (
-              <CourseCard key={course.id} course={course} isTeacher={true} />
+              <CourseCard 
+                key={course.id} 
+                course={course} 
+                isTeacher={true} 
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
             ))}
           </div>
         )}
       </div>
+
+      <EditCourseModal 
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        course={editingCourse}
+        onSave={handleSaveCourse}
+      />
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        courseTitle={deletingCourse?.title || ''}
+      />
     </div>
   );
 }

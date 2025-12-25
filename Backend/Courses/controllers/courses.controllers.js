@@ -2,7 +2,7 @@ import { Module } from "../models/modules.model.js";
 import { Video } from "../models/video.model.js";
 import { Course } from "../models/courses.model.js";
 import { Notes } from "../models/notes.model.js";
-
+import { produceCourse, disconnectCourseProducer } from "../infra/course.producer.js";
 
 export const createCourse = async (req, res) => {
     try {
@@ -24,6 +24,8 @@ export const createCourse = async (req, res) => {
         });
 
         const savedCourse = await newCourse.save();
+        await produceCourse(savedCourse._id.toString(), "course_created");
+        await disconnectCourseProducer();
         res.status(201).json(savedCourse);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -38,6 +40,8 @@ export const editCourse = async (req, res) => {
         }
         const updatedCourse = await Course.findByIdAndUpdate(course_id, updateData, { new: true });
         if (!updatedCourse) return res.status(404).json({ message: "Course not found" });
+        await produceCourse(course_id.toString(), "course_updated");
+        await disconnectCourseProducer();
         res.status(200).json(updatedCourse);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -66,6 +70,8 @@ export const deleteCourse = async (req, res) => {
         await Module.deleteMany({ _id: { $in: moduleIds } });
 
         await Course.findByIdAndDelete(course_id);
+        await produceCourse(course_id.toString(), "course_deleted");
+        await disconnectCourseProducer();
         res.status(200).json({ message: "Course and associated modules deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -74,7 +80,7 @@ export const deleteCourse = async (req, res) => {
 
 export const getAllGeneralInfo = async (req, res) => {
     try {
-        const courses = await Course.find({ visibility: "public" }).select("name subject price thumbnail board pricing_category rating");
+        const courses = await Course.find({ visibility: "public" }).select("name subject price thumbnail board pricing_category rating visibility");
         res.status(200).json(courses);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -105,9 +111,9 @@ export const getAllCourses = async (req, res) => {
 
         let courses;
         if(user_role === "teacher"){
-            courses = await Course.find({ "teacher_details.id" : user_id }).select("name subject price thumbnail board pricing_category rating");
+            courses = await Course.find({ "teacher_details.id" : user_id }).select("name subject price thumbnail board pricing_category rating visibility");
         }else if(user_role === "student"){
-            courses = await Course.find({ "students_id.id" : user_id }).select("name subject price thumbnail board pricing_category rating");
+            courses = await Course.find({ "students_id.id" : user_id }).select("name subject price thumbnail board pricing_category rating visibility");
         }else{
             return res.status(400).json({ message: "Invalid User Role" });
         }
