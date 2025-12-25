@@ -11,7 +11,6 @@ export interface AuthUser {
     email: string;
     accessToken: string;
     photoUrl?: string;
-    name: string;
 }
 
 // Common fields for all users
