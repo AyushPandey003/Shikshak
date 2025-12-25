@@ -408,7 +408,7 @@ export default function ModulesPage() {
             {/* Sidebar - Hidden on mobile by default, shown when toggled */}
             {sidebarVisible && (
                 <CreationSidebar
-                    className={`fixed inset-y-0 left-0 z-50 w-[85vw] md:w-[360px] md:relative transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+                    className={`fixed top-16 bottom-0 left-0 z-40 w-[85vw] md:w-[360px] md:relative md:top-0 md:h-full transform transition-transform duration-300 ease-in-out md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
                     onBack={() => setSidebarVisible(false)}
                     guidedSteps={guidedSteps}
                     recommendations={recommendations}
