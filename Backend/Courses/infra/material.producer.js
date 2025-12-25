@@ -23,22 +23,21 @@ export async function connectProducer() {
   connectionPromise = null;
 }
 
-export async function produceModuleCreated(module_id, course_id) {
+export async function produceMaterialCreated(material_id, module_id, eventtype) {
   await connectProducer();
-  console.log("Producing Module Created...");
-  const eventtype = 'module_created';
+  console.log("Producing Material Created...");
   await producer.send({
-    topic: "module_created",
+    topic: "materail_data",
     messages: [
       {
-        key: module_id,
-        value: JSON.stringify({ module_id, course_id, eventtype }),
+        key: material_id,
+        value: JSON.stringify({ material_id, module_id, eventtype }),
       },
     ],
   });
 }
 
-export async function disconnectProducer() {
+export async function disconnectMaterialProducer() {
   if (isConnected) {
     await producer.disconnect();
     isConnected = false;

@@ -1,9 +1,8 @@
 // infra/email.consumer.js
 import { kafka } from "./client.js";
-import { sendModuleNotificationEmail } from "./emailService.js";
 
 const consumer = kafka.consumer({
-  groupId: "email-group",
+  groupId: "material-group",
   sessionTimeout: 30000,
   heartbeatInterval: 3000,
 });
@@ -22,12 +21,12 @@ async function connectConsumer() {
 
 async function subscribeToTopics() {
   try {
-    console.log("Subscribing to topics: module_created, payment_done");
+    console.log("Subscribing to topics: material_data");
     await consumer.subscribe({
-      topics: ["module_created", "payment_done"],
+      topics: ["materail_data"],
       fromBeginning: true
     });
-    console.log("✓ Subscribed to topics: module_created, payment_done");
+    console.log("✓ Subscribed to topics: material_data");
   } catch (error) {
     console.error("❌ Failed to subscribe:", error.message);
     throw error;
@@ -60,27 +59,23 @@ async function startConsumer() {
           console.log(`Key: ${message.key?.toString()}`);
           console.log(`Event Type: ${eventtype}`);
 
-          if (eventtype === 'module_created') {
-            const { module_id, course_id } = payload;
+          if (eventtype === 'video_created') {
+            const { material_id, module_id } = payload;
             console.log(`Module ID: ${module_id}`);
-            console.log(`Course ID: ${course_id}`);
+            console.log(`Video ID: ${material_id}`);
 
-            // const emails = [];
-            // find emails and send to below function in array
-            // await sendEmail(emails);
+            // get video url and data then add in db and rag
 
-            console.log(`✅ Email sent for module_id=${module_id}`);
+            console.log(`✅ Video created for module_id=${module_id}`);
 
-          } else if (eventtype === 'payment_done') {
-            const { course_id, user_id } = payload;
-            console.log(`Course ID: ${course_id}`);
-            console.log(`User ID: ${user_id}`);
+          } else if (eventtype === 'note_created') {
+            const { material_id, module_id } = payload;
+            console.log(`Module ID: ${module_id}`);
+            console.log(`Note ID: ${material_id}`);
 
-            // const emails = [];
-            // find emails and send to below function in array
-            // await sendEmail(emails);
+            // get notes url and data then add in db and rag
 
-            console.log(`✅ Payment email processed for user_id=${user_id}`);
+            console.log(`✅ Note created for module_id=${module_id}`);
 
           } else {
             console.warn(`⚠️ Unknown event type: ${eventtype}`);

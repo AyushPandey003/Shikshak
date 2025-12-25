@@ -43,19 +43,22 @@ export default function CreateCoursePage() {
     formData.append("file", file);
 
     try {
+      const headers: Record<string, string> = {};
+      if (user?.accessToken) {
+        headers["Authorization"] = `Bearer ${user.accessToken}`;
+      }
+
       const res = await axios.post("http://localhost:4000/material/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers,
         withCredentials: true
       });
       console.log("Upload response:", res.data);
       if (res.data && res.data.blobName) {
         setThumbnailUrl(res.data.blobName);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error uploading thumbnail:", error);
-      alert("Failed to upload thumbnail");
+      alert(`Failed to upload thumbnail: ${error.response?.status} - ${error.response?.data?.message || error.message}`);
     }
   }
 
@@ -93,7 +96,13 @@ export default function CreateCoursePage() {
 
       console.log("Sending payload:", payload);
 
+      const headers: Record<string, string> = {};
+      if (user?.accessToken) {
+        headers["Authorization"] = `Bearer ${user.accessToken}`;
+      }
+
       await axios.post("http://localhost:4000/material/courses/create_course", payload, {
+        headers,
         withCredentials: true
       });
 

@@ -3,37 +3,34 @@ import { Course } from "../models/courses.model.js";
 import { Video } from "../models/video.model.js";
 import { Notes } from "../models/notes.model.js";
 import { produceModuleCreated, disconnectProducer } from "../infra/module.producer.js";
+import { produceMaterialCreated, disconnectMaterialProducer } from "../infra/material.producer.js";
 
-// Create Module
 export const createModule = async (req, res) => {
     try {
         const { course_id, title, description, duration } = req.body;
-
         if (!course_id || !title) {
             return res.status(400).json({ message: "Course ID and Title are required" });
         }
-
         const course = await Course.findById(course_id);
         if (!course) {
             return res.status(404).json({ message: "Course not found" });
         }
-
         const newModule = new Module({
             course_id,
             title,
             description,
             duration,
         });
-
         const savedModule = await newModule.save();
-
         // Add module to course
         course.module_id.push(savedModule._id);
         await course.save();
-
-        await produceModuleCreated(savedModule._id, course_id);
+        
+        // Convert ObjectId to string
+        const savedmoduleid = savedModule._id.toString();
+        
+        await produceModuleCreated(savedmoduleid, course_id);
         await disconnectProducer();
-
         res.status(201).json(savedModule);
     } catch (error) {
         console.error("Error creating module:", error);
@@ -147,6 +144,9 @@ export const addVideo = async (req, res) => {
         module.video_id.push(savedVideo._id);
         await module.save();
 
+        await produceMaterialCreated(savedVideo._id.toString(), module_id, 'video_created');
+        await disconnectMaterialProducer();
+
         res.status(201).json(savedVideo);
     } catch (error) {
         console.error("Error adding video:", error);
@@ -180,6 +180,9 @@ export const addNotes = async (req, res) => {
 
         module.notes_id.push(savedNotes._id);
         await module.save();
+
+        await produceMaterialCreated(savedNotes._id.toString(), module_id, 'notes_created');
+        await disconnectMaterialProducer();
 
         res.status(201).json(savedNotes);
     } catch (error) {

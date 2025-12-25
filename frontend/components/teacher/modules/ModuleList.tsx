@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { ModuleCard } from './ModuleCard';
 import { Module, ContentItem } from './types';
-import { CheckCircle2, ChevronUp, Clock, Plus, Trash2, Save } from 'lucide-react';
+import { CheckCircle2, ChevronUp, Clock, Plus } from 'lucide-react';
 
 interface ModuleListProps {
     modules: Module[];
@@ -20,8 +20,6 @@ interface ModuleListProps {
     onDescriptionChange: (id: string, description: string) => void;
     onEditModule: (module: Module) => void;
     onEditItem: (item: ContentItem, parentId: string) => void;
-    onDeleteCourse: () => void;
-    onSaveCourse: () => void;
 }
 
 export function ModuleList({
@@ -40,9 +38,7 @@ export function ModuleList({
     onReorderModules,
     onDescriptionChange,
     onEditModule,
-    onEditItem,
-    onDeleteCourse,
-    onSaveCourse
+    onEditItem
 }: ModuleListProps) {
 
     // Drag and Drop State
@@ -73,13 +69,13 @@ export function ModuleList({
             const modulesCopy = [...modules];
             const dragIndex = modulesCopy.findIndex(m => m.id === dragItem.current?.id);
             const hoverIndex = modulesCopy.findIndex(m => m.id === dragOverItem.current?.id);
-            
+
             const [movedModule] = modulesCopy.splice(dragIndex, 1);
             modulesCopy.splice(hoverIndex, 0, movedModule);
-            
+
             onReorderModules(modulesCopy);
         }
-        
+
         // 2. Reordering Items within the SAME Module
         if (dragItem.current.type === 'item' && dragOverItem.current.type === 'item') {
             if (dragItem.current.parentId === dragOverItem.current.parentId) {
@@ -89,10 +85,10 @@ export function ModuleList({
                         const itemsCopy = [...m.items];
                         const dragIndex = itemsCopy.findIndex(i => i.id === dragItem.current?.id);
                         const hoverIndex = itemsCopy.findIndex(i => i.id === dragOverItem.current?.id);
-                        
+
                         const [movedItem] = itemsCopy.splice(dragIndex, 1);
                         itemsCopy.splice(hoverIndex, 0, movedItem);
-                        
+
                         return { ...m, items: itemsCopy };
                     }
                     return m;
@@ -107,46 +103,33 @@ export function ModuleList({
     };
 
     return (
-        <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 md:p-8 w-full min-w-0 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 md:p-8 w-full min-w-0">
             <div className="w-full max-w-4xl mx-auto min-w-0">
                 <div className="flex items-center justify-between mb-4 md:mb-8">
                     <h1 className="text-xl md:text-2xl font-bold md:font-bold text-gray-900 hidden md:block">Recommended course content</h1>
                     <h1 className="text-xl font-semibold text-gray-900 md:hidden">Course Modules</h1>
                     <div className="flex gap-2">
-                        <button 
-                            onClick={onDeleteCourse}
-                            className="flex items-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
-                        >
-                            <Trash2 size={16} />
-                            <span className="hidden sm:inline">Delete Course</span>
-                        </button>
-                        <button 
-                            onClick={onSaveCourse}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
-                        >
-                            <Save size={16} />
-                            <span className="hidden sm:inline">Save Course</span>
-                        </button>
+                        {/* Empty for now, maybe save button */}
                     </div>
                 </div>
 
                 <div className="flex items-center justify-between mb-4">
-                    <button 
+                    <button
                         onClick={onCollapseAll}
                         className="text-blue-600 text-xs md:text-sm font-medium flex items-center gap-1 hover:underline transition-colors"
                     >
-                        <ChevronUp size={14} className="md:w-4 md:h-4" /> 
+                        <ChevronUp size={14} className="md:w-4 md:h-4" />
                         {modules.every(m => !m.isExpanded) ? 'Expand all' : 'Collapse all'}
                     </button>
 
                     <div className="flex flex-col md:flex-row items-end md:items-center gap-0.5 md:gap-4 text-[10px] md:text-sm text-gray-500">
-                        <span className="flex items-center gap-1 text-green-600"><CheckCircle2 size={10} className="md:w-3 md:h-3"/> Saved</span>
-                        <span className="flex items-center gap-1"><Clock size={10} className="md:w-3 md:h-3"/> Total: {modules.length * 45}m (est)</span>
+                        <span className="flex items-center gap-1 text-green-600"><CheckCircle2 size={10} className="md:w-3 md:h-3" /> Saved</span>
+                        <span className="flex items-center gap-1"><Clock size={10} className="md:w-3 md:h-3" /> Total: {modules.length * 45}m (est)</span>
                     </div>
                 </div>
 
                 {/* Modules List */}
-                <div className="space-y-6 pb-20"> 
+                <div className="space-y-6 pb-20">
                     {modules.map((module, index) => (
                         <ModuleCard
                             key={module.id}
@@ -171,9 +154,9 @@ export function ModuleList({
                             onDragEnd={handleDragEnd}
                         />
                     ))}
-                    
+
                     {/* Add Module Button */}
-                    <button 
+                    <button
                         onClick={onAddModule}
                         className="w-full border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/20 transition-all group"
                     >
