@@ -6,6 +6,7 @@ import moduleRoutes from "./routes/modules.js";
 import reviewsRoutes from "./routes/reviews.js";
 import { produceModuleCreated } from "./infra/module.producer.js";
 import { disconnectProducer } from "./infra/module.producer.js";
+import "./infra/startConsumer.js";
 
 const app = express();
 
