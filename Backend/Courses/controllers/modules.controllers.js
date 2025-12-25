@@ -4,36 +4,32 @@ import { Video } from "../models/video.model.js";
 import { Notes } from "../models/notes.model.js";
 import { produceModuleCreated, disconnectProducer } from "../infra/module.producer.js";
 
-// Create Module
 export const createModule = async (req, res) => {
     try {
         const { course_id, title, description, duration } = req.body;
-
         if (!course_id || !title) {
             return res.status(400).json({ message: "Course ID and Title are required" });
         }
-
         const course = await Course.findById(course_id);
         if (!course) {
             return res.status(404).json({ message: "Course not found" });
         }
-
         const newModule = new Module({
             course_id,
             title,
             description,
             duration,
         });
-
         const savedModule = await newModule.save();
-
         // Add module to course
         course.module_id.push(savedModule._id);
         await course.save();
-
-        await produceModuleCreated(savedModule._id, course_id);
+        
+        // Convert ObjectId to string
+        const savedmoduleid = savedModule._id.toString();
+        
+        await produceModuleCreated(savedmoduleid, course_id);
         await disconnectProducer();
-
         res.status(201).json(savedModule);
     } catch (error) {
         console.error("Error creating module:", error);
