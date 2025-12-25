@@ -1,7 +1,7 @@
 import { createProxyMiddleware } from "http-proxy-middleware";
 
 const authProxy = createProxyMiddleware({
-  target: "http://localhost:3004",
+  target: "http://localhost:3000",
   changeOrigin: true,
   // Cookie handling for session management
   cookieDomainRewrite: "localhost",
