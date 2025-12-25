@@ -1,7 +1,8 @@
 // infra/email.consumer.js
 import { kafka } from "./client.js";
+import { sendModuleNotificationEmail } from "./emailService.js";
 
-const consumer = kafka.consumer({ 
+const consumer = kafka.consumer({
   groupId: "email-group",
   sessionTimeout: 30000,
   heartbeatInterval: 3000,
@@ -22,9 +23,9 @@ async function connectConsumer() {
 async function subscribeToTopics() {
   try {
     console.log("Subscribing to topic: module_created");
-    await consumer.subscribe({ 
-      topic: "module_created", 
-      fromBeginning: true 
+    await consumer.subscribe({
+      topic: "module_created",
+      fromBeginning: true
     });
     console.log("✓ Subscribed to topic: module_created");
   } catch (error) {
@@ -46,23 +47,22 @@ async function startConsumer() {
         try {
           console.log("\n📨 NEW MESSAGE RECEIVED:");
           console.log("─".repeat(50));
-          
+
           const value = message.value.toString();
           console.log("Raw message:", value);
-          
+
           const { module_id, course_id } = JSON.parse(value);
-          
+
           console.log(`Topic: ${topic}`);
           console.log(`Partition: ${partition}`);
           console.log(`Offset: ${message.offset}`);
           console.log(`Key: ${message.key?.toString()}`);
           console.log(`Module ID: ${module_id}`);
           console.log(`Course ID: ${course_id}`);
-          
-          // Call your email function here
-          // import { sendEmail } from "./emailService.js";
-          // await sendEmail(module_id, course_id);
-          
+
+          // Send email notification to enrolled students
+          await sendModuleNotificationEmail(module_id, course_id);
+
           console.log(`✅ Email sent for module_id=${module_id}`);
           console.log("─".repeat(50));
         } catch (error) {
