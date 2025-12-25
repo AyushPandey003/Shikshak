@@ -42,7 +42,7 @@ const authMiddleware = async (req, res, next) => {
     // BUT the user questioned "if its correct or wrong", implying they might send *something*.
     // So let's forward even empty to let Auth service decide (it will 401).
 
-    const authServiceUrl = "http://localhost:3004/api/auth/get_user";
+    const authServiceUrl = "http://localhost:3000/api/auth/get_user";
     console.log(`[AUTH MIDDLEWARE] Validating token via ${authServiceUrl}`);
 
     const response = await fetch(authServiceUrl, {
