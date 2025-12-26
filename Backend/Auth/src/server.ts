@@ -9,12 +9,13 @@ import { getUser, handleUpdateProfile } from './controllers/userController';
 import { setCorsHeaders } from './utils/httpUtils';
 import '../infra/startConsumer.js';
 
-dotenv.config();
+// Load centralized environment configuration
+dotenv.config({ path: path.resolve(__dirname, '../../.config/.env') });
 
 // Connect to Database
 connectDB();
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT_AUTH || 3000;
 
 const server = http.createServer(async (req, res) => {
     // Handle CORS for all requests first

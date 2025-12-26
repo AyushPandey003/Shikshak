@@ -6,8 +6,14 @@ import {
 } from "@azure/storage-blob";
 import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load centralized environment configuration
+dotenv.config({ path: path.resolve(__dirname, '../../../.config/.env') });
 
 const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
 const CONTAINER_NAME = process.env.AZURE_CONTAINER_NAME || "uploads";
