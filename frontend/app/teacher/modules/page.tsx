@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { ModuleList } from '@/components/teacher/modules/ModuleList';
 import { EditModuleModal } from '@/components/teacher/modules/EditModuleModal';
@@ -10,7 +11,6 @@ import { EditContentItemModal } from '@/components/teacher/modules/EditContentIt
 import { CreationSidebar } from '@/components/teacher/modules/CreationSidebar';
 import { Module, ContentItem, GuidedStep, SidebarRecommendation } from '@/components/teacher/modules/types';
 
-const COURSE_ID = "694d03014d946d2135d2485e";
 const API_URL = "http://localhost:4000/material/module";
 const UPLOAD_URL = "http://localhost:4000/material/upload";
 
@@ -18,6 +18,8 @@ const UPLOAD_URL = "http://localhost:4000/material/upload";
 axios.defaults.withCredentials = true;
 
 export default function ModulesPage() {
+    const searchParams = useSearchParams();
+    const courseId = searchParams.get('courseId');
     const [modules, setModules] = useState<Module[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -63,14 +65,16 @@ export default function ModulesPage() {
 
     // Fetch modules on load
     useEffect(() => {
-        fetchModules();
-    }, []);
+        if (courseId) {
+            fetchModules();
+        }
+    }, [courseId]);
 
     const fetchModules = async () => {
         try {
             setLoading(true);
             const response = await axios.post(`${API_URL}/get_all_module`, {
-                course_id: COURSE_ID
+                course_id: courseId
             });
 
             if (response.data) {
@@ -123,7 +127,7 @@ export default function ModulesPage() {
         try {
             const tempTitle = `Module ${modules.length + 1}`;
             const response = await axios.post(`${API_URL}/create_module`, {
-                course_id: COURSE_ID,
+                course_id: courseId,
                 title: tempTitle,
                 description: 'Dummy descrition',
                 duration: '0s',

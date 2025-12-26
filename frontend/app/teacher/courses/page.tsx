@@ -37,7 +37,9 @@ export default function Page() {
   };
 
   const handleConfirmDelete = async () => {
-    // Just close the modal and do nothing as requested
+    if (deletingCourse) {
+      setCourses(courses.filter(c => c.id !== deletingCourse.id));
+    }
     setIsDeleteModalOpen(false);
     setDeletingCourse(null);
   };
@@ -102,11 +104,16 @@ export default function Page() {
               students: c.student_count || 0,
               image: imageUrl,
               subject: c.subject,
-              grade: "10th Class", // Placeholder
+              grade: c.grade || "10th Class",
               board: c.board,
               tags: [c.pricing_category],
               isBundle: false,
               type: c.visibility === 'public' ? 'Public' : (c.visibility === 'private' ? 'Private' : 'Draft'),
+              description: c.description,
+              course_outcomes: Array.isArray(c.course_outcomes) ? c.course_outcomes.join('\n') : c.course_outcomes,
+              language: c.language,
+              duration: c.duration,
+              visibility: c.visibility,
             };
           }));
           setCourses(mappedCourses);
@@ -162,10 +169,10 @@ export default function Page() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 w-full">
             {/* cards */}
             {filteredCourses.map((course) => (
-              <CourseCard 
-                key={course.id} 
-                course={course} 
-                isTeacher={true} 
+              <CourseCard
+                key={course.id}
+                course={course}
+                isTeacher={true}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
               />
@@ -174,7 +181,7 @@ export default function Page() {
         )}
       </div>
 
-      <EditCourseModal 
+      <EditCourseModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         course={editingCourse}
@@ -186,6 +193,7 @@ export default function Page() {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
         courseTitle={deletingCourse?.title || ''}
+        courseId={deletingCourse?.id || ''}
       />
     </div>
   );

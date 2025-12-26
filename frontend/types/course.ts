@@ -13,6 +13,11 @@ export interface Course {
   rating: number;
   students: number;
   image: string;
+  description: string;
+  course_outcomes: string;
+  language: string;
+  duration: string;
+  visibility: string;
 
   // New Fields
   subject: string;      // e.g., Mathematics
