@@ -1,5 +1,6 @@
 // infra/email.consumer.js
 import { kafka } from "./client.js";
+import {redis} from "./redis/redis.js"
 
 const consumer = kafka.consumer({
   groupId: "update_redis-group",
@@ -63,7 +64,7 @@ async function startConsumer() {
             const { course_id } = payload;
             console.log(`Course ID: ${course_id}`);
 
-            // add course in redis
+            await redis.del("courses:all");
 
             console.log(`✅ Course created for course_id=${course_id}`);
 
@@ -71,7 +72,7 @@ async function startConsumer() {
             const { course_id } = payload;
             console.log(`Course ID: ${course_id}`);
 
-            // update course in redis
+            await redis.del("courses:all");
 
             console.log(`✅ Course updated for course_id=${course_id}`);
 
@@ -80,7 +81,7 @@ async function startConsumer() {
             const { course_id } = payload;
             console.log(`Course ID: ${course_id}`);
 
-            // delete course from redis
+            await redis.del("courses:all");
 
             console.log(`✅ Course deleted for course_id=${course_id}`);
 

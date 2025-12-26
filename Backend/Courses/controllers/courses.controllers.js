@@ -3,6 +3,7 @@ import { Video } from "../models/video.model.js";
 import { Course } from "../models/courses.model.js";
 import { Notes } from "../models/notes.model.js";
 import { produceCourse, disconnectCourseProducer } from "../infra/course.producer.js";
+import { redis } from "../infra/redis/redis.js";
 
 export const createCourse = async (req, res) => {
     try {
@@ -80,7 +81,18 @@ export const deleteCourse = async (req, res) => {
 
 export const getAllGeneralInfo = async (req, res) => {
     try {
+        const cachedCourses = await redis.get("courses:all");
+
+         if (cachedCourses) {
+            console.log("⚡ Courses from Redis");
+            return res.status(200).json(JSON.parse(cachedCourses));
+        }
+
         const courses = await Course.find({ visibility: "public" }).select("name subject price thumbnail board pricing_category rating visibility");
+        await redis.set(
+            "courses:all",
+            JSON.stringify(courses)
+        );
         res.status(200).json(courses);
     } catch (error) {
         res.status(500).json({ message: error.message });
