@@ -45,36 +45,32 @@ const studentCourses = [
   }
 ];
 
-import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
 export default function StudentDashboardPage() {
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <Navbar />
-      <div className="pt-32 md:pt-36"> {/* Increased padding for gap between navbar and dashboard */}
-        <DashboardLayout
-          role="student"
-          hideHeader={true}
-          profileStats={
-        <ProfileStatsCard 
-           name="Tim" 
-           roleTag="Student" 
-           activityPercentage={78} 
-           stats={studentStats}
-        />
-      }
-      courses={
-        <CourseListCard items={studentCourses} />
-      }
-      studyChart={
-        <StudyStatsChart />
-      }
-      aiWidget={
-        <AiAssistantCard />
-      }
-    />
-      </div>
+    <div className="min-h-screen">
+      <DashboardLayout
+        role="student"
+        hideHeader={true}
+        profileStats={
+          <ProfileStatsCard 
+             name="Tim" 
+             roleTag="Student" 
+             activityPercentage={78} 
+             stats={studentStats}
+          />
+        }
+        courses={
+          <CourseListCard items={studentCourses} />
+        }
+        studyChart={
+          <StudyStatsChart />
+        }
+        aiWidget={
+          <AiAssistantCard />
+        }
+      />
       <Footer />
     </div>
   );
