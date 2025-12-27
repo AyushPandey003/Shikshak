@@ -27,7 +27,7 @@ export async function produceCourse(course_id, eventtype) {
   await connectProducer();
   console.log("Producing Course Created...");
   await producer.send({
-    topic: "module_created",
+    topic: "course",
     messages: [
       {
         key: course_id,

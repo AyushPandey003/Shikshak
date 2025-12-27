@@ -69,6 +69,10 @@ const courseSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        grade: {
+            type: String,
+            required: true,
+        },
         pricing_category: {
             type: String,
             enum: ["paid", "free"],
