@@ -1,9 +1,20 @@
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load centralized environment configuration
+dotenv.config({ path: path.resolve(__dirname, '../../.config/.env') });
+
 import express from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 
 import authProxy from "./routes/auth.js";
 import materialProxy from "./routes/material.js";
+import paymentProxy from "./routes/payment.js";
 
 import authMiddleware from "./middleware/authMiddleware.js";
 
@@ -38,7 +49,11 @@ app.use((req, res, next) => {
     console.log(`[GATEWAY] Routing to material proxy`);
     return materialProxy(req, res, next);
   }
-  console.log(`[GATEWAY] Not matching /authentication, calling next()`);
+  if (req.url.startsWith("/payment")) {
+    console.log(`[GATEWAY] Routing to payment proxy`);
+    return paymentProxy(req, res, next);
+  }
+  console.log(`[GATEWAY] Not matching any route, calling next()`);
   next();
 });
 
@@ -47,7 +62,7 @@ app.get("/", (req, res) => {
   res.send("API Gateway is running 🚀");
 });
 
-const PORT = 4000;
+const PORT = process.env.PORT_GATEWAY || 4000;
 app.listen(PORT, () => {
   console.log(`API Gateway running on port ${PORT}`);
 });

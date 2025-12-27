@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import path from 'path';
 
-dotenv.config();
+// Load centralized environment configuration
+dotenv.config({ path: path.resolve(__dirname, '../../../../.config/.env') });
 
 const connectDB = async () => {
     try {

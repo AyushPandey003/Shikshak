@@ -1,3 +1,4 @@
+
 import { Module } from "../models/modules.model.js";
 import { Video } from "../models/video.model.js";
 import { Course } from "../models/courses.model.js";
@@ -26,8 +27,7 @@ export const createCourse = async (req, res) => {
         });
 
         const savedCourse = await newCourse.save();
-        await produceCourse(savedCourse._id.toString(), "course_created");
-        await disconnectCourseProducer();
+        // Note: No Kafka notification for course creation - no students to notify yet
         res.status(201).json(savedCourse);
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -2,8 +2,10 @@ import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import dotenv from "dotenv";
+import path from "path";
 
-dotenv.config();
+// Load centralized environment configuration
+dotenv.config({ path: path.resolve(__dirname, '../../../.config/.env') });
 
 
 const client = new MongoClient(process.env.MONGO_URI || "mongodb://localhost:27017/database");
