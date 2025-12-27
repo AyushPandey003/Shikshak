@@ -82,16 +82,16 @@ export const deleteCourse = async (req, res) => {
 
 export const getAllGeneralInfo = async (req, res) => {
     try {
-        const cachedCourses = await redis.get("courses:all");
+        const cachedCourses = await redis.get("courses:all:v2");
 
         if (cachedCourses) {
             console.log("⚡ Courses from Redis");
             return res.status(200).json(JSON.parse(cachedCourses));
         }
 
-        const courses = await Course.find({ visibility: "public" }).select("name subject price thumbnail board pricing_category rating visibility grade");
+        const courses = await Course.find({ visibility: "public" }).select("name subject price thumbnail board pricing_category rating visibility grade teacher_details");
         await redis.set(
-            "courses:all",
+            "courses:all:v2",
             JSON.stringify(courses)
         );
         res.status(200).json(courses);
