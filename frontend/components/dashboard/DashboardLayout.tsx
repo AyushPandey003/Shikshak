@@ -100,7 +100,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {/* Right Column: Courses, Chart, AI */}
         <div className="lg:col-span-8 flex flex-col gap-6">
            {/* Top Row: Courses */}
-           <div className="w-full">
+           <div className="w-full h-full">
               {courses}
            </div>
 

@@ -6,19 +6,26 @@ import StudyStatsChart from '@/components/dashboard/StudyStatsChart';
 import AiAssistantCard from '@/components/dashboard/AiAssistantCard';
 
 // Dummy Data for Student
-const studentStats = {
-  inProgress: 9,
-  upcoming: 4,
-  completed: 15
+const upcomingEvents = {
+  courses: [
+    { title: 'UX Research', date: '21 Oct' },
+    { title: 'Python Basics', date: '28 Oct' }
+  ],
+  tests: [
+    { title: 'Figma Basics', date: '19 Oct' },
+    { title: 'Agile Quiz', date: '24 Oct' }
+  ]
 };
+
+// ... existing studentCourses map ...
 
 const studentCourses = [
   {
     id: '1',
     title: 'Design thinking',
     level: 'Advanced',
-    classesCompleted: 4,
-    totalClasses: 12,
+    modulesCompleted: 4,
+    totalModules: 12,
     percentage: 46,
     mentorName: 'Tomas Luis',
     color: 'white' as const
@@ -27,8 +34,8 @@ const studentCourses = [
     id: '2',
     title: 'Leadership',
     level: 'Beginner',
-    classesCompleted: 8,
-    totalClasses: 14,
+    modulesCompleted: 8,
+    totalModules: 14,
     percentage: 72,
     mentorName: 'Nelly Roven',
     color: 'orange' as const
@@ -37,8 +44,8 @@ const studentCourses = [
     id: '3',
     title: 'IT English',
     level: 'Advanced',
-    classesCompleted: 6,
-    totalClasses: 10,
+    modulesCompleted: 6,
+    totalModules: 10,
     percentage: 56,
     mentorName: 'Stefan Colman',
     color: 'white' as const
@@ -57,18 +64,20 @@ export default function StudentDashboardPage() {
           <ProfileStatsCard 
              name="Tim" 
              roleTag="Student" 
-             activityPercentage={78} 
-             stats={studentStats}
+             upcomingCourses={upcomingEvents.courses}
+             upcomingTests={upcomingEvents.tests}
           />
         }
         courses={
           <CourseListCard items={studentCourses} />
         }
         studyChart={
-          <StudyStatsChart />
+          // <StudyStatsChart />
+          null
         }
         aiWidget={
-          <AiAssistantCard />
+          // <AiAssistantCard />
+          null
         }
       />
       <Footer />
