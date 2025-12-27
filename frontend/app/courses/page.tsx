@@ -7,6 +7,7 @@ import FilterBar from '@/components/layout/FilterBar';
 import { CLASSES, BOARDS, SUBJECTS } from '@/constants/allcourses';
 import { TabOption, SortOption, Course } from '@/types/course';
 import axios from 'axios';
+import { useAppStore } from '@/store/useAppStore';
 
 interface FilterState {
   grades: string[];
@@ -15,6 +16,7 @@ interface FilterState {
 }
 
 export default function CoursesPage() {
+  const { user } = useAppStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<TabOption>('All');
   const [courses, setCourses] = useState<Course[]>([]);
@@ -48,24 +50,46 @@ export default function CoursesPage() {
           fetchedData = [];
         }
 
-        const mappedCourses: Course[] = fetchedData.map((c: any) => ({
-          id: c._id || c.id,
-          title: c.name || "Untitled Course",
-          instructor: {
-            id: c.teacher_details?.id || 'inst-1',
-            name: c.teacher_details?.name || 'Instructor',
-            avatar: c.teacher_details?.avatar || 'https://ui-avatars.com/api/?name=Instructor'
-          },
-          price: c.price || 0,
-          originalPrice: c.price || 0,
-          rating: c.rating || 4.5,
-          students: c.students_count || 0,
-          image: c.thumbnail || "https://picsum.photos/300/200",
-          subject: c.subject || "General",
-          grade: c.class || "General", // Backend data might be missing this
-          board: c.board || "CBSE",
-          tags: [],
-          isBundle: false
+        const mappedCourses: Course[] = await Promise.all(fetchedData.map(async (c: any) => {
+          let imageUrl = "https://picsum.photos/300/200";
+
+          // If thumbnail is a blob name (doesn't start with http), fetch SAS URL
+          if (c.thumbnail && !c.thumbnail.startsWith("http")) {
+            try {
+              // Use encodeURIComponent to handle spaces or special chars safe
+              const sasRes = await axios.get(`http://localhost:4000/material/upload/${encodeURIComponent(c.thumbnail)}`, {
+                headers: user?.accessToken ? { "Authorization": `Bearer ${user.accessToken}` } : {},
+                withCredentials: true
+              });
+              if (sasRes.data && sasRes.data.url) {
+                imageUrl = sasRes.data.url;
+              }
+            } catch (err: any) {
+              console.error(`Failed to fetch SAS for ${c.thumbnail}:`, err);
+            }
+          } else if (c.thumbnail) {
+            imageUrl = c.thumbnail;
+          }
+
+          return {
+            id: c._id || c.id,
+            title: c.name || "Untitled Course",
+            instructor: {
+              id: c.teacher_details?.id || 'inst-1',
+              name: c.teacher_details?.name || 'Instructor',
+              avatar: c.teacher_details?.avatar || 'https://ui-avatars.com/api/?name=Instructor'
+            },
+            price: c.price || 0,
+            originalPrice: c.price || 0,
+            rating: c.rating || 4.5,
+            students: c.students_count || 0,
+            image: imageUrl,
+            subject: c.subject || "General",
+            grade: c.class || c.grade || "General", // Backend data might be missing this
+            board: c.board || "CBSE",
+            tags: [],
+            isBundle: c.isBundle || false
+          };
         }));
 
         setCourses(mappedCourses);

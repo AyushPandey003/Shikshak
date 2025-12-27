@@ -11,8 +11,10 @@ import CourseReviews from '@/components/ui/CourseReviews';
 import { Star, Award, Globe, AlertCircle, Play, CheckCircle2 } from 'lucide-react';
 import axios from 'axios';
 import { Course, Review } from '@/types/coursedet';
+import { useAppStore } from '@/store/useAppStore';
 
 const CourseDetailPage: React.FC = () => {
+    const { user } = useAppStore();
     const params = useParams();
     const courseId = params.courseId as string;
     const [course, setCourse] = useState<Course | null>(null);
@@ -31,6 +33,23 @@ const CourseDetailPage: React.FC = () => {
                 const data = res.data;
                 console.log("Course details:", data);
 
+                let thumbnailUrl = data.thumbnail;
+                // If thumbnail is a blob name (doesn't start with http), fetch SAS URL
+                if (data.thumbnail && !data.thumbnail.startsWith("http")) {
+                    try {
+                        // Use encodeURIComponent to handle spaces or special chars safe
+                        const sasRes = await axios.get(`http://localhost:4000/material/upload/${encodeURIComponent(data.thumbnail)}`, {
+                            headers: user?.accessToken ? { "Authorization": `Bearer ${user.accessToken}` } : {},
+                            withCredentials: true
+                        });
+                        if (sasRes.data && sasRes.data.url) {
+                            thumbnailUrl = sasRes.data.url;
+                        }
+                    } catch (err: any) {
+                        console.error(`Failed to fetch SAS for ${data.thumbnail}:`, err);
+                    }
+                }
+
                 // Map API data to UI structure
                 // Note: Providing fallbacks for fields not present in general info endpoint
                 const mappedCourse: Course = {
@@ -46,7 +65,7 @@ const CourseDetailPage: React.FC = () => {
                     price: data.price,
                     originalPrice: data.price ? Math.floor(data.price * 1.3) : 0, // Mock original price
                     discountEnding: "2 days",
-                    thumbnail: data.thumbnail,
+                    thumbnail: thumbnailUrl,
                     videoPreview: "", // Not available in API
                     whatYouWillLearn: [ // Placeholder as API doesn't return this yet
                         "Comprehensive understanding of the syllabus",

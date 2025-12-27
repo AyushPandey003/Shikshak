@@ -15,6 +15,7 @@ export default function CreateCoursePage() {
     subject: "",
     description: "",
     board: "",
+    grade: "",
     price: "",
     duration: "",
     visibility: "public",
@@ -89,6 +90,7 @@ export default function CreateCoursePage() {
         visibility: course.visibility,
         thumbnail: thumbnailUrl,
         board: course.board,
+        grade: course.grade,
         pricing_category: Number(course.price) > 0 ? 'paid' : 'free',
         language: course.language,
         course_outcomes: course.course_outcomes.split('\n').filter(line => line.trim() !== "")
@@ -182,7 +184,7 @@ export default function CreateCoursePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Board <span className="text-red-500">*</span></label>
               <input
@@ -195,6 +197,28 @@ export default function CreateCoursePage() {
                 className="w-full border rounded-lg px-3 py-2 border-zinc-200 focus:outline-none"
               />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Grade <span className="text-red-500">*</span></label>
+              <select
+                name="grade"
+                value={course.grade}
+                onChange={handleChange}
+                required
+                className="w-full border rounded-lg px-3 py-2 border-zinc-200 focus:outline-none"
+              >
+                <option value="" disabled>Select Grade</option>
+                <option value="5th">5th</option>
+                <option value="6th">6th</option>
+                <option value="7th">7th</option>
+                <option value="8th">8th</option>
+                <option value="9th">9th</option>
+                <option value="10th">10th</option>
+                <option value="11th">11th</option>
+                <option value="12th">12th</option>
+              </select>
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-1">Language <span className="text-red-500">*</span></label>
               <input
