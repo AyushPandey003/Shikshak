@@ -57,7 +57,7 @@ import Footer from '@/components/layout/Footer';
 
 export default function TeacherDashboardPage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       <DashboardLayout
         role="teacher"
         hideHeader={true}
@@ -68,6 +68,7 @@ export default function TeacherDashboardPage() {
              imageSrc="https://ui-avatars.com/api/?name=Sarah+Connors&background=random"
              upcomingCourses={upcomingEvents.courses}
              upcomingTests={upcomingEvents.tests}
+             activityPercentage={92}
           />
         }
         courses={

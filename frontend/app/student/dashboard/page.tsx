@@ -56,7 +56,7 @@ import Footer from '@/components/layout/Footer';
 
 export default function StudentDashboardPage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       <DashboardLayout
         role="student"
         hideHeader={true}
@@ -66,6 +66,7 @@ export default function StudentDashboardPage() {
              roleTag="Student" 
              upcomingCourses={upcomingEvents.courses}
              upcomingTests={upcomingEvents.tests}
+             activityPercentage={78}
           />
         }
         courses={

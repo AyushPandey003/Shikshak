@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ClipboardList } from 'lucide-react';
 
 interface Course {
   id: string;
@@ -18,14 +18,14 @@ const CourseListCard: React.FC<{ items: Course[]; title?: string }> = ({
   title = "Your courses"
 }) => {
   return (
-    <div className="bg-[#FF6B6B] rounded-[2rem] p-8 text-white relative overflow-hidden h-auto md:h-full flex flex-col">
+    <div className="bg-[#FF6B6B] rounded-[2rem] p-8 text-white relative overflow-hidden h-auto md:h-[550px] flex flex-col">
        {/* Header */}
-       <div className="flex items-center justify-between mb-8 relative z-10">
-          <h2 className="text-3xl font-medium">{title}</h2>
+       <div className="flex items-center justify-between mb-8 relative z-10 flex-nowrap">
+          <h2 className="text-2xl md:text-3xl font-medium truncate mr-2">{title}</h2>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-shrink-0">
 
-             <button className="bg-white text-[#FF6B6B] px-5 py-2 rounded-full font-medium text-sm hover:bg-gray-50 transition-colors">
+             <button className="bg-white text-[#FF6B6B] px-5 py-2 rounded-full font-medium text-sm hover:bg-gray-50 transition-colors whitespace-nowrap">
                 View all
              </button>
           </div>
@@ -38,21 +38,21 @@ const CourseListCard: React.FC<{ items: Course[]; title?: string }> = ({
                 <div>
                   <h3 className="text-xl font-bold mb-3">{course.title}</h3>
                   <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 mb-6">
-                     <span className="bg-orange-50 text-orange-600 px-2 py-1 rounded-md border border-orange-100">
-                        {course.level}
-                     </span>
+                     <ClipboardList size={16} className="text-orange-500" />
                      <span>{course.modulesCompleted}/{course.totalModules} modules</span>
                   </div>
                 </div>
 
                 <div>
+                   {/* Progress removed */}
+                   {/* 
                    <div className="flex items-center justify-between text-sm font-bold mb-1">
                       <span>{course.percentage}% completed</span>
                    </div>
                    <div className="h-1.5 w-full bg-gray-100 rounded-full mb-4">
-                      {/* Random color for variety based on id/index not passed, hardcoding orange */}
                       <div className="h-full bg-orange-500 rounded-full" style={{ width: `${course.percentage}%` }}></div>
-                   </div>
+                   </div> 
+                   */}
 
                    <div className="flex items-center gap-2">
                       <img 

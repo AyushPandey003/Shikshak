@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, BookOpen, FileText } from 'lucide-react';
+import { Calendar, BookOpen, FileText, CheckCircle, Play } from 'lucide-react';
 
 interface ProfileStatsCardProps {
   name: string;
@@ -7,6 +7,7 @@ interface ProfileStatsCardProps {
   imageSrc?: string;
   upcomingCourses: Array<{ title: string; date: string }>;
   upcomingTests: Array<{ title: string; date: string }>;
+  activityPercentage: number;
 }
 
 const ProfileStatsCard: React.FC<ProfileStatsCardProps> = ({
@@ -14,15 +15,16 @@ const ProfileStatsCard: React.FC<ProfileStatsCardProps> = ({
   roleTag,
   imageSrc,
   upcomingCourses,
-  upcomingTests
+  upcomingTests,
+  activityPercentage
 }) => {
   return (
-    <div className="bg-white rounded-[2rem] p-6 shadow-sm h-full flex flex-col relative overflow-hidden">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-xl font-semibold tracking-tight text-gray-800">Statistics</h2>
+    <div className="bg-white rounded-[2rem] p-6 shadow-sm h-auto md:h-[550px] flex flex-col justify-between relative overflow-hidden">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold tracking-tight text-gray-800">Statistic</h2>
       </div>
 
-      <div className="flex flex-col items-center mt-4 mb-8">
+      <div className="flex flex-col items-center my-auto">
         <div className="relative w-28 h-28 mb-3 group">
            {/* Refined Ring */}
            <div className="absolute inset-0 rounded-full border-[3px] border-gray-100 transition-colors group-hover:border-gray-200"></div>
@@ -42,57 +44,46 @@ const ProfileStatsCard: React.FC<ProfileStatsCardProps> = ({
         </div>
 
         <h3 className="text-2xl font-bold mt-2 text-center text-gray-900">Welcome, {name.split(' ')[0]} 👋</h3>
-        <p className="text-sm text-gray-400 font-medium">Have a nice day!</p>
+        {/* <p className="text-sm text-gray-400 font-medium">Have a nice day!</p> */}
       </div>
 
-      <div className="flex-1 flex flex-col gap-6 overflow-y-auto thin-scrollbar pr-1">
-         {/* Upcoming Courses */}
-         <div>
-            <div className="flex items-center gap-3 mb-3 text-gray-800">
-               <div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 shadow-sm">
-                  <BookOpen size={16} />
-               </div>
-               <span className="font-bold text-base">No. of Courses</span>
-               <span className="ml-auto bg-gray-50 text-gray-500 text-xs font-bold px-2.5 py-1 rounded-lg border border-gray-100">{upcomingCourses.length}</span>
-            </div>
-            <div className="flex flex-col gap-2.5">
-               {upcomingCourses.length > 0 ? upcomingCourses.map((course, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-3 bg-gray-50/50 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
-                     <span className="font-semibold text-sm text-gray-700 truncate max-w-[140px]">{course.title}</span>
-                     <span className="text-xs font-semibold text-gray-400 flex items-center gap-1.5 bg-white px-2 py-1 rounded-md shadow-sm">
-                        <Calendar size={12} className="text-gray-300" />
-                        {course.date}
-                     </span>
-                  </div>
-               )) : (
-                  <p className="text-sm text-gray-400 italic pl-2">No upcoming courses</p>
-               )}
-            </div>
+      {/* Activity Progress Section Removed */}
+      {/* 
+      <div className="mt-4 mb-6">
+         <div className="flex items-end gap-2 mb-2">
+            <span className="text-5xl font-medium text-gray-800">{activityPercentage}%</span>
+            <span className="text-gray-400 mb-2 font-medium leading-tight text-sm">Total month{/* <br/> * /} activity</span>
          </div>
+         <div className="flex h-2 w-full rounded-full overflow-hidden gap-1 bg-gray-100">
+            <div className="bg-purple-300 w-[42%] h-full rounded-full"></div>
+            <div className="bg-yellow-300 w-[15%] h-full rounded-full"></div>
+            <div className="bg-orange-400 flex-1 h-full rounded-full"></div>
+         </div>
+         <div className="flex justify-between text-xs font-bold mt-2 text-gray-400">
+             <span>42%</span>
+             <span>15%</span>
+             <span>56%</span>
+         </div>
+      </div> 
+      */}
+      <div className="mt-4 mb-6"></div>
 
-         {/* Upcoming Tests */}
-         <div>
-            <div className="flex items-center gap-3 mb-3 text-gray-800">
-               <div className="w-8 h-8 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 shadow-sm">
-                  <FileText size={16} />
-               </div>
-               <span className="font-bold text-base">No. of Tests</span>
-               <span className="ml-auto bg-gray-50 text-gray-500 text-xs font-bold px-2.5 py-1 rounded-lg border border-gray-100">{upcomingTests.length}</span>
-            </div>
-            <div className="flex flex-col gap-2.5">
-               {upcomingTests.length > 0 ? upcomingTests.map((test, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-3 bg-gray-50/50 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
-                     <span className="font-semibold text-sm text-gray-700 truncate max-w-[140px]">{test.title}</span>
-                     <span className="text-xs font-semibold text-gray-400 flex items-center gap-1.5 bg-white px-2 py-1 rounded-md shadow-sm">
-                        <Calendar size={12} className="text-gray-300" />
-                        {test.date}
-                     </span>
-                  </div>
-               )) : (
-                  <p className="text-sm text-gray-400 italic pl-2">No upcoming tests</p>
-               )}
-            </div>
-         </div>
+      {/* Bottom Stats Grid */}
+      <div className="grid grid-cols-2 gap-4 mt-auto">
+        <div className="flex flex-col items-center gap-2 p-2 relative">
+           <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+              <BookOpen size={16} fill="currentColor" className="text-purple-600" />
+           </div>
+           <span className="text-xl font-bold text-gray-800">{upcomingCourses.length}</span>
+           <span className="text-[10px] uppercase font-bold text-gray-400 text-center tracking-wide">No. of Courses</span>
+        </div>
+        <div className="flex flex-col items-center gap-2 p-2 relative">
+           <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+              <FileText size={16} className="text-orange-600" />
+           </div>
+           <span className="text-xl font-bold text-gray-800">{upcomingTests.length}</span>
+           <span className="text-[10px] uppercase font-bold text-gray-400 text-center tracking-wide">No. of Tests</span>
+        </div>
       </div>
     </div>
   );
