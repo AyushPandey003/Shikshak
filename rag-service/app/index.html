@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Service Tester</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        input[type="file"] {
+            margin-bottom: 15px;
+        }
+
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>RAG Service Tester</h1>
+
+    <div class="section">
+        <h2>Ingest Document</h2>
+        <div class="grid">
+            <div>
+                <label for="course_id">Course ID</label>
+                <input type="text" id="course_id" value="CS101">
+            </div>
+            <div>
+                <label for="module_id">Module ID</label>
+                <input type="text" id="module_id" value="M1">
+            </div>
+        </div>
+        <label for="source_type">Source Type</label>
+        <select id="source_type">
+            <option value="txt">Text (TXT)</option>
+            <option value="pdf">PDF</option>
+            <option value="docx">Word (DOCX)</option>
+            <option value="video">Video (MP4)</option>
+            <option value="notes">Lecture Notes</option>
+        </select>
+        <label for="fileInput">File</label>
+        <input type="file" id="fileInput">
+        <br>
+        <button onclick="ingest()">Upload & Ingest</button>
+        <pre id="ingestResult"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Query</h2>
+        <label for="questionInput">Question</label>
+        <input type="text" id="questionInput" placeholder="Ask a question...">
+        <div class="grid">
+            <div>
+                <label for="filter_course">Filter by Course (optional)</label>
+                <input type="text" id="filter_course" placeholder="e.g., CS101">
+            </div>
+            <div>
+                <label for="filter_module">Filter by Module (optional)</label>
+                <input type="text" id="filter_module" placeholder="e.g., M1">
+            </div>
+        </div>
+        <button onclick="query()">Ask</button>
+        <pre id="queryResult"></pre>
+    </div>
+
+    <script>
+        async function ingest() {
+            const fileInput = document.getElementById('fileInput');
+            const resultPre = document.getElementById('ingestResult');
+
+            if (fileInput.files.length === 0) {
+                alert("Please select a file");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('course_id', document.getElementById('course_id').value);
+            formData.append('module_id', document.getElementById('module_id').value);
+            formData.append('source_type', document.getElementById('source_type').value);
+
+            resultPre.innerText = "Ingesting...";
+
+            try {
+                const response = await fetch('/ingest', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                resultPre.innerText = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultPre.innerText = "Error: " + error.message;
+            }
+        }
+
+        async function query() {
+            const questionInput = document.getElementById('questionInput');
+            const resultPre = document.getElementById('queryResult');
+            const question = questionInput.value;
+
+            if (!question) {
+                alert("Please enter a question");
+                return;
+            }
+
+            resultPre.innerText = "Thinking...";
+
+            const payload = {
+                query: question
+            };
+            const courseFilter = document.getElementById('filter_course').value;
+            const moduleFilter = document.getElementById('filter_module').value;
+            if (courseFilter) payload.course_id = courseFilter;
+            if (moduleFilter) payload.module_id = moduleFilter;
+
+            try {
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                resultPre.innerText = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultPre.innerText = "Error: " + error.message;
+            }
+        }
+    </script>
+</body>
+
+</html>

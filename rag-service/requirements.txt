@@ -1,0 +1,39 @@
+# Core
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.6
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# Document Extraction
+pdfplumber>=0.10.3
+python-docx>=1.1.0
+PyMuPDF>=1.23.0
+
+# Video/Audio Transcription (optional - comment if not using)
+openai-whisper>=20231117
+
+# Azure OpenAI
+openai>=1.12.0
+tiktoken>=0.5.2
+
+# Vector DB
+qdrant-client>=1.7.0
+
+# Background Jobs (optional)
+celery>=5.3.4
+redis>=5.0.1
+
+# Azure Integration (optional for MVP)
+azure-storage-blob>=12.19.0
+azure-identity>=1.15.0
+azure-keyvault-secrets>=4.7.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.23.0
+httpx>=0.26.0
+
+# Linting
+ruff>=0.1.9
