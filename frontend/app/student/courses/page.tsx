@@ -5,6 +5,7 @@ import { Course } from "@/types/course";
 import { useState, useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 type Option = "All" | "In Progress" | "Completed";
 
@@ -16,11 +17,14 @@ export default function StudentCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // In a real app we might fetch enrolled courses. 
-  // For now using the same endpoint but logic assumes backend filters for student
-  // or checks "enrolled" courses. Since we don't have a dedicated "get_enrolled" yet,
-  // we'll attempt to use the same logic but expect student view.
-  // NOTE: Based on previous context, we might need to adjust this endpoint later.
+  const router = useRouter();
+
+
+  useEffect(() => {
+    if (profile?.role !== "STUDENT") {
+      router.push("/");
+    }
+  }, []);
 
   useEffect(() => {
     const fetchCourses = async () => {

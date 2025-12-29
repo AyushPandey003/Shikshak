@@ -7,14 +7,25 @@ import { Course } from "@/types/course";
 import { useState, useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 type Option = "All" | "Public" | "Private" | "Draft";
 
 export default function Page() {
+
+  const { user, profile } = useAppStore();
+  const router = useRouter();
+
+
+  useEffect(() => {
+    if (profile?.role !== "TEACHER") {
+      router.push("/");
+    }
+  }, []);
+
   const [activeTab, setActiveTab] = useState<Option>("Public");
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
-  const { user } = useAppStore();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
