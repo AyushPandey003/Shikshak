@@ -9,6 +9,7 @@ import Navbar from '@/components/layout/Navbar';
 import SidebarCollapsedStrip from '@/components/learn/SidebarCollapsedStrip';
 import CourseInfoTabs from '@/components/learn/CourseInfoTabs';
 import LearnPageFooter from '@/components/learn/LearnPageFooter';
+import AIAssistant from '@/components/learn/AIAssistant';
 import { Menu } from 'lucide-react'; // Retaining Menu for mobile button if needed, though Footer handles it
 
 export default function ModulePage() {
@@ -22,6 +23,7 @@ export default function ModulePage() {
     const [isSidebarOpen, setSidebarOpen] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
     const [activeTab, setActiveTab] = useState<'description' | 'transcript' | 'notes' | 'downloads'>('description');
+    const [isAiOpen, setIsAiOpen] = useState(false);
 
     const activeLecture = course.sections
         .flatMap(s => s.lectures)
@@ -73,6 +75,10 @@ export default function ModulePage() {
                             setActiveLectureId(id);
                             if (isMobile) setSidebarOpen(false);
                         }}
+                        onOpenAI={() => {
+                            setIsAiOpen(true);
+                            if (isMobile) setSidebarOpen(false);
+                        }}
                     />
                 </div>
 
@@ -106,7 +112,11 @@ export default function ModulePage() {
                     </div>
 
                     {/* Footer Actions */}
-                    <LearnPageFooter onToggleSidebar={toggleSidebar} />
+                    <LearnPageFooter 
+                        onToggleSidebar={toggleSidebar} 
+                        isAiOpen={isAiOpen}
+                        onToggleAI={() => setIsAiOpen(!isAiOpen)}
+                    />
 
                 </div>
 
@@ -119,13 +129,12 @@ export default function ModulePage() {
                 )}
             </div>
             
-             {/* Mobile Sidebar Toggle Button (Floating) - Ensuring it's removed if redundant, checking page.tsx logic previously.. 
-                 Wait, I removed the floating button in previous steps but added it back in one edit? 
-                 In the current page.tsx content (lines 209-245), the toggle is in the Footer. 
-                 There is no floating button in the main content area anymore except the one I removed.
-                 BUT, checking line 217 in previous view... yes, footer has it.
-                 So I don't need to add any extra floating button here.
-             */}
+             {/* AI Assistant Window (Global) */}
+             <AIAssistant 
+                modules={course.sections}
+                isOpen={isAiOpen}
+                onClose={() => setIsAiOpen(false)}
+             />
         </div>
     );
 }

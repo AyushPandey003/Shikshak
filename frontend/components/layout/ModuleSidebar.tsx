@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Play, FileText, CheckCircle2, Circle, X, Check, HelpCircle, ClipboardList } from 'lucide-react'; // Added icons
+import { ChevronDown, ChevronUp, Play, FileText, CheckCircle2, Circle, X, Check, HelpCircle, ClipboardList, Sparkles } from 'lucide-react'; // Added icons
 import { Section } from '@/types/coursedet';
 
 interface ModuleSidebarProps {
@@ -8,9 +8,10 @@ interface ModuleSidebarProps {
     onLectureSelect: (lectureId: string) => void;
     courseTitle: string;
     onClose?: () => void;
+    onOpenAI?: () => void;
 }
 
-const ModuleSidebar: React.FC<ModuleSidebarProps> = ({ sections, activeLectureId, onLectureSelect, courseTitle, onClose }) => {
+const ModuleSidebar: React.FC<ModuleSidebarProps> = ({ sections, activeLectureId, onLectureSelect, courseTitle, onClose, onOpenAI }) => {
     // Open all sections by default or just the active one
     const getActiveSectionId = () => {
         if(!activeLectureId) return sections[0]?.id;
@@ -134,6 +135,17 @@ const ModuleSidebar: React.FC<ModuleSidebarProps> = ({ sections, activeLectureId
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* AI Assistant Button (Mobile Sidebar) */}
+            <div className="p-4 border-t border-gray-200 bg-gray-50 lg:hidden">
+                <button 
+                    onClick={onOpenAI}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl shadow-md active:scale-95 transition-all font-bold"
+                >
+                    <Sparkles className="w-5 h-5" />
+                    <span>Ask AI Assistant</span>
+                </button>
             </div>
         </div>
     );
