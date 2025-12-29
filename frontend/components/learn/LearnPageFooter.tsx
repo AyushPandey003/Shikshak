@@ -1,23 +1,41 @@
 import React from 'react';
-import { Menu, ThumbsUp, ThumbsDown, Flag, ArrowRight } from 'lucide-react';
+import { Menu, ThumbsUp, ThumbsDown, Flag, ArrowRight, Sparkles } from 'lucide-react';
 
 interface LearnPageFooterProps {
     onToggleSidebar: () => void;
+    isAiOpen?: boolean;
+    onToggleAI?: () => void;
 }
 
-const LearnPageFooter: React.FC<LearnPageFooterProps> = ({ onToggleSidebar }) => {
+const LearnPageFooter: React.FC<LearnPageFooterProps> = ({ onToggleSidebar, isAiOpen, onToggleAI }) => {
     return (
         <div className="border-t border-gray-200 bg-white z-30 shrink-0">
              <div className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-4">
                 
-                {/* Mobile: Sidebar Toggle */}
-                <button 
-                    onClick={onToggleSidebar}
-                    className="lg:hidden p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                    title="Course Content"
-                >
-                    <Menu className="w-6 h-6" />
-                </button>
+                <div className="flex items-center gap-3">
+                    {/* Mobile: Sidebar Toggle */}
+                    <button 
+                        onClick={onToggleSidebar}
+                        className="lg:hidden p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Course Content"
+                    >
+                        <Menu className="w-6 h-6" />
+                    </button>
+
+                    {/* AI Assistant Trigger (Visible on all screens) */}
+                    <button 
+                        onClick={onToggleAI}
+                        className={`
+                            flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm active:scale-95
+                            ${isAiOpen 
+                                ? 'bg-indigo-600 text-white shadow-indigo-200' 
+                                : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'}
+                        `}
+                    >
+                        <Sparkles className={`w-4 h-4 ${isAiOpen ? 'animate-pulse' : ''}`} />
+                        <span className="hidden sm:inline">AI Assistant</span>
+                    </button>
+                </div>
 
                 {/* Desktop: Like/Dislike Actions */}
                 <div className="hidden lg:flex items-center gap-6">
@@ -43,3 +61,4 @@ const LearnPageFooter: React.FC<LearnPageFooterProps> = ({ onToggleSidebar }) =>
 };
 
 export default LearnPageFooter;
+
