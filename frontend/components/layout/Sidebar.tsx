@@ -13,22 +13,30 @@ import { AiOutlineVideoCameraAdd } from "react-icons/ai";
 
 import { useAppStore } from "@/store/useAppStore";
 
-const navItems = [
+const teacherNavItems = [
   { href: "/teacher/dashboard", label: "Dashboard", icon: MdDashboard },
   { href: "/teacher/courses", label: "Courses", icon: MdClass },
   { href: "/teacher/courses/create", label: "Compose", icon: AiOutlineVideoCameraAdd },
+];
+
+const studentNavItems = [
+  { href: "/student/dashboard", label: "Dashboard", icon: MdDashboard },
+  { href: "/student/courses", label: "Courses", icon: IoSchool },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname() || "/";
   const { isSidebarOpen, closeSidebar } = useAppStore();
 
+  const isStudent = pathname.startsWith("/student");
+  const navItems = isStudent ? studentNavItems : teacherNavItems;
+
   return (
     <>
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[90] md:hidden"
+          className="fixed inset-0 bg-black/20 z-[90] md:hidden"
           onClick={closeSidebar}
         />
       )}
