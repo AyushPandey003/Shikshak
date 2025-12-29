@@ -9,7 +9,7 @@ export enum UserRole {
 export interface AuthUser {
     id: string;
     email: string;
-    name?: string; 
+    name?: string;
     accessToken: string;
     photoUrl?: string;
 }
@@ -43,6 +43,11 @@ export interface ParentProfile {
 // Combined Profile Type
 export interface UserProfile extends BaseProfile {
     role: UserRole;
+    // Fields from flat MongoDB structure
+    courses?: string[];
+    class?: string;
+
+    // Legacy/Nested structure support (if transformed)
     teacherDetails?: TeacherProfile;
     studentDetails?: StudentProfile;
     parentDetails?: ParentProfile;

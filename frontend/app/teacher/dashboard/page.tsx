@@ -1,11 +1,15 @@
-import React from 'react';
+'use client';
+import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import ProfileStatsCard from '@/components/dashboard/ProfileStatsCard';
 import CourseListCard from '@/components/dashboard/CourseListCard';
 import StudyStatsChart from '@/components/dashboard/StudyStatsChart';
 import AiAssistantCard from '@/components/dashboard/AiAssistantCard';
+import Footer from '@/components/layout/Footer';
+import { useAppStore } from '@/store/useAppStore';
+import axios from 'axios';
 
-// Dummy Data for Teacher
+// Dummy Data for Teacher (Events still dummy as no backend for them yet)
 const upcomingEvents = {
   courses: [
     { title: 'React Performance', date: '20 Oct' },
@@ -17,63 +21,77 @@ const upcomingEvents = {
   ]
 };
 
-// ... existing teacherCourses map ...
-
-const teacherCourses = [
-// ... no changes to mock data array content ...
-  {
-    id: 't1',
-    title: 'Advanced React Patterns',
-    level: 'Expert',
-    modulesCompleted: 12,
-    totalModules: 12, // Fully prepared
-    percentage: 100,
-    mentorName: 'Sarah Connors', // Self
-    color: 'white' as const
-  },
-  {
-    id: 't2',
-    title: 'UI Design Principles',
-    level: 'Intermediate',
-    modulesCompleted: 5,
-    totalModules: 10,
-    percentage: 50,
-    mentorName: 'Sarah Connors',
-    color: 'white' as const
-  },
-  {
-    id: 't3',
-    title: 'Web Accessibility',
-    level: 'All Levels',
-    modulesCompleted: 2,
-    totalModules: 8,
-    percentage: 25,
-    mentorName: 'Sarah Connors',
-    color: 'white' as const
-  }
-];
-
-import Footer from '@/components/layout/Footer';
-
 export default function TeacherDashboardPage() {
+  const { user } = useAppStore();
+  const [courses, setCourses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      if (!user) return;
+      try {
+        setLoading(true);
+        // Using "teacher" role hardcoded as this is the teacher dashboard
+        const headers: Record<string, string> = {};
+        if (user?.accessToken) {
+          headers["Authorization"] = `Bearer ${user.accessToken}`;
+        }
+
+        const response = await axios.post("http://localhost:4000/material/courses/get_all", {
+          user_id: user.id,
+          user_role: "teacher"
+        }, {
+          headers,
+          withCredentials: true
+        });
+
+        if (response.data) {
+          // Filter for PUBLIC courses only and map to UI format
+          const mappedCourses = response.data
+            .filter((c: any) => c.visibility === 'public')
+            .map((c: any) => ({
+              id: c._id,
+              title: c.name,
+              level: c.grade || 'General',
+              modulesCompleted: c.module_id?.length || 0, // In teacher view, we show total modules as "completed/created"
+              totalModules: c.module_id?.length || 0,
+              percentage: 100, // Teacher has completed creating these (or is in progress, but for this view we show full)
+              mentorName: c.teacher_details?.name || user.name || "Me",
+              color: 'white' as const
+            }));
+          setCourses(mappedCourses);
+        }
+      } catch (error) {
+        console.error("Failed to fetch courses", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, [user]);
+
+  if (!user) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <DashboardLayout
         role="teacher"
         hideHeader={true}
         profileStats={
-          <ProfileStatsCard 
-             name="Sarah" 
-             roleTag="Teacher" 
-             imageSrc="https://ui-avatars.com/api/?name=Sarah+Connors&background=random"
-             upcomingCourses={upcomingEvents.courses}
-             upcomingTests={upcomingEvents.tests}
-             activityPercentage={92}
+          <ProfileStatsCard
+            name={user.name || "Teacher"}
+            roleTag="Teacher"
+            imageSrc={user.photoUrl || "https://ui-avatars.com/api/?name=Teacher&background=random"}
+            upcomingCourses={upcomingEvents.courses}
+            upcomingTests={upcomingEvents.tests}
+            activityPercentage={92}
           />
         }
         courses={
-          // Teacher might want to see courses they are teaching
-          <CourseListCard items={teacherCourses} title="Courses Teaching" />
+          <CourseListCard items={courses} title="Courses Teaching" />
         }
         studyChart={
           // Reuse study chart for Student Engagement or similar for now
