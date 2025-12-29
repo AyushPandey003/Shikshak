@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { uploadFileToAzure, generateSasUrl } from "../utils/azureStorage.js";
+import { uploadFileToAzure, generateSasUrl, deleteBlobFromAzure } from "../utils/azureStorage.js";
 
 const router = express.Router();
 const storage = multer.memoryStorage();
@@ -41,4 +41,30 @@ router.get("/:blobName", (req, res) => {
     }
 });
 
+router.delete("/:blobName", async (req, res) => {
+    try {
+        const { blobName } = req.params;
+
+        if (!blobName) {
+            return res.status(400).json({ error: "Blob name is required" });
+        }
+
+        const result = await deleteBlobFromAzure(blobName);
+
+        if (!result.success) {
+            return res.status(404).json({ error: result.message });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: result.message,
+            blobName: blobName
+        });
+    } catch (error) {
+        console.error("Delete error:", error);
+        res.status(500).json({ error: "Failed to delete blob" });
+    }
+});
+
 export default router;
+
