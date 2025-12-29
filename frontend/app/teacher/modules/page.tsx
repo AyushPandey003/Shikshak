@@ -73,8 +73,9 @@ export default function ModulesPage() {
     const fetchModules = async () => {
         try {
             setLoading(true);
+            const cleanCourseId = courseId?.replace(/['"]+/g, '') || '';
             const response = await axios.post(`${API_URL}/get_all_module`, {
-                course_id: courseId
+                course_id: cleanCourseId
             });
 
             if (response.data) {
@@ -124,12 +125,19 @@ export default function ModulesPage() {
     };
 
     const handleAddModule = async () => {
+        if (!courseId) {
+            alert("Course ID is missing");
+            return;
+        }
+
         try {
             const tempTitle = `Module ${modules.length + 1}`;
+            const cleanCourseId = courseId.replace(/['"]+/g, '');
+
             const response = await axios.post(`${API_URL}/create_module`, {
-                course_id: courseId,
+                course_id: cleanCourseId,
                 title: tempTitle,
-                description: 'Dummy descrition',
+                description: 'Dummy description',
                 duration: '0s',
             });
 
@@ -137,7 +145,7 @@ export default function ModulesPage() {
                 const newModule: Module = {
                     id: response.data._id,
                     title: response.data.title,
-                    description: 'Dummy descrition',
+                    description: 'Dummy description',
                     duration: 'Dummy duration',
                     items: [],
                     isExpanded: true,
