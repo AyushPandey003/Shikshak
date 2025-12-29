@@ -83,8 +83,8 @@ export default function ModulesPage() {
                 const mappedModules: Module[] = response.data.map((m: any) => ({
                     id: m._id,
                     title: m.title,
-                    description: '', // Backend doesn't support description yet
-                    duration: '', // Backend doesn't support duration yet
+                    description: m.description || '',
+                    duration: m.duration || '',
                     isExpanded: false,
                     items: [
                         ...(m.video_id || []).map((v: any) => ({
@@ -183,7 +183,9 @@ export default function ModulesPage() {
             try {
                 await axios.post(`${API_URL}/edit_module`, {
                     module_id: currentModule.id,
-                    title: data.title
+                    title: data.title,
+                    description: data.description,
+                    duration: data.duration
                 });
 
                 setModules(modules.map(m =>
@@ -407,6 +409,40 @@ export default function ModulesPage() {
         }
     };
 
+    const COURSES_API_URL = "http://localhost:4000/material/courses";
+
+    const handleSaveCourseContent = async () => {
+        if (!courseId) return;
+
+        try {
+            const cleanCourseId = courseId.replace(/['"]+/g, '');
+            // Extract module IDs in current order
+            const moduleIds = modules.map(m => m.id);
+
+            // 1. Save Course Structure (Order)
+            await axios.post(`${COURSES_API_URL}/edit_course`, {
+                course_id: cleanCourseId,
+                module_id: moduleIds
+            });
+
+            // 2. Save Each Module's Details (Title, Description, etc.)
+            // We use Promise.all to save them in parallel
+            await Promise.all(modules.map(m =>
+                axios.post(`${API_URL}/edit_module`, {
+                    module_id: m.id,
+                    title: m.title,
+                    description: m.description, // detailed description from textarea
+                    duration: m.duration || '0m'
+                })
+            ));
+
+            alert("Course content saved successfully!");
+        } catch (error) {
+            console.error("Error saving course content:", error);
+            alert("Failed to save course content.");
+        }
+    };
+
     return (
         <div className="flex h-full w-full overflow-hidden bg-white">
             {/* Mobile Backdrop */}
@@ -449,6 +485,7 @@ export default function ModulesPage() {
                     onDescriptionChange={handleDescriptionChange}
                     onEditModule={handleEditModule}
                     onEditItem={handleEditItem}
+                    onSaveCourseContent={handleSaveCourseContent}
                 />
 
                 {/* Mobile Footer Navbar */}

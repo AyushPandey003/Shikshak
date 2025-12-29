@@ -39,6 +39,10 @@ export default function AuthInitializer() {
                         phoneNumber: userData.phoneNumber,
                         role: userData.role,
                         id: userData._id,
+                        // New flattened fields
+                        courses: userData.courses || [],
+                        class: userData.class,
+
                         teacherDetails: userData.role === 'teacher' ? {
                             subjects: userData.subjects || [],
                             qualifications: userData.qualifications || [],
@@ -47,7 +51,7 @@ export default function AuthInitializer() {
                         } : undefined,
                         studentDetails: userData.role === 'student' ? {
                             classGrade: userData.class || "",
-                            coursesEnrolled: [] // Assuming this comes from somewhere else or empty for now
+                            coursesEnrolled: userData.courses || []
                         } : undefined,
                         parentDetails: userData.role === 'parent' ? {
                             referId: userData.referId || ""

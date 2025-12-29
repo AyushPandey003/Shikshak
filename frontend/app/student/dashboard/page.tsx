@@ -1,11 +1,15 @@
-import React from 'react';
+'use client';
+import React, { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import ProfileStatsCard from '@/components/dashboard/ProfileStatsCard';
 import CourseListCard from '@/components/dashboard/CourseListCard';
 import StudyStatsChart from '@/components/dashboard/StudyStatsChart';
 import AiAssistantCard from '@/components/dashboard/AiAssistantCard';
+import Footer from '@/components/layout/Footer';
+import { useAppStore } from '@/store/useAppStore';
+import axios from 'axios';
 
-// Dummy Data for Student
+// Dummy Data for Upcoming Events (Backend integration pending for events)
 const upcomingEvents = {
   courses: [
     { title: 'UX Research', date: '21 Oct' },
@@ -17,60 +21,110 @@ const upcomingEvents = {
   ]
 };
 
-// ... existing studentCourses map ...
-
-const studentCourses = [
-  {
-    id: '1',
-    title: 'Design thinking',
-    level: 'Advanced',
-    modulesCompleted: 4,
-    totalModules: 12,
-    percentage: 46,
-    mentorName: 'Tomas Luis',
-    color: 'white' as const
-  },
-  {
-    id: '2',
-    title: 'Leadership',
-    level: 'Beginner',
-    modulesCompleted: 8,
-    totalModules: 14,
-    percentage: 72,
-    mentorName: 'Nelly Roven',
-    color: 'orange' as const
-  },
-  {
-    id: '3',
-    title: 'IT English',
-    level: 'Advanced',
-    modulesCompleted: 6,
-    totalModules: 10,
-    percentage: 56,
-    mentorName: 'Stefan Colman',
-    color: 'white' as const
-  }
-];
-
-import Footer from '@/components/layout/Footer';
-
 export default function StudentDashboardPage() {
+  const { user, profile } = useAppStore();
+  const [courses, setCourses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!user || !profile) return;
+
+      // Check role case-insensitively
+      if ((profile.role as string).toUpperCase() !== 'STUDENT') return;
+
+      try {
+        setLoading(true);
+        const enrolledCourseIds = profile.courses || [];
+
+        // Fetch details for each enrolled course
+        const fetchedCourses = await Promise.all(
+          enrolledCourseIds.map(async (courseId: string) => {
+            try {
+              // Using general endpoint to allow viewing if public, bypassing strict student list check
+              const response = await axios.post("http://localhost:4000/material/courses/get_course_by_id_general", {
+                course_id: courseId
+              }, {
+                headers: user.accessToken ? { Authorization: `Bearer ${user.accessToken}` } : {},
+                withCredentials: true
+              });
+
+              let imageUrl = "https://picsum.photos/seed/course/400/300";
+
+              if (response.data) {
+                const c: any = response.data;
+
+                // Fetch SAS URL if thumbnail is not a full URL
+                if (c.thumbnail && !c.thumbnail.startsWith("http")) {
+                  try {
+                    const sasRes = await axios.get(`http://localhost:4000/material/upload/${encodeURIComponent(c.thumbnail)}`, {
+                      headers: user.accessToken ? { Authorization: `Bearer ${user.accessToken}` } : {},
+                      withCredentials: true
+                    });
+                    if (sasRes.data && sasRes.data.url) {
+                      imageUrl = sasRes.data.url;
+                    }
+                  } catch (err) {
+                    console.error(`Failed to fetch SAS for ${c.thumbnail}`, err);
+                  }
+                } else if (c.thumbnail) {
+                  imageUrl = c.thumbnail;
+                }
+
+                // Map to CourseListCard format
+                return {
+                  id: c._id,
+                  title: c.name,
+                  level: c.grade || 'General',
+                  // Progress is mocked as we don't have a progress API yet
+                  modulesCompleted: 0,
+                  totalModules: c.module_id?.length || 0,
+                  percentage: 0,
+                  mentorName: c.teacher_details?.name || "Instructor",
+                  color: 'white' as const
+                };
+              }
+              return null;
+            } catch (err) {
+              console.error(`Failed to fetch course ${courseId}`, err);
+              return null;
+            }
+          })
+        );
+
+        setCourses(fetchedCourses.filter(c => c !== null));
+
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [user, profile]);
+
+  if (!user || !profile) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <DashboardLayout
         role="student"
         hideHeader={true}
         profileStats={
-          <ProfileStatsCard 
-             name="Tim" 
-             roleTag="Student" 
-             upcomingCourses={upcomingEvents.courses}
-             upcomingTests={upcomingEvents.tests}
-             activityPercentage={78}
+          <ProfileStatsCard
+            name={user.name || "Student"}
+            roleTag="Student"
+            imageSrc={user.photoUrl || "https://ui-avatars.com/api/?name=Student&background=random"}
+            upcomingCourses={upcomingEvents.courses}
+            upcomingTests={upcomingEvents.tests}
+            activityPercentage={78} // Dummy activity stats
           />
         }
         courses={
-          <CourseListCard items={studentCourses} />
+          <CourseListCard items={courses} />
         }
         studyChart={
           // <StudyStatsChart />

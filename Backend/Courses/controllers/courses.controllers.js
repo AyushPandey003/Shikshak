@@ -124,9 +124,9 @@ export const getAllCourses = async (req, res) => {
 
         let courses;
         if (user_role === "teacher") {
-            courses = await Course.find({ "teacher_details.id": user_id }).select("name subject price thumbnail board pricing_category rating visibility grade description course_outcomes language duration");
+            courses = await Course.find({ "teacher_details.id": user_id }).select("name subject price thumbnail board pricing_category rating visibility grade description course_outcomes language duration module_id");
         } else if (user_role === "student") {
-            courses = await Course.find({ "students_id.id": user_id }).select("name subject price thumbnail board pricing_category rating visibility grade description course_outcomes language duration");
+            courses = await Course.find({ "students_id.id": user_id }).select("name subject price thumbnail board pricing_category rating visibility grade description course_outcomes language duration module_id");
         } else {
             return res.status(400).json({ message: "Invalid User Role" });
         }

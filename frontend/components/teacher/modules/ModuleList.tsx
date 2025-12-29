@@ -20,6 +20,7 @@ interface ModuleListProps {
     onDescriptionChange: (id: string, description: string) => void;
     onEditModule: (module: Module) => void;
     onEditItem: (item: ContentItem, parentId: string) => void;
+    onSaveCourseContent: () => void;
 }
 
 export function ModuleList({
@@ -38,7 +39,8 @@ export function ModuleList({
     onReorderModules,
     onDescriptionChange,
     onEditModule,
-    onEditItem
+    onEditItem,
+    onSaveCourseContent
 }: ModuleListProps) {
 
     // Drag and Drop State
@@ -109,7 +111,10 @@ export function ModuleList({
                     <h1 className="text-xl md:text-2xl font-bold md:font-bold text-gray-900 hidden md:block">Recommended course content</h1>
                     <h1 className="text-xl font-semibold text-gray-900 md:hidden">Course Modules</h1>
                     <div className="flex gap-2">
-                        <button className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
+                        <button
+                            onClick={onSaveCourseContent}
+                            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+                        >
                             Save
                         </button>
                     </div>

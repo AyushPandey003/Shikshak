@@ -25,10 +25,10 @@ export const createModule = async (req, res) => {
         // Add module to course
         course.module_id.push(savedModule._id);
         await course.save();
-        
+
         // Convert ObjectId to string
         const savedmoduleid = savedModule._id.toString();
-        
+
         await produceModuleCreated(savedmoduleid, course_id);
         await disconnectProducer();
         res.status(201).json(savedModule);
@@ -41,15 +41,19 @@ export const createModule = async (req, res) => {
 // Edit Module
 export const editModule = async (req, res) => {
     try {
-        const { module_id, title } = req.body;
+        const { module_id, title, description, duration } = req.body;
 
         if (!module_id) {
             return res.status(400).json({ message: "Module ID is required" });
         }
 
+        const updateData = { title };
+        if (description) updateData.description = description;
+        if (duration) updateData.duration = duration;
+
         const updatedModule = await Module.findByIdAndUpdate(
             module_id,
-            { title },
+            updateData,
             { new: true }
         );
 
