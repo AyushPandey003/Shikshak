@@ -6,19 +6,27 @@ import StudyStatsChart from '@/components/dashboard/StudyStatsChart';
 import AiAssistantCard from '@/components/dashboard/AiAssistantCard';
 
 // Dummy Data for Teacher
-const teacherStats = {
-  inProgress: 12, // Active Classes
-  upcoming: 5,   // Pending Reviews
-  completed: 120 // Total Students
+const upcomingEvents = {
+  courses: [
+    { title: 'React Performance', date: '20 Oct' },
+    { title: 'System Design', date: '25 Oct' }
+  ],
+  tests: [
+    { title: 'JS Advanced Quiz', date: '18 Oct' },
+    { title: 'CSS Mastery', date: '22 Oct' }
+  ]
 };
 
+// ... existing teacherCourses map ...
+
 const teacherCourses = [
+// ... no changes to mock data array content ...
   {
     id: 't1',
     title: 'Advanced React Patterns',
     level: 'Expert',
-    classesCompleted: 12,
-    totalClasses: 12, // Fully prepared
+    modulesCompleted: 12,
+    totalModules: 12, // Fully prepared
     percentage: 100,
     mentorName: 'Sarah Connors', // Self
     color: 'white' as const
@@ -27,8 +35,8 @@ const teacherCourses = [
     id: 't2',
     title: 'UI Design Principles',
     level: 'Intermediate',
-    classesCompleted: 5,
-    totalClasses: 10,
+    modulesCompleted: 5,
+    totalModules: 10,
     percentage: 50,
     mentorName: 'Sarah Connors',
     color: 'white' as const
@@ -37,8 +45,8 @@ const teacherCourses = [
     id: 't3',
     title: 'Web Accessibility',
     level: 'All Levels',
-    classesCompleted: 2,
-    totalClasses: 8,
+    modulesCompleted: 2,
+    totalModules: 8,
     percentage: 25,
     mentorName: 'Sarah Connors',
     color: 'white' as const
@@ -49,7 +57,7 @@ import Footer from '@/components/layout/Footer';
 
 export default function TeacherDashboardPage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       <DashboardLayout
         role="teacher"
         hideHeader={true}
@@ -57,9 +65,10 @@ export default function TeacherDashboardPage() {
           <ProfileStatsCard 
              name="Sarah" 
              roleTag="Teacher" 
-             activityPercentage={92} 
-             stats={teacherStats}
              imageSrc="https://ui-avatars.com/api/?name=Sarah+Connors&background=random"
+             upcomingCourses={upcomingEvents.courses}
+             upcomingTests={upcomingEvents.tests}
+             activityPercentage={92}
           />
         }
         courses={
@@ -68,10 +77,12 @@ export default function TeacherDashboardPage() {
         }
         studyChart={
           // Reuse study chart for Student Engagement or similar for now
-          <StudyStatsChart />
+          // <StudyStatsChart />
+          null
         }
         aiWidget={
-          <AiAssistantCard />
+          // <AiAssistantCard />
+          null
         }
       />
       <Footer />

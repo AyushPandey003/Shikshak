@@ -23,7 +23,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6 font-sans text-gray-800 no-scrollbar max-w-7xl mx-auto">
+    <div className="bg-gray-50 p-4 md:p-6 font-sans text-gray-800 no-scrollbar max-w-7xl mx-auto">
       {/* Top Navigation */}
       {!hideHeader && (
         <header className="flex items-center justify-between mb-8 relative md:static">
@@ -100,7 +100,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {/* Right Column: Courses, Chart, AI */}
         <div className="lg:col-span-8 flex flex-col gap-6">
            {/* Top Row: Courses */}
-           <div className="w-full">
+           <div className="w-full h-full">
               {courses}
            </div>
 

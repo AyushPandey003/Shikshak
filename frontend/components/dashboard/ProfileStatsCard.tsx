@@ -1,41 +1,36 @@
 import React from 'react';
-import { Play, Calendar, Users, Briefcase } from 'lucide-react';
+import { Calendar, BookOpen, FileText, CheckCircle, Play } from 'lucide-react';
 
 interface ProfileStatsCardProps {
   name: string;
   roleTag: string;
-  activityPercentage: number;
-  stats: {
-    inProgress: number;
-    upcoming: number;
-    completed: number;
-  };
   imageSrc?: string;
+  upcomingCourses: Array<{ title: string; date: string }>;
+  upcomingTests: Array<{ title: string; date: string }>;
+  activityPercentage: number;
 }
 
 const ProfileStatsCard: React.FC<ProfileStatsCardProps> = ({
   name,
   roleTag,
-  activityPercentage,
-  stats,
-  imageSrc
+  imageSrc,
+  upcomingCourses,
+  upcomingTests,
+  activityPercentage
 }) => {
   return (
-    <div className="bg-white rounded-[2rem] p-6 shadow-sm h-full flex flex-col justify-between relative overflow-hidden">
+    <div className="bg-white rounded-[2rem] p-6 shadow-sm h-auto md:h-[550px] flex flex-col justify-between relative overflow-hidden">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Statistic</h2>
-        <button className="text-sm font-medium bg-gray-100 hover:bg-gray-200 px-4 py-1.5 rounded-full transition-colors">
-          View all
-        </button>
+        <h2 className="text-xl font-semibold tracking-tight text-gray-800">Statistic</h2>
       </div>
 
-      <div className="flex flex-col items-center mt-4">
-        <div className="relative w-32 h-32 mb-4">
-           {/* Progress Ring Placeholder - simpler CSS border approach */}
-           <div className="absolute inset-0 rounded-full border-4 border-gray-100"></div>
-           <div className="absolute inset-0 rounded-full border-4 border-orange-500 border-t-transparent -rotate-45" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)'}}></div> 
+      <div className="flex flex-col items-center my-auto">
+        <div className="relative w-28 h-28 mb-3 group">
+           {/* Refined Ring */}
+           <div className="absolute inset-0 rounded-full border-[3px] border-gray-100 transition-colors group-hover:border-gray-200"></div>
+           <div className="absolute inset-0 rounded-full border-[3px] border-orange-500 border-t-transparent -rotate-45" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)'}}></div> 
            
-           <div className="absolute inset-2 overflow-hidden rounded-full border-4 border-white shadow-sm">
+           <div className="absolute inset-[5px] overflow-hidden rounded-full border-[3px] border-white shadow-sm">
              <img 
                src={imageSrc || `https://ui-avatars.com/api/?name=${name}&size=128&background=random`} 
                alt={name} 
@@ -43,53 +38,51 @@ const ProfileStatsCard: React.FC<ProfileStatsCardProps> = ({
              />
            </div>
            
-           <span className="absolute bottom-[-10px] left-1/2 -translate-x-1/2 bg-coral-500 bg-[#FF6B6B] text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm border border-white">
+           <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#FF6B6B] text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-sm border-[2px] border-white uppercase tracking-wider">
              {roleTag}
            </span>
         </div>
 
-        <h3 className="text-2xl font-bold mt-4 text-center">Welcome, {name.split(' ')[0]} 👋</h3>
+        <h3 className="text-2xl font-bold mt-2 text-center text-gray-900">Welcome, {name.split(' ')[0]} 👋</h3>
+        {/* <p className="text-sm text-gray-400 font-medium">Have a nice day!</p> */}
       </div>
 
-      <div className="mt-8 mb-8">
+      {/* Activity Progress Section Removed */}
+      {/* 
+      <div className="mt-4 mb-6">
          <div className="flex items-end gap-2 mb-2">
             <span className="text-5xl font-medium text-gray-800">{activityPercentage}%</span>
-            <span className="text-gray-400 mb-2 font-medium">Total month<br/>activity</span>
+            <span className="text-gray-400 mb-2 font-medium leading-tight text-sm">Total month{/* <br/> * /} activity</span>
          </div>
-         {/* Simple Progress Bar */}
-         <div className="flex h-2 w-full rounded-full overflow-hidden gap-1">
-            <div className="bg-purple-300 w-[42%]"></div>
-            <div className="bg-yellow-300 w-[15%]"></div>
-            <div className="bg-orange-400 flex-1"></div>
+         <div className="flex h-2 w-full rounded-full overflow-hidden gap-1 bg-gray-100">
+            <div className="bg-purple-300 w-[42%] h-full rounded-full"></div>
+            <div className="bg-yellow-300 w-[15%] h-full rounded-full"></div>
+            <div className="bg-orange-400 flex-1 h-full rounded-full"></div>
          </div>
-         <div className="flex justify-between text-xs font-bold mt-2 text-gray-700">
+         <div className="flex justify-between text-xs font-bold mt-2 text-gray-400">
              <span>42%</span>
              <span>15%</span>
              <span>56%</span>
          </div>
-      </div>
+      </div> 
+      */}
+      <div className="mt-4 mb-6"></div>
 
-      <div className="grid grid-cols-3 gap-2 mt-auto">
-        <div className="flex flex-col items-center gap-2 p-2">
+      {/* Bottom Stats Grid */}
+      <div className="grid grid-cols-2 gap-4 mt-auto">
+        <div className="flex flex-col items-center gap-2 p-2 relative">
            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
-              <Play size={16} fill="currentColor" />
+              <BookOpen size={16} fill="currentColor" className="text-purple-600" />
            </div>
-           <span className="text-xl font-bold">{stats.inProgress}</span>
-           <span className="text-xs text-gray-400 text-center">In progress</span>
+           <span className="text-xl font-bold text-gray-800">{upcomingCourses.length}</span>
+           <span className="text-[10px] uppercase font-bold text-gray-400 text-center tracking-wide">No. of Courses</span>
         </div>
-        <div className="flex flex-col items-center gap-2 p-2">
-           <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
-              <Calendar size={16} />
+        <div className="flex flex-col items-center gap-2 p-2 relative">
+           <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+              <FileText size={16} className="text-orange-600" />
            </div>
-           <span className="text-xl font-bold">{stats.upcoming}</span>
-           <span className="text-xs text-gray-400 text-center">Upcoming</span>
-        </div>
-        <div className="flex flex-col items-center gap-2 p-2">
-           <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
-               <Briefcase size={16} />
-           </div>
-           <span className="text-xl font-bold">{stats.completed}</span>
-           <span className="text-xs text-gray-400 text-center">Completed</span>
+           <span className="text-xl font-bold text-gray-800">{upcomingTests.length}</span>
+           <span className="text-[10px] uppercase font-bold text-gray-400 text-center tracking-wide">No. of Tests</span>
         </div>
       </div>
     </div>
