@@ -32,7 +32,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({ course }) => {
                 setPaymentSuccess(true);
                 // Redirect to course page or dashboard after a delay
                 setTimeout(() => {
-                    router.push('/student/courses');
+                    router.push(`/courses/${course.id}/learn`);
                 }, 2000);
             },
             onError: (err) => {
@@ -68,7 +68,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({ course }) => {
                             <CheckCircle className="w-5 h-5 text-emerald-600" />
                             <div>
                                 <p className="text-sm font-semibold text-emerald-800">Enrollment Successful!</p>
-                                <p className="text-xs text-emerald-600">Redirecting to your courses...</p>
+                                <p className="text-xs text-emerald-600">Redirecting to your course...</p>
                             </div>
                         </div>
                     )}
