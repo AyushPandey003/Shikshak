@@ -19,6 +19,9 @@ const videoSchema = new mongoose.Schema(
             ref: "Module",
             required: true,
         },
+        transcript: {
+            type: String,
+        },
     },
     { timestamps: true }
 );

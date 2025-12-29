@@ -25,10 +25,10 @@ export const createModule = async (req, res) => {
         // Add module to course
         course.module_id.push(savedModule._id);
         await course.save();
-        
+
         // Convert ObjectId to string
         const savedmoduleid = savedModule._id.toString();
-        
+
         await produceModuleCreated(savedmoduleid, course_id);
         await disconnectProducer();
         res.status(201).json(savedModule);
@@ -119,9 +119,9 @@ export const deleteModule = async (req, res) => {
 // Add Video
 export const addVideo = async (req, res) => {
     try {
-        const { module_id, azure_id, title } = req.body;
+        const { module_id, azure_id, title, course_id } = req.body;
 
-        if (!module_id || !azure_id || !title) {
+        if (!module_id || !azure_id || !title || !course_id) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -144,7 +144,7 @@ export const addVideo = async (req, res) => {
         module.video_id.push(savedVideo._id);
         await module.save();
 
-        await produceMaterialCreated(savedVideo._id.toString(), module_id, 'video_created');
+        await produceMaterialCreated(savedVideo._id.toString(), module_id, course_id, 'video_created', azure_id);
         await disconnectMaterialProducer();
 
         res.status(201).json(savedVideo);
@@ -157,9 +157,9 @@ export const addVideo = async (req, res) => {
 // Add Notes
 export const addNotes = async (req, res) => {
     try {
-        const { module_id, azure_id } = req.body;
+        const { module_id, azure_id, course_id } = req.body;
 
-        if (!module_id || !azure_id) {
+        if (!module_id || !azure_id || !course_id) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -181,7 +181,7 @@ export const addNotes = async (req, res) => {
         module.notes_id.push(savedNotes._id);
         await module.save();
 
-        await produceMaterialCreated(savedNotes._id.toString(), module_id, 'notes_created');
+        await produceMaterialCreated(savedNotes._id.toString(), module_id, course_id, 'notes_created', azure_id);
         await disconnectMaterialProducer();
 
         res.status(201).json(savedNotes);

@@ -1,0 +1,14 @@
+import { createProxyMiddleware } from "http-proxy-middleware";
+
+const ragProxy = createProxyMiddleware({
+    target: "http://localhost:4005",
+    changeOrigin: true,
+    pathRewrite: {
+        "^/rag": "/api/rag"
+    },
+    onProxyReq(proxyReq, req) {
+        console.log(`[RAG] ${req.method} ${req.originalUrl}`);
+    }
+});
+
+export default ragProxy;

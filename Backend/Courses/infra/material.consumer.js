@@ -60,20 +60,45 @@ async function startConsumer() {
           console.log(`Event Type: ${eventtype}`);
 
           if (eventtype === 'video_created') {
-            const { material_id, module_id } = payload;
+            const { material_id, module_id, course_id, azure_id } = payload;
             console.log(`Module ID: ${module_id}`);
             console.log(`Video ID: ${material_id}`);
 
-            // get video url and data then add in db and rag
+            try {
+              const { ingestVideoToRag } = await import("../utils/ragClient.js");
+              const transcript = await ingestVideoToRag({
+                course_id: course_id,
+                module_id: module_id,
+                video_id: uuidv4(),
+                blob_name: azure_id
+              });
+
+              console.log(`Transcript: ${transcript}`);
+              await video.updateOne({
+                _id: material_id,
+                $set: { transcript: transcript }
+              })
+
+
+            } catch (err) {
+              console.error("Error in video_created handler:", err);
+            }
 
             console.log(`✅ Video created for module_id=${module_id}`);
 
           } else if (eventtype === 'note_created') {
-            const { material_id, module_id } = payload;
-            console.log(`Module ID: ${module_id}`);
-            console.log(`Note ID: ${material_id}`);
-
-            // get notes url and data then add in db and rag
+            const { material_id, module_id, course_id } = payload;
+            try {
+              const { ingestNotesToRag } = await import("../utils/notesClient.js");
+              await ingestNotesToRag({
+                course_id: course_id,
+                module_id: module_id,
+                notes_id: uuidv4(),
+                blob_name: azure_id
+              });
+            } catch (err) {
+              console.error("Error in note_created handler:", err);
+            }
 
             console.log(`✅ Note created for module_id=${module_id}`);
 

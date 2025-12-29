@@ -1,6 +1,0 @@
-improvements:-
-
-1. Responses are short and not detailed.
-2. Remove Sources from the response.
-3. Create a single api and automatically whether the blob uri is pdf or video.
-4. I will provide a payload of course id module id blob uri or video/notes_id.
