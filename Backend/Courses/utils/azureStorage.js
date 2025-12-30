@@ -99,3 +99,22 @@ export const generateSasUrl = (blobName) => {
         throw new Error("Could not generate SAS URL");
     }
 };
+
+export const deleteBlobFromAzure = async (blobName) => {
+    await initAzureStorage();
+
+    try {
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+        const exists = await blockBlobClient.exists();
+
+        if (!exists) {
+            return { success: false, message: "Blob not found" };
+        }
+
+        await blockBlobClient.delete();
+        return { success: true, message: "Blob deleted successfully" };
+    } catch (error) {
+        console.error("Error deleting blob from Azure:", error.message);
+        throw new Error("Blob deletion failed");
+    }
+};

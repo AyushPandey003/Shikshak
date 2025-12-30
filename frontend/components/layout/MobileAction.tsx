@@ -28,7 +28,7 @@ const MobileAction: React.FC<MobileActionProps> = ({ course }) => {
                 console.log('Payment successful:', data);
                 setPaymentSuccess(true);
                 setTimeout(() => {
-                    router.push('/student/courses');
+                    router.push(`/courses/${course.id}/learn`);
                 }, 2000);
             },
             onError: (err) => {

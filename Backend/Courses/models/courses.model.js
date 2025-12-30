@@ -121,7 +121,13 @@ const courseSchema = new mongoose.Schema(
                 type: String,
                 required: true,
             },
-        ]
+        ],
+        test_id: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Test",
+            },
+        ],
     },
     { timestamps: true }
 );

@@ -14,6 +14,7 @@ import connectDB from "./db/index.js";
 import coursesRoutes from "./routes/courses.js";
 import moduleRoutes from "./routes/modules.js";
 import reviewsRoutes from "./routes/reviews.js";
+import testsRoutes from "./routes/tests.js";
 import { produceMaterialCreated } from "./infra/material.producer.js";
 import { disconnectMaterialProducer } from "./infra/material.producer.js";
 import "./infra/startConsumer.js";
@@ -44,7 +45,11 @@ app.use("/api/module", moduleRoutes);
 // reviews routes
 app.use("/api/reviews", reviewsRoutes);
 
+// tests routes
+app.use("/api/tests", testsRoutes);
+
 const PORT = process.env.PORT_COURSES || 4002;
 app.listen(PORT, () => {
   console.log(`Courses Service running on port ${PORT}`);
 });
+
