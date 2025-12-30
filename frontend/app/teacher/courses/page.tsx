@@ -17,11 +17,11 @@ export default function Page() {
   const router = useRouter();
 
 
-  useEffect(() => {
-    if (profile?.role !== "TEACHER") {
-      router.push("/");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (profile?.role !== "TEACHER") {
+  //     router.push("/");
+  //   }
+  // }, []);
 
   const [activeTab, setActiveTab] = useState<Option>("Public");
 

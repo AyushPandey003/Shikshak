@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Heart, ShoppingCart, User, BookOpen, GraduationCap, Pencil, Trash2, MessageSquarePlus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Heart, ShoppingCart, User, BookOpen, GraduationCap, Pencil, Trash2, MessageSquarePlus, Star } from 'lucide-react';
 import { Course } from '@/types/course';
 import Link from 'next/link';
 import ReviewModal from './ReviewModal';
+import axios from 'axios';
+import { useAppStore } from '@/store/useAppStore';
 
 interface CourseCardProps {
   course: Course;
@@ -17,31 +19,63 @@ interface CourseCardProps {
 const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, onEdit, onDelete }) => {
   const course_id = course.id;
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const { user } = useAppStore();
+  const [ratingData, setRatingData] = useState({ rating: course.rating || 0, count: course.totalRatings || 0 });
+
+  useEffect(() => {
+    // Fetch reviews to get real-time rating
+    const fetchReviews = async () => {
+      try {
+        const response = await axios.post("http://localhost:4000/material/reviews/get_reviews", {
+          course_id: course_id
+        }, { withCredentials: true });
+
+        const reviews = response.data;
+        if (Array.isArray(reviews) && reviews.length > 0) {
+          const total = reviews.reduce((acc: number, curr: any) => acc + (curr.rating || 0), 0);
+          const avg = total / reviews.length;
+          setRatingData({
+            rating: avg,
+            count: reviews.length
+          });
+        } else {
+          setRatingData({
+            rating: 0,
+            count: 0
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch reviews for card:", error);
+      }
+    };
+
+    fetchReviews();
+  }, [course_id]);
+
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const handleReviewSubmit = async (data: { rating: number; description: string; isAnonymous: boolean }) => {
-    console.log("Review Submitted:", { 
-      courseId: course.id,
-      ...data 
-    });
+    if (!user) {
+      alert("Please login to submit a review");
+      return;
+    }
 
-    /* 
     try {
-      const response = await axios.post("http://localhost:4000/material/reviews/add", {
-        courseId: course.id,
+      const response = await axios.post("http://localhost:4000/material/reviews/create_review", {
         rating: data.rating,
-        description: data.description,
-        isAnonymous: data.isAnonymous
+        comment: data.description,
+        course_id: course.id,
+        user_id: user.id,
       }, {
         withCredentials: true
       });
       console.log("Review saved:", response.data);
-      alert("Review submitted successfully!");
-    } catch (error) {
+      // alert("Review submitted successfully!");
+    } catch (error: any) {
       console.error("Failed to submit review:", error);
-      alert("Failed to submit review.");
+      alert(error.response?.data?.message || "Failed to submit review.");
     }
-    */
+
   };
 
   return (
@@ -108,6 +142,26 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
             />
             <span className="text-sm text-gray-500">{course.instructor?.name || "Instructor"}</span>
           </div>
+
+          {[
+            // Rating
+            <div key="rating" className="flex items-center gap-1.5 mb-2.5">
+              <span className="font-bold text-gray-900 text-sm">{ratingData.rating.toFixed(1)}</span>
+              <div className="flex items-center">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    size={14}
+                    className={`${star <= Math.round(ratingData.rating)
+                      ? "fill-amber-400 text-amber-400"
+                      : "fill-gray-200 text-gray-200"
+                      }`}
+                  />
+                ))}
+              </div>
+              <span className="text-xs text-gray-400">({ratingData.count})</span>
+            </div>
+          ]}
 
           {/* Divider */}
           <div className="border-t border-gray-100 my-2"></div>

@@ -89,7 +89,7 @@ export const getAllGeneralInfo = async (req, res) => {
             return res.status(200).json(JSON.parse(cachedCourses));
         }
 
-        const courses = await Course.find({ visibility: "public" }).select("name subject price thumbnail board pricing_category rating visibility grade teacher_details");
+        const courses = await Course.find({ visibility: "public" }).select("name subject price thumbnail board pricing_category rating visibility grade teacher_details reviews");
         await redis.set(
             "courses:all:v2",
             JSON.stringify(courses)
