@@ -20,11 +20,11 @@ export default function StudentCoursesPage() {
   const router = useRouter();
 
 
-  useEffect(() => {
-    if (profile?.role !== "STUDENT") {
-      router.push("/");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (profile?.role !== "STUDENT") {
+  //     router.push("/");
+  //   }
+  // }, []);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -90,7 +90,8 @@ export default function StudentCoursesPage() {
                   },
                   price: c.price,
                   rating: c.rating || 0,
-                  students: 0, // Backend getCourseById for student doesn't return student_count currently
+                  students: 0,
+                  // Note: CourseCard will now render rating using the 'rating' field and stars
                   image: imageUrl,
                   subject: c.subject,
                   grade: c.grade,

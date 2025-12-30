@@ -11,6 +11,7 @@ export interface Course {
   price: number;
   originalPrice?: number; // For strikethrough
   rating: number;
+  totalRatings?: number;
   students: number;
   image: string;
   description?: string;

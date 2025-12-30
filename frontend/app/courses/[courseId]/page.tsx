@@ -91,10 +91,17 @@ const CourseDetailPage: React.FC = () => {
                     }]
                 };
 
-                const mappedReviews: Review[] = data.reviews ? data.reviews.map((r: any) => ({
+                // Fetch reviews specifically
+                const reviewsRes = await axios.post("http://localhost:4000/material/reviews/get_reviews", {
+                    course_id: courseId
+                }, { withCredentials: true });
+
+                const reviewsData = reviewsRes.data;
+
+                const mappedReviews: Review[] = Array.isArray(reviewsData) ? reviewsData.map((r: any) => ({
                     id: r._id,
-                    author: "Student",
-                    initials: "S",
+                    author: r.isAnonymous ? "Anonymous" : "Student",
+                    initials: r.isAnonymous ? "A" : "S",
                     rating: r.rating || 5,
                     timeAgo: new Date(r.createdAt).toLocaleDateString(),
                     content: r.comment || ""
