@@ -163,6 +163,7 @@ export default function StudentCoursesPage() {
                 key={course.id}
                 course={course}
                 isTeacher={false} // Student view
+                canReview={true}
               />
             ))}
           </div>
