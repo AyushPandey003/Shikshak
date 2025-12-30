@@ -21,10 +21,9 @@ export default function StudentCoursesPage() {
 
 
   useEffect(() => {
-    // Protection logic commented out for development
-    // if (profile?.role !== "STUDENT") {
-    //   router.push("/");
-    // }
+    if (profile?.role !== "STUDENT") {
+      router.push("/");
+    }
   }, []);
 
   useEffect(() => {
@@ -32,7 +31,6 @@ export default function StudentCoursesPage() {
       // Logic to fetch enrolled courses based on user profile
       // MongoDB data shows 'courses' is a top-level array of strings on the user profile
       // Check role case-insensitively as backend returns lowercase 'student' but enum is uppercase
-      /* 
       if (!user || !profile || (profile.role as string).toUpperCase() !== 'STUDENT' || !profile.courses) {
         setLoading(false);
         return;
@@ -118,59 +116,10 @@ export default function StudentCoursesPage() {
       } finally {
         setLoading(false);
       }
-      */
-      
-      setLoading(true);
-      // Dummy data for development
-      const dummyCourses: Course[] = [
-        {
-          id: "dummy-1",
-          title: "Introduction to React",
-          instructor: {
-            id: "inst-1",
-            name: "John Doe",
-            avatar: "https://ui-avatars.com/api/?name=John+Doe"
-          },
-          price: 499,
-          rating: 4.5,
-          students: 120,
-          image: "https://picsum.photos/seed/react/400/300",
-          subject: "Computer Science",
-          grade: "Undergraduate",
-          board: "Tech",
-          tags: ["Best Seller"],
-          isBundle: false,
-          type: "Public"
-        },
-        {
-          id: "dummy-2",
-          title: "Advanced Mathematics",
-          instructor: {
-            id: "inst-2",
-            name: "Jane Smith",
-            avatar: "https://ui-avatars.com/api/?name=Jane+Smith"
-          },
-          price: 999,
-          rating: 4.8,
-          students: 85,
-          image: "https://picsum.photos/seed/math/400/300",
-          subject: "Mathematics",
-          grade: "12th Grade",
-          board: "CBSE",
-          tags: [],
-          isBundle: false,
-          type: "Public"
-        }
-      ];
-
-      setTimeout(() => {
-        setCourses(dummyCourses);
-        setLoading(false);
-      }, 500);
     };
 
     fetchCourses();
-  }, [user, profile]); // Restored dependencies but kept dummy logic active
+  }, [user, profile]);
 
   const tabs: Option[] = ["All", "In Progress", "Completed"];
 
