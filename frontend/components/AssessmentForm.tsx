@@ -41,7 +41,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({ onStart }) => {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none"
             placeholder="e.g. Midterm Oral Exam"
             required
           />
@@ -53,7 +53,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({ onStart }) => {
             value={questionsInput}
             onChange={(e) => setQuestionsInput(e.target.value)}
             rows={6}
-            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none resize-none font-sans"
+            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none resize-none font-sans"
             placeholder="Question 1&#10;Question 2..."
             required
           />
@@ -62,7 +62,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({ onStart }) => {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 group"
+          className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 group"
         >
           Setup Permissions
           <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
