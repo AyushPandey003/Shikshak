@@ -352,17 +352,17 @@ const App: React.FC = () => {
       <div className="w-full max-w-4xl">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className="bg-orange-500 p-2.5 rounded-xl shadow-lg shadow-orange-200">
+            <div className="bg-blue-600 p-2 rounded-lg shadow-lg">
               <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
               </svg>
             </div>
-            <h1 className="text-2xl font-black text-gray-800 uppercase tracking-tighter">AI Examiner <span className="text-orange-600">LIVE</span></h1>
+            <h1 className="text-xl font-bold text-gray-800 uppercase tracking-tight">AI Examiner <span className="text-blue-600">LIVE</span></h1>
           </div>
           {appState === AppState.TESTING && (
-            <div className="flex items-center gap-3 px-5 py-2.5 bg-white rounded-full shadow-md border border-orange-100">
-              <div className={`w-3 h-3 rounded-full ${isAiSpeaking ? 'bg-orange-500 animate-pulse' : (isListening ? 'bg-green-500 animate-ping' : 'bg-gray-300')}`} />
-              <span className="text-sm font-bold text-gray-700 uppercase tracking-wide">
+            <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100">
+              <div className={`w-3 h-3 rounded-full ${isAiSpeaking ? 'bg-blue-500 animate-pulse' : (isListening ? 'bg-green-500 animate-ping' : 'bg-gray-300')}`} />
+              <span className="text-sm font-semibold text-gray-700">
                 {isAiSpeaking ? 'Examiner Speaking' : (isListening ? 'Listening' : 'Ready')}
               </span>
             </div>
@@ -379,13 +379,13 @@ const App: React.FC = () => {
         {appState === AppState.SETUP && <AssessmentForm onStart={handleStartSetup} />}
 
         {appState === AppState.PERMISSIONS && (
-          <div className="max-w-xl mx-auto bg-white p-10 rounded-3xl shadow-2xl text-center border border-white ring-1 ring-orange-100">
-            <h2 className="text-3xl font-extrabold mb-6 text-gray-800 tracking-tight">Prepare for Assessment</h2>
-            <p className="text-gray-600 mb-10 leading-relaxed text-lg">
-              Note: This is a <strong className="text-orange-600">closed-eye assessment</strong>.
+          <div className="max-w-xl mx-auto bg-white p-10 rounded-2xl shadow-xl text-center border border-gray-100">
+            <h2 className="text-2xl font-bold mb-4">Prepare for Assessment</h2>
+            <p className="text-gray-600 mb-8 leading-relaxed">
+              Note: This is a <strong>closed-eye assessment</strong>.
               The proctoring system will monitor you. Keep your eyes closed throughout the test.
             </p>
-            <button onClick={requestPermissions} className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold py-5 px-12 rounded-2xl transition-all shadow-xl shadow-orange-200 active:scale-95 w-full text-lg">
+            <button onClick={requestPermissions} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-12 rounded-xl transition-all shadow-lg active:scale-95 w-full">
               Confirm & Start
             </button>
           </div>
@@ -396,39 +396,39 @@ const App: React.FC = () => {
             <ProctoringComponent onViolation={handleProctoringViolation} />
             <div className="lg:col-span-5 space-y-6">
               {/* <CameraPreview stream={camStream} /> */}
-              <div className="bg-white p-6 rounded-2xl shadow-lg shadow-gray-100 border border-orange-50">
+              <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xs font-bold text-orange-400 tracking-widest uppercase">Progress</h3>
-                  <span className="text-sm font-bold text-orange-600">{currentQuestionIndex + 1} / {questions.length}</span>
+                  <h3 className="text-xs font-bold text-gray-400 tracking-widest uppercase">Progress</h3>
+                  <span className="text-sm font-bold text-blue-600">{currentQuestionIndex + 1} / {questions.length}</span>
                 </div>
                 <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
-                  <div className="bg-gradient-to-r from-orange-500 to-amber-500 h-full transition-all duration-700 ease-out" style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }} />
+                  <div className="bg-blue-600 h-full transition-all duration-700" style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }} />
                 </div>
               </div>
             </div>
 
             <div className="lg:col-span-7 flex flex-col gap-6">
-              <div className="flex-1 bg-white p-10 rounded-2xl shadow-lg shadow-gray-100 border border-orange-50 flex flex-col relative overflow-hidden">
-                {isAiSpeaking && <div className="absolute top-0 left-0 w-full h-1.5 bg-orange-500 animate-pulse" />}
-                <h3 className="text-xs font-bold text-orange-400 uppercase tracking-widest mb-6">Current Question</h3>
+              <div className="flex-1 bg-white p-10 rounded-2xl shadow-md border border-gray-100 flex flex-col relative overflow-hidden">
+                {isAiSpeaking && <div className="absolute top-0 left-0 w-full h-1 bg-blue-500 animate-pulse" />}
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Current Question</h3>
                 <div className="flex-1 flex flex-col justify-center">
-                  <p className="text-3xl font-black text-gray-800 leading-tight tracking-tight">
+                  <p className="text-3xl font-bold text-gray-900 leading-tight">
                     {questions[currentQuestionIndex]?.text}
                   </p>
                 </div>
 
-                <div className="mt-8 pt-8 border-t border-orange-50 bg-orange-50/50 p-6 rounded-xl">
-                  <h4 className="text-xs font-bold text-orange-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <span className={`w-2.5 h-2.5 rounded-full ${isListening ? 'bg-green-500 animate-ping' : 'bg-gray-300'}`} />
+                <div className="mt-8 pt-8 border-t border-gray-50 bg-gray-50 p-6 rounded-xl">
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${isListening ? 'bg-green-500 animate-ping' : 'bg-gray-300'}`} />
                     Answer Transcript
                   </h4>
-                  <p className={`text-lg leading-relaxed ${liveTranscription ? 'text-gray-900 font-medium' : 'text-gray-400 italic'}`}>
+                  <p className={`text-lg leading-relaxed ${liveTranscription ? 'text-gray-800' : 'text-gray-400 italic'}`}>
                     {liveTranscription || (isListening ? 'Processing speech...' : 'Waiting for response...')}
                   </p>
                 </div>
               </div>
 
-              <button onClick={() => finishTest('Manually Ended')} className="bg-white hover:bg-red-50 text-red-500 hover:text-red-600 font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-red-100 shadow-sm">
+              <button onClick={() => finishTest('Manually Ended')} className="bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 border border-red-100 shadow-sm">
                 Terminate Exam
               </button>
             </div>
@@ -449,9 +449,9 @@ const App: React.FC = () => {
               </div>
 
               {aiSummary && (
-                <div className="mb-12 bg-orange-50 border border-orange-100 p-8 rounded-2xl">
-                  <h3 className="text-orange-800 font-bold text-xs uppercase tracking-widest mb-4">Examiner's AI Summary</h3>
-                  <p className="text-orange-900/80 text-lg leading-relaxed whitespace-pre-wrap font-medium">{aiSummary}</p>
+                <div className="mb-12 bg-blue-50 border border-blue-100 p-8 rounded-2xl">
+                  <h3 className="text-blue-800 font-bold text-xs uppercase tracking-widest mb-4">Examiner's AI Summary</h3>
+                  <p className="text-blue-900 text-lg leading-relaxed whitespace-pre-wrap">{aiSummary}</p>
                 </div>
               )}
 
@@ -459,10 +459,10 @@ const App: React.FC = () => {
                 {report.qa.map((item, idx) => (
                   <div key={idx} className="space-y-4">
                     <div className="flex items-start gap-4">
-                      <span className="bg-gradient-to-br from-orange-500 to-amber-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg flex-shrink-0 shadow-lg shadow-orange-200">{idx + 1}</span>
-                      <h3 className="text-xl font-bold text-gray-900 pt-1">{item.question}</h3>
+                      <span className="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0">{idx + 1}</span>
+                      <h3 className="text-xl font-bold text-gray-900">{item.question}</h3>
                     </div>
-                    <div className="ml-14 p-8 bg-gray-50 rounded-2xl border border-gray-100 text-gray-700 text-lg leading-relaxed italic shadow-inner">
+                    <div className="ml-12 p-6 bg-gray-50 rounded-2xl border border-gray-100 text-gray-700 text-lg leading-relaxed italic shadow-inner">
                       {item.answer}
                     </div>
                   </div>
@@ -470,10 +470,10 @@ const App: React.FC = () => {
               </div>
 
               <div className="mt-16 pt-8 border-t flex gap-4 no-print">
-                <button onClick={() => window.location.reload()} className="flex-1 py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-all shadow-md">
+                <button onClick={() => window.location.reload()} className="flex-1 py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all">
                   Conduct New Assessment
                 </button>
-                <button onClick={() => window.print()} className="flex-1 py-4 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-lg shadow-orange-200">
+                <button onClick={() => window.print()} className="flex-1 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg">
                   Export PDF Report
                 </button>
               </div>

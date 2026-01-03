@@ -204,7 +204,7 @@ const ProctoringComponent: React.FC<ProctoringComponentProps> = ({ onViolation }
 
                 {!isLoaded && (
                     <div className="absolute inset-0 flex items-center justify-center bg-gray-900/90">
-                        <div className="animate-spin h-6 w-6 border-b-2 border-orange-500 rounded-full" />
+                        <div className="animate-spin h-6 w-6 border-b-2 border-blue-500 rounded-full" />
                     </div>
                 )}
 
@@ -223,8 +223,8 @@ const ProctoringComponent: React.FC<ProctoringComponentProps> = ({ onViolation }
                 )}
             </div>
 
-            <div className={`text-[10px] font-mono flex gap-2 items-center ${isViolationDetected ? 'text-red-400' : 'text-orange-400'}`}>
-                <div className={`w-1.5 h-1.5 rounded-full ${isViolationDetected ? 'bg-red-500' : 'bg-orange-500 animate-pulse'}`} />
+            <div className={`text-[10px] font-mono flex gap-2 items-center ${isViolationDetected ? 'text-red-400' : 'text-blue-400'}`}>
+                <div className={`w-1.5 h-1.5 rounded-full ${isViolationDetected ? 'bg-red-500' : 'bg-blue-500 animate-pulse'}`} />
                 {status}
             </div>
         </div>
