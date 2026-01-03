@@ -191,39 +191,56 @@ export const getStudentResult = async (req, res) => {
 // Generate AI questions using RAG
 export const generateAiQuestions = async (req, res) => {
     try {
-        const { module_id, course_id, number_of_questions } = req.body;
+        const { module_id, course_id, number_of_questions = 5, query } = req.body;
 
-        if ((!module_id && !course_id) || !number_of_questions) {
-            return res.status(400).json({ error: "Module ID (or Course ID) and Number of Questions are required" });
+        if (!module_id && !course_id && !query) {
+            return res.status(400).json({ error: "Module ID, Course ID, or Query is required" });
         }
 
-        const ragServiceUrl = process.env.RAG_SERVICE_URL || 'http://localhost:4005';
+        const ragServiceUrl = process.env.RAG_PROXY_URL || 'http://localhost:4005';
 
-        // Construct the query for the RAG service
-        // We want specifically numbered questions
-        const query = `Generate ${number_of_questions} multiple choice questions (with 4 options and the correct answer indicated) for ${module_id ? 'module ' + module_id : 'course ' + course_id}. Return them as a numbered list. Format strictly as: 
-        1. [Question]
-        a) [Option A]
-        b) [Option B]
-        c) [Option C]
-        d) [Option D]
-        Answer: [Correct Answer]`;
+        // Construct the prompt for the RAG service
+        // If a specific query/text is provided by the user (like the chunk in the prompt), we use that.
+        // Otherwise, we ask RAG to generate questions based on the module/course context.
+        let ragQuery = query;
+
+        if (!ragQuery) {
+            ragQuery = `Generate ${number_of_questions} multiple choice questions (with 4 options and the correct answer indicated) based on the content of ${module_id ? 'module ' + module_id : 'course ' + course_id}. 
+            Format strictly as a JSON array of objects with keys: question, options (array of strings), answer (string).`;
+        }
 
         // Call the RAG service query endpoint
+        // logic: RAG service takes "query" and finds relevant chunks.
+        // If we want questions *covering* the module, we might need "full_context: true" or just rely on semantic search.
         const response = await axios.post(`${ragServiceUrl}/api/rag/query`, {
-            query: query,
+            query: ragQuery,
             ...(module_id && { module_id }),
             ...(course_id && { course_id }),
-            top_k: 5, // Retrieve context to generate questions
-            include_sources: false
+            top_k: 5, // Get enough context
+            full_context: true // or true if we want comprehensive coverage, but it might be slow
         });
 
         // The RAG service returns { answer: "...", sources: [...] }
         const generatedText = response.data.answer;
 
+        // Try to parse JSON if the model followed instructions, otherwise return text
+        let questions;
+        try {
+            // Find JSON in the response (it might be wrapped in ```json ... ```)
+            const jsonMatch = generatedText.match(/\[.*\]/s);
+            if (jsonMatch) {
+                questions = JSON.parse(jsonMatch[0]);
+            } else {
+                questions = generatedText;
+            }
+        } catch (e) {
+            questions = generatedText;
+        }
+
         res.status(200).json({
             success: true,
-            questions: generatedText
+            questions: questions,
+            sources: response.data.sources
         });
 
     } catch (error) {

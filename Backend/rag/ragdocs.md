@@ -3,7 +3,7 @@
 Complete API reference for the RAG (Retrieval-Augmented Generation) Microservice.
 
 **Base URL:** `https://rag-service.whitetree-88f47ee0.eastus2.azurecontainerapps.io`  
-**Local Development:** `http://localhost:8000`
+**Local Development:** `http://localhost:4005`
 
 ---
 
