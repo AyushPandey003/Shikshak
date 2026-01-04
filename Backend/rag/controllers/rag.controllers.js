@@ -24,9 +24,10 @@ if (!RAG_SERVICE_URL) {
  */
 export const healthCheck = async (req, res) => {
     try {
-        const response = await axios.get(`${RAG_SERVICE_URL}/health`, {
-            timeout: 10000
+        const response = await axios.get(`${RAG_SERVICE_URL}`, {
+            timeout: 20000
         });
+        console.log(response.data, "rag");
         res.status(200).json({
             status: 'healthy',
             ragService: response.data,
