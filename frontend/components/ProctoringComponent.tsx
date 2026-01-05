@@ -23,10 +23,12 @@ const ProctoringComponent: React.FC<ProctoringComponentProps> = ({ onViolation }
 
     // Constants
     const EYES_OPEN_THRESHOLD = 5000; // 5 seconds
+    const NO_FACE_THRESHOLD = 5000; // 5 seconds
     const EAR_THRESHOLD = 0.2;
 
     // Mutable refs
     const eyesOpenStartRef = useRef<number | null>(null);
+    const noFaceStartRef = useRef<number | null>(null);
     const faceMeshRef = useRef<any>(null);
     const cameraRef = useRef<any>(null);
     const violationTriggeredRef = useRef<boolean>(false);
@@ -62,7 +64,7 @@ const ProctoringComponent: React.FC<ProctoringComponentProps> = ({ onViolation }
         }
     };
 
-    const handleViolation = useCallback(() => {
+    const handleViolation = useCallback((reason: string = 'Eyes open violation') => {
         if (violationTriggeredRef.current) return;
 
         violationTriggeredRef.current = true;
@@ -71,21 +73,34 @@ const ProctoringComponent: React.FC<ProctoringComponentProps> = ({ onViolation }
 
         try {
             cameraRef.current?.stop();
-        } catch {}
+        } catch { }
 
         stopCameraStream();
-        onViolation('Eyes open violation');
+        onViolation(reason);
     }, [onViolation]);
 
     const onResults = useCallback((results: any) => {
         if (violationTriggeredRef.current) return;
 
         if (!results.multiFaceLandmarks?.length) {
-            setStatus('No face detected');
+            if (!noFaceStartRef.current) {
+                noFaceStartRef.current = Date.now();
+            }
+
+            const duration = Date.now() - noFaceStartRef.current;
+            const remaining = Math.max(0, Math.ceil((NO_FACE_THRESHOLD - duration) / 1000));
+            setStatus(`No face detected (Closing in ${remaining}s)`);
+
+            if (duration >= NO_FACE_THRESHOLD) {
+                handleViolation('Face not detected violation');
+            }
+
             eyesOpenStartRef.current = null;
             setCountdown(0);
             return;
         }
+
+        noFaceStartRef.current = null;
 
         const landmarks = results.multiFaceLandmarks[0] as Point[];
         const leftEAR = computeEAR(LEFT_EYE, landmarks);
@@ -102,7 +117,7 @@ const ProctoringComponent: React.FC<ProctoringComponentProps> = ({ onViolation }
                 setCountdown(Math.floor(duration / 1000));
 
                 if (duration >= EYES_OPEN_THRESHOLD) {
-                    handleViolation();
+                    handleViolation('Eyes open violation');
                 }
             }
             setStatus(`Eyes OPEN (${avgEAR.toFixed(2)})`);
@@ -153,7 +168,7 @@ const ProctoringComponent: React.FC<ProctoringComponentProps> = ({ onViolation }
                                 await faceMeshRef.current.send({
                                     image: videoRef.current,
                                 });
-                            } catch {}
+                            } catch { }
                         }
                     },
                     width: 640,
@@ -183,11 +198,11 @@ const ProctoringComponent: React.FC<ProctoringComponentProps> = ({ onViolation }
             active = false;
             try {
                 cameraRef.current?.stop();
-            } catch {}
+            } catch { }
             stopCameraStream();
             try {
                 faceMeshRef.current?.close();
-            } catch {}
+            } catch { }
         };
     }, [onResults]);
 
