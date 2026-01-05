@@ -1,8 +1,8 @@
 // Define the available roles
 export enum UserRole {
-    TEACHER = 'TEACHER',
-    STUDENT = 'STUDENT',
-    PARENT = 'PARENT',
+    TEACHER = 'teacher',
+    STUDENT = 'student',
+    PARENT = 'parent',
 }
 
 // Basic auth info returned from Google (simulated)

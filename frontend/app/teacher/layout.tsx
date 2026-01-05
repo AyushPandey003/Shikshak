@@ -1,17 +1,46 @@
+'use client';
+
 import React from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import Topbar from "@/components/layout/Topbar";
+import { useAppStore } from "@/store/useAppStore";
+import { UserRole } from "@/types/auth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function TeacherLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
+  const { profile, isAuthLoading } = useAppStore();
+  const router = useRouter();
 
+  useEffect(() => {
+    if (!isAuthLoading) {
+      if (!profile || profile.role !== UserRole.TEACHER) {
+        router.push("/");
+      }
+    }
+  }, [profile, isAuthLoading, router]);
+
+  if (isAuthLoading) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center bg-white">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
+
+  if (!profile || profile.role !== UserRole.TEACHER) {
+    return null;
+  }
+
+  return (
     <div className="min-h-screen w-full flex flex-col bg-white">
       {/* Topbar (Global Header) */}
-      <header className="sticky top-0 z-[50] w-full bg-white">
+      <header className="sticky top-0 z-50 w-full bg-white">
         <Topbar />
       </header>
 

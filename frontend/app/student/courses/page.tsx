@@ -165,6 +165,7 @@ export default function StudentCoursesPage() {
                 course={course}
                 isTeacher={false} // Student view
                 canReview={true}
+                href={`/courses/${course.id}/learn`}
               />
             ))}
           </div>

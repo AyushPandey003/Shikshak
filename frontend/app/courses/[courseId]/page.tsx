@@ -98,6 +98,8 @@ const CourseDetailPage: React.FC = () => {
 
                 const reviewsData = reviewsRes.data;
 
+                console.log("reviewsData", reviewsData);
+
                 const mappedReviews: Review[] = Array.isArray(reviewsData) ? reviewsData.map((r: any) => ({
                     id: r._id,
                     author: r.isAnonymous ? "Anonymous" : "Student",
