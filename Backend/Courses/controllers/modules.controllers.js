@@ -147,8 +147,12 @@ export const addVideo = async (req, res) => {
 
         module.video_id.push(savedVideo._id);
         await module.save();
-
-        await produceMaterialCreated(savedVideo._id.toString(), module_id, 'video_created');
+        const course_id = module.course_id;
+        const azureBlobUrl = savedVideo.azure_id;
+        const video_id = savedVideo._id;
+        const note_id = null;
+        const eventtype = 'video_created';
+        await produceMaterialCreated(course_id, module_id, azureBlobUrl, video_id, note_id, eventtype);
         await disconnectMaterialProducer();
 
         res.status(201).json(savedVideo);
@@ -184,8 +188,12 @@ export const addNotes = async (req, res) => {
 
         module.notes_id.push(savedNotes._id);
         await module.save();
-
-        await produceMaterialCreated(savedNotes._id.toString(), module_id, 'notes_created');
+        const course_id = module.course_id;
+        const azureBlobUrl = savedNotes.azure_id;
+        const video_id = null;
+        const note_id = savedNotes._id;
+        const eventtype = 'note_created';
+        await produceMaterialCreated(course_id, module_id, azureBlobUrl, video_id, note_id, eventtype);
         await disconnectMaterialProducer();
 
         res.status(201).json(savedNotes);
@@ -213,9 +221,15 @@ export const deleteVideo = async (req, res) => {
         await Module.findByIdAndUpdate(videoToDelete.module_id, {
             $pull: { video_id: video_id }
         });
-
+        const savedVideo = await Video.findById(video_id);
+        const course_id = null;
+        const module_id = null;
+        const azureBlobUrl = savedVideo.azure_id;
+        const note_id = null;
+        const eventtype = 'video_deleted';
+        await produceMaterialCreated(course_id, module_id, azureBlobUrl, video_id, note_id, eventtype);
+        await disconnectMaterialProducer();
         await Video.findByIdAndDelete(video_id);
-
         res.status(200).json({ message: "Video deleted successfully" });
     } catch (error) {
         console.error("Error deleting video:", error);
@@ -242,6 +256,15 @@ export const deleteNotes = async (req, res) => {
             $pull: { notes_id: notes_id }
         });
 
+        const savedNotes = await Notes.findById(notes_id);
+        const course_id = null;
+        const module_id = null;
+        const video_id = null;
+        const azureBlobUrl = savedNotes.azure_id;
+        const note_id = savedNotes._id;
+        const eventtype = 'note_deleted';
+        await produceMaterialCreated(course_id, module_id, azureBlobUrl, video_id, note_id, eventtype);
+        await disconnectMaterialProducer();
         await Notes.findByIdAndDelete(notes_id);
 
         res.status(200).json({ message: "Notes deleted successfully" });

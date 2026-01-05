@@ -1,5 +1,7 @@
 // infra/email.consumer.js
 import { kafka } from "./client.js";
+import { deleteBlobFromAzure } from "../utils/azureStorage.js";
+import axios from "axios";
 
 const consumer = kafka.consumer({
   groupId: "material-group",
@@ -52,33 +54,51 @@ async function startConsumer() {
 
           const payload = JSON.parse(value);
           const { eventtype } = payload;
-
-          console.log(`Topic: ${topic}`);
-          console.log(`Partition: ${partition}`);
-          console.log(`Offset: ${message.offset}`);
-          console.log(`Key: ${message.key?.toString()}`);
-          console.log(`Event Type: ${eventtype}`);
-
           if (eventtype === 'video_created') {
-            const { material_id, module_id } = payload;
-            console.log(`Module ID: ${module_id}`);
-            console.log(`Video ID: ${material_id}`);
 
-            // get video url and data then add in db and rag
+            const { course_id, module_id, azureBlobUrl, video_id } = payload;
+            axios.post('http://localhost:4005/api/rag/ingest', {
+              course_id,
+              module_id,
+              azureBlobUrl,
+              video_id
+            })
 
-            console.log(`✅ Video created for module_id=${module_id}`);
 
-          } else if (eventtype === 'note_created') {
-            const { material_id, module_id } = payload;
-            console.log(`Module ID: ${module_id}`);
-            console.log(`Note ID: ${material_id}`);
+          }
+          else if (eventtype === 'note_created') {
+            const { course_id, module_id, azureBlobUrl, note_id } = payload;
+            axios.post('http://localhost:4005/api/rag/ingest', {
+              course_id,
+              module_id,
+              azureBlobUrl,
+              note_id
+            })
 
-            // get notes url and data then add in db and rag
 
-            console.log(`✅ Note created for module_id=${module_id}`);
 
-          } else {
-            console.warn(`⚠️ Unknown event type: ${eventtype}`);
+          }
+          else if (eventtype === 'video_deleted') {
+
+            const { video_id, azureBlobUrl } = payload;
+            axios.delete('http://localhost:4005/api/rag/delete', {
+              video_id,
+            })
+            deleteBlobFromAzure(azureBlobUrl)
+          }
+          else if (eventtype === 'note_deleted') {
+
+            const { note_id, azureBlobUrl } = payload;
+            axios.delete('http://localhost:4005/api/rag/delete', {
+              note_id,
+            })
+            deleteBlobFromAzure(azureBlobUrl)
+
+
+
+          }
+          else {
+            console.log("Unknown event type:", eventtype);
           }
 
           console.log("─".repeat(50));

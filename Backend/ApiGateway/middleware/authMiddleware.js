@@ -16,6 +16,11 @@ const authMiddleware = async (req, res, next) => {
     "/authentication/callback",     // OAuth callbacks
     "/authentication/error",        // Auth error pages
     "/material/health",
+    "/rag/health",
+    "/rag/ingest",
+    "/rag/query",
+    "/rag/sources",
+    "/rag/delete",
     "/material/reviews/get_reviews",
     "/material/courses/get_all_general",
     "/material/courses/get_course_by_id_general"
