@@ -14,9 +14,10 @@ interface CourseCardProps {
   canReview?: boolean;
   onEdit?: (course: Course) => void;
   onDelete?: (course: Course) => void;
+  href?: string;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, onEdit, onDelete }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, onEdit, onDelete, href }) => {
   const course_id = course.id;
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const { user } = useAppStore();
@@ -80,7 +81,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
 
   return (
     <>
-      <Link href={`/courses/${course_id}`} className="group bg-white rounded-xl shadow-sm border cursor-pointer border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full relative">
+      <Link href={href || `/courses/${course_id}`} className="group bg-white rounded-xl shadow-sm border cursor-pointer border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full relative">
 
         {/* Image Container */}
         <div className="relative h-48 w-full overflow-hidden bg-gray-200">

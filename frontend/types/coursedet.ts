@@ -14,6 +14,7 @@ export interface Lecture {
     isPreview: boolean;
     type: 'video' | 'article' | 'quiz' | 'assignment';
     description?: string;
+    contentUrl?: string; // For storing Azure Blob ID or URL
 }
 
 export interface Section {

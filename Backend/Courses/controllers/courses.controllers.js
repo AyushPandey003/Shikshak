@@ -27,6 +27,8 @@ export const createCourse = async (req, res) => {
         });
 
         const savedCourse = await newCourse.save();
+        await produceCourse(savedCourse._id.toString(), "course_created");
+        await disconnectCourseProducer();
         // Note: No Kafka notification for course creation - no students to notify yet
         res.status(201).json(savedCourse);
     } catch (error) {
@@ -82,7 +84,7 @@ export const deleteCourse = async (req, res) => {
 
 export const getAllGeneralInfo = async (req, res) => {
     try {
-        const cachedCourses = await redis.get("courses:all:v2");
+        const cachedCourses = await redis.get("courses:all");
 
         if (cachedCourses) {
             console.log("⚡ Courses from Redis");
@@ -91,7 +93,7 @@ export const getAllGeneralInfo = async (req, res) => {
 
         const courses = await Course.find({ visibility: "public" }).select("name subject price thumbnail board pricing_category rating visibility grade teacher_details reviews");
         await redis.set(
-            "courses:all:v2",
+            "courses:all",
             JSON.stringify(courses)
         );
         res.status(200).json(courses);

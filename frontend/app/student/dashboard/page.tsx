@@ -48,6 +48,7 @@ export default function StudentDashboardPage() {
                 headers: user.accessToken ? { Authorization: `Bearer ${user.accessToken}` } : {},
                 withCredentials: true
               });
+              console.log("response", response);
 
               let imageUrl = "https://picsum.photos/seed/course/400/300";
 
