@@ -7,6 +7,7 @@ import Link from 'next/link';
 import ReviewModal from './ReviewModal';
 import axios from 'axios';
 import { useAppStore } from '@/store/useAppStore';
+import { useRouter } from 'next/navigation';
 
 interface CourseCardProps {
   course: Course;
@@ -17,12 +18,15 @@ interface CourseCardProps {
   href?: string;
 }
 
+
+
 const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, onEdit, onDelete, href }) => {
   const course_id = course.id;
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const { user } = useAppStore();
   const [ratingData, setRatingData] = useState({ rating: course.rating || 0, count: course.totalRatings || 0 });
 
+  const router = useRouter();
   useEffect(() => {
     // Fetch reviews to get real-time rating
     const fetchReviews = async () => {
@@ -79,6 +83,17 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
 
   };
 
+  const createTestHandler = (course_id: string) => {
+    const params = new URLSearchParams();
+    params.append('course_id', course_id);
+    if (user?.id) {
+      params.append('user_id', user.id);
+    }
+
+    console.log(params.toString());
+    router.push(`/aitest/create?${params.toString()}`);
+  }
+
   return (
     <>
       <Link href={href || `/courses/${course_id}`} className="group bg-white rounded-xl shadow-sm border cursor-pointer border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full relative">
@@ -129,6 +144,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
             <span>{course.subject || "Subject"}</span>
           </div>
 
+
+
           {/* Title */}
           <h3 className="font-semibold text-gray-900 text-lg leading-snug mb-2 line-clamp-2 min-h-[3.5rem]">
             {course.title}
@@ -171,17 +188,30 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
           <div className="flex items-center justify-between mt-auto pt-1">
             <div className="flex gap-2">
               {isTeacher && (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    window.location.href = `/teacher/modules?courseId=${course_id}`;
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-100 transition-colors text-xs font-semibold"
-                >
-                  <BookOpen size={14} />
-                  Add Contents
-                </button>
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.location.href = `/teacher/modules?courseId=${course_id}`;
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-100 transition-colors text-xs font-semibold"
+                  >
+                    <BookOpen size={14} />
+                    Add Contents
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      createTestHandler(course.id);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-600 rounded-md hover:bg-purple-100 transition-colors text-xs font-semibold"
+                  >
+                    <GraduationCap size={14} />
+                    Create Test
+                  </button>
+                </>
               )}
               {!isTeacher && canReview && (
                 <button
