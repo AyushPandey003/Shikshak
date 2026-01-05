@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import ragRoutes from './routes/rag.js';
-
+import './infra/startConsumer.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -20,9 +20,6 @@ app.use(express.json());
 app.use('/api/rag', ragRoutes);
 
 // Mock Health Route (since the actual health check is in routes/rag.js, but good to have a root one)
-app.get('/health', (req, res) => {
-    res.send('RAG Proxy Service Running');
-});
 
 app.listen(PORT, () => {
     console.log(`RAG Service running on port ${PORT}`);

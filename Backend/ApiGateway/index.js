@@ -15,6 +15,7 @@ import rateLimit from "express-rate-limit";
 import authProxy from "./routes/auth.js";
 import materialProxy from "./routes/material.js";
 import paymentProxy from "./routes/payment.js";
+import ragProxy from "./routes/rag.js";
 
 import authMiddleware from "./middleware/authMiddleware.js";
 
@@ -52,6 +53,10 @@ app.use((req, res, next) => {
   if (req.url.startsWith("/payment")) {
     console.log(`[GATEWAY] Routing to payment proxy`);
     return paymentProxy(req, res, next);
+  }
+  if (req.url.startsWith("/rag")) {
+    console.log(`[GATEWAY] Routing to rag proxy`);
+    return ragProxy(req, res, next);
   }
   console.log(`[GATEWAY] Not matching any route, calling next()`);
   next();
