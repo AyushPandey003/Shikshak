@@ -20,19 +20,17 @@ const CreateTestPage: React.FC = () => {
         }
     }, [profile, router]);
 
-    const data = searchParams.get('data');
-
     useEffect(() => {
-        if (data) {
-            try {
-                const parsedData = JSON.parse(data);
-                setCourseId(parsedData.course_id);
-                setUserId(parsedData.user_id);
-            } catch (e) {
-                console.error("Failed to parse data query param", e);
-            }
+        const courseIdParam = searchParams.get('course_id');
+        const userIdParam = searchParams.get('user_id');
+
+        if (courseIdParam) {
+            setCourseId(courseIdParam);
         }
-    }, [data]);
+        if (userIdParam) {
+            setUserId(userIdParam);
+        }
+    }, [searchParams]);
 
 
     const handleStartSetup = async (config: AssessmentConfig) => {
@@ -42,7 +40,7 @@ const CreateTestPage: React.FC = () => {
         }
         console.log(config);
         // call api to create a test
-        await axios.post('http://localhost:4000/material/test-create', {
+        await axios.post('http://localhost:4000/material/tests/test-create', {
             title: config.title,
             questions: config.questions,
             course_id: course_id,

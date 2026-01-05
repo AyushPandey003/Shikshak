@@ -6,9 +6,9 @@ import axios from "axios";
 // Create a new test
 export const createTest = async (req, res) => {
     try {
-        const { questions, course_id, user_id, valid_until } = req.body;
+        const { questions, course_id, user_id, valid_until, title } = req.body;
 
-        if (!questions || !course_id || !user_id || !valid_until) {
+        if (!questions || !course_id || !user_id || !valid_until || !title) {
             return res.status(400).json({ error: "All fields are required" });
         }
 
@@ -24,6 +24,7 @@ export const createTest = async (req, res) => {
             course_id,
             user_id,
             valid_until: new Date(valid_until),
+            title
         });
 
         await test.save();

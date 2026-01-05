@@ -44,6 +44,7 @@ export default function TeacherDashboardPage() {
           headers,
           withCredentials: true
         });
+        console.log(response.data);
 
         if (response.data) {
           // Filter for PUBLIC courses only and map to UI format

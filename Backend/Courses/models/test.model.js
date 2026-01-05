@@ -21,6 +21,14 @@ const testSchema = new mongoose.Schema(
             type: Date,
             required: true,
         },
+        title: {
+            type: String,
+            required: true,
+        },
+        isdone: {
+            type: Boolean,
+            default: false,
+        },
     },
     { timestamps: true }
 );
