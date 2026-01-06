@@ -269,6 +269,7 @@ export default function ModulePage() {
 
             {/* AI Assistant Window (Global) */}
             <AIAssistant
+                courseId={courseId}
                 modules={course.sections}
                 isOpen={isAiOpen}
                 onClose={() => setIsAiOpen(false)}
