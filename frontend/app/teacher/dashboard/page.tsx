@@ -8,6 +8,7 @@ import AiAssistantCard from '@/components/dashboard/AiAssistantCard';
 import Footer from '@/components/layout/Footer';
 import { useAppStore } from '@/store/useAppStore';
 import axios from 'axios';
+import { BookOpen, FileText, Award, Clock } from 'lucide-react';
 
 // Dummy Data for Teacher (Events still dummy as no backend for them yet)
 const upcomingEvents = {
@@ -22,7 +23,7 @@ const upcomingEvents = {
 };
 
 export default function TeacherDashboardPage() {
-  const { user } = useAppStore();
+  const { user, profile } = useAppStore();
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,7 +45,7 @@ export default function TeacherDashboardPage() {
           headers,
           withCredentials: true
         });
-        console.log(response.data);
+        console.log("courses", response.data);
 
         if (response.data) {
           // Filter for PUBLIC courses only and map to UI format
@@ -86,8 +87,36 @@ export default function TeacherDashboardPage() {
             name={user.name || "Teacher"}
             roleTag="Teacher"
             imageSrc={user.photoUrl || "https://ui-avatars.com/api/?name=Teacher&background=random"}
-            upcomingCourses={upcomingEvents.courses}
-            upcomingTests={upcomingEvents.tests}
+            stats={[
+              {
+                label: "Subjects",
+                value: profile?.teacherDetails?.subjects?.join(', ') || "None",
+                icon: BookOpen,
+                className: "text-purple-600",
+                bgClassName: "bg-purple-100"
+              },
+              {
+                label: "Classes",
+                value: profile?.teacherDetails?.classes?.join(', ') || "None",
+                icon: FileText,
+                className: "text-orange-600",
+                bgClassName: "bg-orange-100"
+              },
+              {
+                label: "Qualifications",
+                value: profile?.teacherDetails?.qualifications?.join(', ') || "None",
+                icon: Award,
+                className: "text-blue-600",
+                bgClassName: "bg-blue-100"
+              },
+              {
+                label: "Experience",
+                value: profile?.teacherDetails?.experiences || "0 Yrs",
+                icon: Clock,
+                className: "text-green-600",
+                bgClassName: "bg-green-100"
+              }
+            ]}
             activityPercentage={92}
           />
         }

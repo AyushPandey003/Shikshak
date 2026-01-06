@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import { GraduationCap, BookOpen, ClipboardList, Phone } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import ProfileStatsCard from '@/components/dashboard/ProfileStatsCard';
 import CourseListCard from '@/components/dashboard/CourseListCard';
@@ -119,9 +120,37 @@ export default function StudentDashboardPage() {
             name={user.name || "Student"}
             roleTag="Student"
             imageSrc={user.photoUrl || "https://ui-avatars.com/api/?name=Student&background=random"}
-            upcomingCourses={upcomingEvents.courses}
-            upcomingTests={upcomingEvents.tests}
-            activityPercentage={78} // Dummy activity stats
+            stats={[
+              {
+                 label: "Class",
+                 value: profile?.studentDetails?.classGrade || profile?.class || "N/A",
+                 icon: GraduationCap,
+                 className: "text-purple-600",
+                 bgClassName: "bg-purple-100"
+              },
+              {
+                 label: "Courses Enrolled",
+                 value: courses.length > 0 ? courses.map(c => c.title).join(', ') : "None",
+                 icon: BookOpen,
+                 className: "text-orange-600",
+                 bgClassName: "bg-orange-100"
+              },
+              {
+                 label: "Assignments",
+                 value: "0 Pending", // Placeholder
+                 icon: ClipboardList,
+                 className: "text-blue-600",
+                 bgClassName: "bg-blue-100"
+              },
+              {
+                 label: "Phone Number",
+                 value: profile?.phoneNumber || "N/A",
+                 icon: Phone,
+                 className: "text-green-600",
+                 bgClassName: "bg-green-100"
+              }
+            ]}
+            activityPercentage={78}
           />
         }
         courses={
