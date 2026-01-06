@@ -5,12 +5,13 @@ import { useRouter, useParams } from 'next/navigation';
 import VideoPlayer from '@/components/ui/VideoPlayer';
 import ModuleSidebar from '@/components/layout/ModuleSidebar';
 import TestSidebar from '@/components/layout/TestSidebar';
-import { dummyTests } from '@/types/test';
+import { dummyTests, Test } from '@/types/test';
 import Navbar from '@/components/layout/Navbar';
 import SidebarCollapsedStrip from '@/components/learn/SidebarCollapsedStrip';
 import CourseInfoTabs from '@/components/learn/CourseInfoTabs';
 import LearnPageFooter from '@/components/learn/LearnPageFooter';
 import AIAssistant from '@/components/learn/AIAssistant';
+import TestView from '@/components/learn/TestView';
 import axios from 'axios';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -34,6 +35,10 @@ export default function ModulePage() {
     const [isMobile, setIsMobile] = useState(false);
     const [activeTab, setActiveTab] = useState<'description' | 'transcript' | 'notes' | 'downloads'>('description');
     const [isAiOpen, setIsAiOpen] = useState(false);
+
+    // Test View State
+    const [activeView, setActiveView] = useState<'lecture' | 'test'>('lecture');
+    const [activeTest, setActiveTest] = useState<Test | null>(null);
 
     // Fetch Course & Modules
     useEffect(() => {
@@ -199,7 +204,11 @@ export default function ModulePage() {
                         {/* Sidebar View Switcher */}
                         <div className="flex items-center p-2 gap-2 border-b border-gray-200 shrink-0">
                             <button
-                                onClick={() => setSidebarView('modules')}
+                                onClick={() => {
+                                    setSidebarView('modules');
+                                    // Switch back to lecture view when modules tab is clicked
+                                    setActiveView('lecture');
+                                }}
                                 className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
                                     sidebarView === 'modules' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:bg-gray-50'
                                 }`}
@@ -207,7 +216,11 @@ export default function ModulePage() {
                                 Modules
                             </button>
                             <button
-                                onClick={() => setSidebarView('tests')}
+                                onClick={() => {
+                                    setSidebarView('tests');
+                                    // Switch to test view when tests tab is clicked
+                                    setActiveView('test');
+                                }}
                                 className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
                                     sidebarView === 'tests' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:bg-gray-50'
                                 }`}
@@ -225,6 +238,7 @@ export default function ModulePage() {
                                     onClose={() => setSidebarOpen(false)}
                                     onLectureSelect={(id) => {
                                         setActiveLectureId(id);
+                                        setActiveView('lecture');
                                         if (isMobile) setSidebarOpen(false);
                                     }}
                                     onOpenAI={() => {
@@ -238,8 +252,9 @@ export default function ModulePage() {
                                     courseTitle={course.title}
                                     onTestSelect={(test) => {
                                         console.log('Selected test:', test);
+                                        setActiveTest(test);
+                                        setActiveView('test');
                                         if (isMobile) setSidebarOpen(false);
-                                        // TODO: Handle test selection (e.g., open test modal or page)
                                     }}
                                     onClose={() => setSidebarOpen(false)}
                                 />
@@ -255,37 +270,51 @@ export default function ModulePage() {
                     <div className="flex-1 overflow-y-auto scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                         <div className="p-4 pt-0 sm:p-6 sm:pt-0 lg:p-8 lg:pt-0 max-w-[1200px] mx-auto w-full">
 
-                            {/* Video Player Container */}
-                            <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-black mb-6 sm:mb-8">
-                                <div className="aspect-video w-full">
-                                    {activeLecture?.type === 'video' ? (
-                                        currentVideoUrl ? (
-                                            <VideoPlayer src={currentVideoUrl} poster={course.thumbnail} />
+                            {/* Content Display Area */}
+                            {activeView === 'lecture' ? (
+                                <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-black mb-6 sm:mb-8">
+                                    <div className="aspect-video w-full">
+                                        {activeLecture?.type === 'video' ? (
+                                            currentVideoUrl ? (
+                                                <VideoPlayer src={currentVideoUrl} poster={course.thumbnail} />
+                                            ) : (
+                                                <div className="flex items-center justify-center h-full bg-black text-white">
+                                                    Loading Video...
+                                                </div>
+                                            )
                                         ) : (
-                                            <div className="flex items-center justify-center h-full bg-black text-white">
-                                                Loading Video...
+                                            <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
+                                                {activeLecture?.type === 'article' ? "Reading Material" : "Content Placeholder"}
                                             </div>
-                                        )
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-white mb-6 sm:mb-8 min-h-[400px]">
+                                    {activeTest ? (
+                                        <TestView test={activeTest} />
                                     ) : (
-                                        <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
-                                            {activeLecture?.type === 'article' ? "Reading Material" : "Content Placeholder"}
+                                        <div className="flex items-center justify-center h-full text-gray-400 p-8">
+                                            Select a test to view details
                                         </div>
                                     )}
                                 </div>
-                            </div>
+                            )}
 
                             {/* Title & Actions */}
-                            <div className="mb-6">
-                                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
-                                    {activeLecture?.title}
-                                </h1>
+                            {activeView === 'lecture' && (
+                                <div className="mb-6">
+                                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
+                                        {activeLecture?.title}
+                                    </h1>
 
-                                <CourseInfoTabs
-                                    activeTab={activeTab}
-                                    setActiveTab={setActiveTab}
-                                    activeLecture={activeLecture}
-                                />
-                            </div>
+                                    <CourseInfoTabs
+                                        activeTab={activeTab}
+                                        setActiveTab={setActiveTab}
+                                        activeLecture={activeLecture}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
 
