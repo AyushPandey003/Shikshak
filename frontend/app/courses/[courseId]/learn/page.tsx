@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import VideoPlayer from '@/components/ui/VideoPlayer';
 import ModuleSidebar from '@/components/layout/ModuleSidebar';
+import TestSidebar from '@/components/layout/TestSidebar';
+import { dummyTests } from '@/types/test';
 import Navbar from '@/components/layout/Navbar';
 import SidebarCollapsedStrip from '@/components/learn/SidebarCollapsedStrip';
 import CourseInfoTabs from '@/components/learn/CourseInfoTabs';
@@ -28,6 +30,7 @@ export default function ModulePage() {
 
     // UI State
     const [isSidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarView, setSidebarView] = useState<'modules' | 'tests'>('modules');
     const [isMobile, setIsMobile] = useState(false);
     const [activeTab, setActiveTab] = useState<'description' | 'transcript' | 'notes' | 'downloads'>('description');
     const [isAiOpen, setIsAiOpen] = useState(false);
@@ -192,20 +195,57 @@ export default function ModulePage() {
                         ${isSidebarOpen ? 'translate-x-0 lg:w-[350px]' : '-translate-x-full lg:hidden'}
                     `}
                 >
-                    <ModuleSidebar
-                        sections={course.sections}
-                        activeLectureId={activeLectureId || undefined}
-                        courseTitle={course.title}
-                        onClose={() => setSidebarOpen(false)}
-                        onLectureSelect={(id) => {
-                            setActiveLectureId(id);
-                            if (isMobile) setSidebarOpen(false);
-                        }}
-                        onOpenAI={() => {
-                            setIsAiOpen(true);
-                            if (isMobile) setSidebarOpen(false);
-                        }}
-                    />
+                    <div className="flex flex-col h-full bg-white">
+                        {/* Sidebar View Switcher */}
+                        <div className="flex items-center p-2 gap-2 border-b border-gray-200 shrink-0">
+                            <button
+                                onClick={() => setSidebarView('modules')}
+                                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                                    sidebarView === 'modules' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:bg-gray-50'
+                                }`}
+                            >
+                                Modules
+                            </button>
+                            <button
+                                onClick={() => setSidebarView('tests')}
+                                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                                    sidebarView === 'tests' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:bg-gray-50'
+                                }`}
+                            >
+                                Tests
+                            </button>
+                        </div>
+                        
+                        <div className="flex-1 overflow-hidden">
+                            {sidebarView === 'modules' ? (
+                                <ModuleSidebar
+                                    sections={course.sections}
+                                    activeLectureId={activeLectureId || undefined}
+                                    courseTitle={course.title}
+                                    onClose={() => setSidebarOpen(false)}
+                                    onLectureSelect={(id) => {
+                                        setActiveLectureId(id);
+                                        if (isMobile) setSidebarOpen(false);
+                                    }}
+                                    onOpenAI={() => {
+                                        setIsAiOpen(true);
+                                        if (isMobile) setSidebarOpen(false);
+                                    }}
+                                />
+                            ) : (
+                                <TestSidebar
+                                    tests={dummyTests}
+                                    courseTitle={course.title}
+                                    onTestSelect={(test) => {
+                                        console.log('Selected test:', test);
+                                        if (isMobile) setSidebarOpen(false);
+                                        // TODO: Handle test selection (e.g., open test modal or page)
+                                    }}
+                                    onClose={() => setSidebarOpen(false)}
+                                />
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 {/* Main Content Area */}
