@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Heart, Share2, Loader2, CheckCircle } from 'lucide-react';
+import { Heart, Share2, CheckCircle } from 'lucide-react';
+import { CustomLoader } from '@/components/ui/CustomLoader';
 import { Course } from '@/types/coursedet';
 import { useRazorpay } from '@/hooks/useRazorpay';
 import { useRouter } from 'next/navigation';
@@ -88,7 +89,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({ course }) => {
                         >
                             {loading ? (
                                 <>
-                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    <CustomLoader size={20} className="text-white" color="white" />
                                     Processing...
                                 </>
                             ) : paymentSuccess ? (

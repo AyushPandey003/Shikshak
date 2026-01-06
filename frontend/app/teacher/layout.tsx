@@ -7,7 +7,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { UserRole } from "@/types/auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { CustomLoader } from "@/components/ui/CustomLoader";
 
 export default function TeacherLayout({
   children,
@@ -28,7 +28,7 @@ export default function TeacherLayout({
   if (isAuthLoading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-white">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <CustomLoader size={60} color="#f97316" />
       </div>
     );
   }
