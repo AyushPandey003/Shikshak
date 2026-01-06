@@ -192,10 +192,10 @@ export const getStudentResult = async (req, res) => {
 // Generate AI questions using RAG
 export const generateAiQuestions = async (req, res) => {
     try {
-        const { module_id, course_id, number_of_questions = 5, query } = req.body;
+        const { course_id, number_of_questions = 5, query } = req.body;
 
-        if (!module_id && !course_id && !query) {
-            return res.status(400).json({ error: "Module ID, Course ID, or Query is required" });
+        if (!course_id && !query) {
+            return res.status(400).json({ error: "Course ID, or Query is required" });
         }
 
         const ragServiceUrl = process.env.RAG_PROXY_URL || 'http://localhost:4005';
@@ -206,7 +206,7 @@ export const generateAiQuestions = async (req, res) => {
         let ragQuery = query;
 
         if (!ragQuery) {
-            ragQuery = `Generate ${number_of_questions} multiple choice questions (with 4 options and the correct answer indicated) based on the content of ${module_id ? 'module ' + module_id : 'course ' + course_id}. 
+            ragQuery = `Generate ${number_of_questions} multiple choice questions (with 4 options and the correct answer indicated) based on the content of ${'course ' + course_id}. 
             Format strictly as a JSON array of objects with keys: question, options (array of strings), answer (string).`;
         }
 
@@ -215,10 +215,9 @@ export const generateAiQuestions = async (req, res) => {
         // If we want questions *covering* the module, we might need "full_context: true" or just rely on semantic search.
         const response = await axios.post(`${ragServiceUrl}/api/rag/query`, {
             query: ragQuery,
-            ...(module_id && { module_id }),
             ...(course_id && { course_id }),
             top_k: 5, // Get enough context
-            full_context: true // or true if we want comprehensive coverage, but it might be slow
+            full_context: false // or true if we want comprehensive coverage, but it might be slow
         });
 
         // The RAG service returns { answer: "...", sources: [...] }
