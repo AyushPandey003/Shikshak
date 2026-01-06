@@ -31,6 +31,12 @@ export default function Sidebar() {
   const isStudent = pathname.startsWith("/student");
   const navItems = isStudent ? studentNavItems : teacherNavItems;
 
+  // Determine active item by finding the longest matching href
+  // This ensures "/teacher/courses/create" matches "Compose" while "/teacher/courses/123" matches "Courses"
+  const activeHref = navItems
+    .filter(item => pathname === item.href || pathname.startsWith(`${item.href}/`))
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href;
+
   return (
     <>
       {/* Mobile Overlay */}
@@ -55,7 +61,7 @@ export default function Sidebar() {
           <nav className="px-4 py-4 flex-1 overflow-y-auto">
             <ul className="space-y-2">
               {navItems.map((item) => {
-                const active = pathname === item.href;
+                const active = activeHref === item.href;
                 const Icon = item.icon;
                 return (
                   <li key={item.href}>
