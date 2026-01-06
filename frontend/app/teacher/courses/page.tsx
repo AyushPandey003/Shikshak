@@ -186,6 +186,7 @@ export default function Page() {
                 isTeacher={true}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                href={`/teacher/courses/${course.id}/test-preview`}
               />
             ))}
           </div>
