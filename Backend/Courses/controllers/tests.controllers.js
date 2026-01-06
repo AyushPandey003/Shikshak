@@ -48,22 +48,24 @@ export const createTest = async (req, res) => {
 // Fetch questions for a test
 export const fetchQuestions = async (req, res) => {
     try {
-        const { course_id, query } = req.body;
+        const { course_id, test_id } = req.body;
 
-        if (!course_id || !query) {
-            return res.status(400).json({ error: "Course ID and Query are required" });
+        if (!course_id || !test_id) {
+            return res.status(400).json({ error: "Course ID and Test ID are required" });
         }
 
         const course = await Course.findOne({ course_id });
         if (!course) {
             return res.status(404).json({ error: "Course not found" });
         }
-        // create function for ai rag to create questions on given course id and query
-        const questions = await generateQuestions(course_id, query);
+        const test = course.test_id.find((test) => test._id.toString() === test_id);
+        if (!test) {
+            return res.status(404).json({ error: "Test not found" });
+        }
         res.status(200).json({
             success: true,
-            questions: course.test_id,
-        });
+            questions: test.questions,
+        }); 
     } catch (error) {
         console.error("Error fetching questions:", error);
         res.status(500).json({ error: "Internal Server Error" });

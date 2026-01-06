@@ -6,8 +6,9 @@ import { GoogleGenAI, Modality, LiveServerMessage } from '@google/genai';
 import { AppState, AssessmentConfig, AssessmentReport, QuestionEntry } from '../../../types/types';
 import ProctoringComponent from '../../../components/ProctoringComponent';
 import { decode, decodeAudioData, createBlob } from '../../../utils/audio-utils';
+import axios from 'axios';
 
-const StartTestPage: React.FC = () => {
+const StartTestPage: React.FC = ({course_id,test_id}: {course_id: string, test_id: string}) => {
     const router = useRouter();
     // Start at PERMISSIONS directly, as SETUP is done in create page
     const [appState, setAppState] = useState<AppState>(AppState.PERMISSIONS);
@@ -38,28 +39,47 @@ const StartTestPage: React.FC = () => {
     const phaseRef = useRef<'ASKING' | 'WAITING_FOR_ANSWER'>('ASKING');
     const isFinishingRef = useRef(false);
 
-    useEffect(() => {
-        // Load config from local storage
-        if (typeof window !== 'undefined') {
-            const savedConfig = localStorage.getItem('assessment_config');
-            if (!savedConfig) {
-                // If no config found, redirect to create page
-                router.push('/aitest/create');
-                return;
-            }
-            try {
-                const parsedConfig = JSON.parse(savedConfig);
-                setConfig(parsedConfig);
-                configRef.current = parsedConfig;
-                const initialQuestions = parsedConfig.questions.map((q: string, i: number) => ({ id: `q-${i}`, text: q }));
-                setQuestions(initialQuestions);
-                questionsCountRef.current = initialQuestions.length;
-            } catch (e) {
-                console.error("Failed to parse config", e);
-                router.push('/aitest/create');
-            }
+    // useEffect(() => {
+    //     // Load config from local storage
+    //     if (typeof window !== 'undefined') {
+    //         const savedConfig = localStorage.getItem('assessment_config');
+    //         if (!savedConfig) {
+    //             // If no config found, redirect to create page
+    //             router.push('/aitest/create');
+    //             return;
+    //         }
+    //         try {
+    //             const parsedConfig = JSON.parse(savedConfig);
+    //             setConfig(parsedConfig);
+    //             configRef.current = parsedConfig;
+    //             const initialQuestions = parsedConfig.questions.map((q: string, i: number) => ({ id: `q-${i}`, text: q }));
+    //             setQuestions(initialQuestions);
+    //             questionsCountRef.current = initialQuestions.length;
+    //         } catch (e) {
+    //             console.error("Failed to parse config", e);
+    //             router.push('/aitest/create');
+    //         }
+    //     }
+    // }, [router]);
+
+    useEffect(()=>{
+        console.log("im fetching questions")
+        fetchQuestions()
+    },[])
+
+    const fetchQuestions = async () => {
+        try {
+            const response = await axios.post('http://localhost:4000/material/tests/fetch-questions',{
+                course_id,
+                test_id
+            }, { withCredentials: true });
+            console.log('Questions Result:', response.data);
+            setQuestions(response.data.questions);
+            questionsCountRef.current = response.data.questions.length;
+        } catch (error) {
+            console.error('Error fetching questions:', error);
         }
-    }, [router]);
+    }
 
     const requestPermissions = async () => {
         try {

@@ -24,13 +24,12 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({ onStart, course_id }) =
 
     setLoading(true);
     try {
-      const newCourseId = "TEST_COURSE_001"
+      // const newCourseId = "TEST_COURSE_001"
       const response = await axios.post('http://localhost:4000/material/tests/aitest', {
         query: userQuery,
-        course_id: newCourseId
+        course_id: course_id
       }, { withCredentials: true });
       console.log('Generated Questions Result:', response.data);
-      //add in questionsInput
       setQuestionsInput(prev => prev + '\n' + response.data.questions.join('\n'));
       setIsModalOpen(false);
       setUserQuery('');
