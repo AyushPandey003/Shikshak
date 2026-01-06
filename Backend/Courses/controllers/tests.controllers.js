@@ -99,6 +99,7 @@ export const saveResult = async (req, res) => {
             test_id,
             user_id,
             answers,
+            questions,
             marks: null,
         });
 
