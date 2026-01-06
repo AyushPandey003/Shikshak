@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Bot, User, Sparkles, MessageSquare } from 'lucide-react';
+import axios from 'axios';
 
 interface Module {
   id: string;
@@ -17,9 +18,10 @@ interface AIAssistantProps {
   modules: Module[];
   isOpen: boolean;
   onClose: () => void;
+  courseId: string;
 }
 
-const AIAssistant: React.FC<AIAssistantProps> = ({ modules, isOpen, onClose }) => {
+const AIAssistant: React.FC<AIAssistantProps> = ({ modules, isOpen, onClose, courseId }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -57,19 +59,42 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ modules, isOpen, onClose }) =
     setInputValue('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Construct payload with explicit check for selected module
+      const payload: { query: string; course_id: string; module_id?: string } = {
+        query: inputValue,
+        course_id: courseId
+      };
+
+      // Only include module_id if a specific module is selected (not the default option)
+      if (selectedModule && selectedModule !== "") {
+        payload.module_id = selectedModule;
+      }
+
+      const response = await axios.post('http://localhost:4000/rag/query', payload, {
+        withCredentials: true
+      });
+
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         sender: 'ai',
-        text: selectedModule 
-          ? `I can certainly help you with questions about "${modules.find(m => m.id === selectedModule)?.title}". What specifically would you like to know?`
-          : "That's a great question! Based on the course material, I'd suggest reviewing the introduction section. Would you like me to summarize it for you?",
+        text: response.data.answer || "I'm sorry, I couldn't generate a response.",
         timestamp: new Date(),
       };
+
       setMessages((prev) => [...prev, aiResponse]);
+    } catch (error) {
+      console.error("Error querying RAG:", error);
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        sender: 'ai',
+        text: "Sorry, I'm having trouble connecting to the knowledge base right now. Please try again later.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorResponse]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   if (!isOpen) return null;
@@ -77,7 +102,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ modules, isOpen, onClose }) =
   return (
     <div className="fixed inset-0 z-[100] lg:z-50 lg:absolute lg:inset-auto lg:bottom-20 lg:right-6 flex items-end justify-center lg:block pointer-events-none">
       {/* Mobile Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 lg:hidden pointer-events-auto backdrop-blur-sm animate-in fade-in duration-200"
         onClick={onClose}
       />
@@ -103,7 +128,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ modules, isOpen, onClose }) =
               </div>
             </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="p-1.5 hover:bg-white/10 rounded-full transition-colors"
           >
@@ -126,25 +151,25 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ modules, isOpen, onClose }) =
               </div>
               <div className={`
                 p-3 rounded-2xl text-sm leading-relaxed shadow-sm
-                ${msg.sender === 'user' 
-                  ? 'bg-indigo-600 text-white rounded-tr-none' 
+                ${msg.sender === 'user'
+                  ? 'bg-indigo-600 text-white rounded-tr-none'
                   : 'bg-white text-gray-700 rounded-tl-none border border-gray-100'}
               `}>
                 {msg.text}
               </div>
             </div>
           ))}
-          
+
           {isTyping && (
             <div className="flex gap-3 max-w-[85%] self-start">
-                <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
-                  <Bot className="w-4 h-4 text-violet-600" />
-                </div>
-                <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-gray-100 shadow-sm flex gap-1.5 items-center h-[44px]">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                </div>
+              <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
+                <Bot className="w-4 h-4 text-violet-600" />
+              </div>
+              <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-gray-100 shadow-sm flex gap-1.5 items-center h-[44px]">
+                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+              </div>
             </div>
           )}
           <div ref={messagesEndRef} />

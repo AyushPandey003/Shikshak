@@ -24,7 +24,7 @@ const StartTestPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [report, setReport] = useState<AssessmentReport | null>(null);
     const [liveTranscription, setLiveTranscription] = useState('');
-    const [aiSummary, setAiSummary] = useState<string | null>(null);
+
     const [userId, setUserId] = useState<string>("")
     const [courseId, setCourseId] = useState<string>("")
     const [testId, setTestId] = useState<string>("")
@@ -150,24 +150,31 @@ const StartTestPage: React.FC = () => {
         setReport(finalReport);
         setAppState(AppState.REPORT);
 
-        // Load AI summary in background
-        const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
-        const prompt = `Review this oral English assessment and provide a brief professional summary of the candidate's performance. 
-    Questions and Answers:
-    ${qaHistory.map((qa, i) => `Q${i + 1}: ${qa.question}\nA: ${qa.answer}`).join('\n\n')}
-    Summary:`;
-
+        // Save result to backend
         try {
-            const response = await ai.models.generateContent({
-                model: 'gemini-3-flash-preview',
-                contents: prompt
+            // Validate required fields before sending
+            if (!testId || !userId) {
+                console.warn("Test ID or User ID missing, cannot save result automatically.");
+                return;
+            }
+
+            const answers = qaHistory.map(q => q.answer);
+            // The backend controller requires 'questions' in the body validation, 
+            // even if it might not save it directly to the result model.
+            const questionTexts = configRef.current?.questions || qaHistory.map(q => q.question);
+
+            await axios.post('http://localhost:4000/material/tests/save-result', {
+                test_id: testId,
+                user_id: userId,
+                answers: answers,
+                questions: questionTexts
             });
-            setAiSummary(response.text || 'Summary generation unavailable.');
-        } catch (e) {
-            console.error("Failed to generate AI summary:", e);
-            setAiSummary('Assessment concluded.');
+            console.log('Result saved successfully');
+        } catch (error) {
+            console.error('Failed to save result:', error);
         }
-    }, []);
+    }, [testId, userId]);
+
 
     const finishTest = useCallback((violationReason?: string) => {
         if (isFinishingRef.current) return;
@@ -530,12 +537,7 @@ const StartTestPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            {aiSummary && (
-                                <div className="mb-12 bg-blue-50 border border-blue-100 p-8 rounded-2xl">
-                                    <h3 className="text-blue-800 font-bold text-xs uppercase tracking-widest mb-4">Examiner's AI Summary</h3>
-                                    <p className="text-blue-900 text-lg leading-relaxed whitespace-pre-wrap">{aiSummary}</p>
-                                </div>
-                            )}
+
 
                             <div className="space-y-12">
                                 {report.qa.map((item, idx) => (
