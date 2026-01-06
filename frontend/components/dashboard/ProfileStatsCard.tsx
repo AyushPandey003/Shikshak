@@ -25,7 +25,7 @@ const ProfileStatsCard: React.FC<ProfileStatsCardProps> = ({
   activityPercentage
 }) => {
   return (
-    <div className="bg-white rounded-[2rem] p-6 shadow-sm h-auto md:min-h-[550px] flex flex-col justify-between relative overflow-hidden">
+    <div className="bg-white rounded-[2rem] p-6 shadow-sm h-auto md:min-h-[650px] flex flex-col justify-between relative overflow-hidden">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold tracking-tight text-gray-800">Statistic</h2>
       </div>

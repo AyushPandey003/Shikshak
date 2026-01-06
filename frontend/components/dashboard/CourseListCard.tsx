@@ -18,7 +18,7 @@ const CourseListCard: React.FC<{ items: Course[]; title?: string }> = ({
   title = "Your courses"
 }) => {
   return (
-    <div className="bg-[#FF6B6B] rounded-[2rem] p-8 text-white relative overflow-hidden h-auto md:min-h-[550px] flex flex-col">
+    <div className="bg-[#FF6B6B] rounded-[2rem] p-8 text-white relative overflow-hidden h-auto md:min-h-[650px] flex flex-col">
        {/* Header */}
        <div className="flex items-center justify-between mb-8 relative z-10 flex-nowrap">
           <h2 className="text-2xl md:text-3xl font-medium truncate mr-2">{title}</h2>
