@@ -203,12 +203,13 @@ export const generateAiQuestions = async (req, res) => {
         // Construct the prompt for the RAG service
         // If a specific query/text is provided by the user (like the chunk in the prompt), we use that.
         // Otherwise, we ask RAG to generate questions based on the module/course context.
-        let ragQuery = query;
+        // let ragQuery = query;
 
-        if (!ragQuery) {
-            ragQuery = `Generate ${number_of_questions} multiple choice questions (with 4 options and the correct answer indicated) based on the content of ${'course ' + course_id}. 
-            Format strictly as a JSON array of objects with keys: question, options (array of strings), answer (string).`;
-        }
+        // if (!ragQuery) {
+        //     ragQuery = `Generate ${number_of_questions} multiple choice questions (with 4 options and the correct answer indicated) based on the content of ${'course ' + course_id}. 
+        //     Format strictly as a JSON array of objects with keys: question, options (array of strings), answer (string).`;
+        // }
+        let ragQuery = `Generate ${number_of_questions} questions based on the content of ${'course ' + course_id} and query ${query}. Only just return questions in a JSON nothing else.`;
 
         // Call the RAG service query endpoint
         // logic: RAG service takes "query" and finds relevant chunks.
