@@ -94,6 +94,17 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
     router.push(`/aitest/create?${params.toString()}`);
   }
 
+  const startTestHandler = (course_id: string, test_id: string) => {
+    const params = new URLSearchParams();
+    params.append('course_id', course_id);
+    params.append('test_id', test_id);
+    if (user?.id) {
+      params.append('user_id', user.id);
+    }
+
+    console.log(params.toString());
+    router.push(`/aitest/start?${params.toString()}`);
+  }
   return (
     <>
       <Link href={href || `/courses/${course_id}`} className="group bg-white rounded-xl shadow-sm border cursor-pointer border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full relative">

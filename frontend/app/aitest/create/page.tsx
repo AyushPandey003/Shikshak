@@ -53,7 +53,7 @@ const CreateTestPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4">
             <div className="w-full max-w-4xl">
-                <AssessmentForm onStart={handleStartSetup} />
+                <AssessmentForm onStart={handleStartSetup} course_id={course_id} />
             </div>
         </div>
     );

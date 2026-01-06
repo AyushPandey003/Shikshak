@@ -1,11 +1,14 @@
 'use client';
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { GoogleGenAI, Modality, LiveServerMessage } from '@google/genai';
 import { AppState, AssessmentConfig, AssessmentReport, QuestionEntry } from '../../../types/types';
 import ProctoringComponent from '../../../components/ProctoringComponent';
 import { decode, decodeAudioData, createBlob } from '../../../utils/audio-utils';
+import axios from 'axios';
+
+
 
 const StartTestPage: React.FC = () => {
     const router = useRouter();
@@ -21,7 +24,11 @@ const StartTestPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [report, setReport] = useState<AssessmentReport | null>(null);
     const [liveTranscription, setLiveTranscription] = useState('');
-    const [aiSummary, setAiSummary] = useState<string | null>(null);
+
+    const [userId, setUserId] = useState<string>("")
+    const [courseId, setCourseId] = useState<string>("")
+    const [testId, setTestId] = useState<string>("")
+
 
     // Audio Contexts
     const inputAudioCtxRef = useRef<AudioContext | null>(null);
@@ -38,28 +45,82 @@ const StartTestPage: React.FC = () => {
     const phaseRef = useRef<'ASKING' | 'WAITING_FOR_ANSWER'>('ASKING');
     const isFinishingRef = useRef(false);
 
-    useEffect(() => {
-        // Load config from local storage
-        if (typeof window !== 'undefined') {
-            const savedConfig = localStorage.getItem('assessment_config');
-            if (!savedConfig) {
-                // If no config found, redirect to create page
-                router.push('/aitest/create');
-                return;
-            }
-            try {
-                const parsedConfig = JSON.parse(savedConfig);
-                setConfig(parsedConfig);
-                configRef.current = parsedConfig;
-                const initialQuestions = parsedConfig.questions.map((q: string, i: number) => ({ id: `q-${i}`, text: q }));
-                setQuestions(initialQuestions);
-                questionsCountRef.current = initialQuestions.length;
-            } catch (e) {
-                console.error("Failed to parse config", e);
-                router.push('/aitest/create');
-            }
+    // useEffect(() => {
+    //     // Load config from local storage
+    //     if (typeof window !== 'undefined') {
+    //         const savedConfig = localStorage.getItem('assessment_config');
+    //         if (!savedConfig) {
+    //             // If no config found, redirect to create page
+    //             router.push('/aitest/create');
+    //             return;
+    //         }
+    //         try {
+    //             const parsedConfig = JSON.parse(savedConfig);
+    //             setConfig(parsedConfig);
+    //             configRef.current = parsedConfig;
+    //             const initialQuestions = parsedConfig.questions.map((q: string, i: number) => ({ id: `q-${i}`, text: q }));
+    //             setQuestions(initialQuestions);
+    //             questionsCountRef.current = initialQuestions.length;
+    //         } catch (e) {
+    //             console.error("Failed to parse config", e);
+    //             router.push('/aitest/create');
+    //         }
+    //     }
+    // }, [router]);
+
+    const searchParams = useSearchParams();
+
+
+    const fetchQuestions = async (cId: string, tId: string) => {
+        try {
+            console.log("courseId", cId)
+            console.log("testId", tId)
+
+            const response = await axios.post('http://localhost:4000/material/tests/fetch-questions', {
+                course_id: cId,
+                test_id: tId
+            }, { withCredentials: true });
+            console.log('Questions Result:', response.data);
+
+            // Map the questions to the correct format (handling strings or objects)
+            const rawQuestions = response.data.questions;
+            const formattedQuestions: QuestionEntry[] = rawQuestions.map((q: any, i: number) => {
+                if (typeof q === 'string') {
+                    return { id: `q-${i}`, text: q, answer: '' };
+                }
+                return { id: q.id || `q-${i}`, text: q.text || q, answer: '' };
+            });
+
+            setQuestions(formattedQuestions);
+            questionsCountRef.current = formattedQuestions.length;
+
+            // Set config to allow the test to start
+            const loadedConfig: AssessmentConfig = {
+                title: 'Assessment',
+                questions: formattedQuestions.map((q) => q.text),
+                validUntil: new Date(Date.now() + 3600000).toISOString()
+            };
+            setConfig(loadedConfig);
+            configRef.current = loadedConfig;
+
+        } catch (error) {
+            console.error('Error fetching questions:', error);
         }
-    }, [router]);
+    }
+
+    useEffect(() => {
+        const ncourseId = searchParams.get('course_id');
+        const ntestId = searchParams.get('test_id');
+        const nuserId = searchParams.get('user_id');
+
+        if (ncourseId) setCourseId(ncourseId)
+        if (ntestId) setTestId(ntestId)
+        if (nuserId) setUserId(nuserId)
+
+        if (ncourseId && ntestId) {
+            fetchQuestions(ncourseId, ntestId)
+        }
+    }, [searchParams])
 
     const requestPermissions = async () => {
         try {
@@ -89,24 +150,31 @@ const StartTestPage: React.FC = () => {
         setReport(finalReport);
         setAppState(AppState.REPORT);
 
-        // Load AI summary in background
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-        const prompt = `Review this oral English assessment and provide a brief professional summary of the candidate's performance. 
-    Questions and Answers:
-    ${qaHistory.map((qa, i) => `Q${i + 1}: ${qa.question}\nA: ${qa.answer}`).join('\n\n')}
-    Summary:`;
-
+        // Save result to backend
         try {
-            const response = await ai.models.generateContent({
-                model: 'gemini-3-flash-preview',
-                contents: prompt
+            // Validate required fields before sending
+            if (!testId || !userId) {
+                console.warn("Test ID or User ID missing, cannot save result automatically.");
+                return;
+            }
+
+            const answers = qaHistory.map(q => q.answer);
+            // The backend controller requires 'questions' in the body validation, 
+            // even if it might not save it directly to the result model.
+            const questionTexts = configRef.current?.questions || qaHistory.map(q => q.question);
+
+            await axios.post('http://localhost:4000/material/tests/save-result', {
+                test_id: testId,
+                user_id: userId,
+                answers: answers,
+                questions: questionTexts
             });
-            setAiSummary(response.text || 'Summary generation unavailable.');
-        } catch (e) {
-            console.error("Failed to generate AI summary:", e);
-            setAiSummary('Assessment concluded.');
+            console.log('Result saved successfully');
+        } catch (error) {
+            console.error('Failed to save result:', error);
         }
-    }, []);
+    }, [testId, userId]);
+
 
     const finishTest = useCallback((violationReason?: string) => {
         if (isFinishingRef.current) return;
@@ -229,7 +297,7 @@ const StartTestPage: React.FC = () => {
 
         setError(null);
         isFinishingRef.current = false;
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
 
         try {
             inputAudioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
@@ -320,7 +388,7 @@ const StartTestPage: React.FC = () => {
         if (appState === AppState.REPORT) {
             let activeCtx: AudioContext | null = null;
             const speakFinalMessage = async () => {
-                const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+                const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
                 try {
                     const response = await ai.models.generateContent({
                         model: "gemini-2.5-flash-preview-tts",
@@ -469,12 +537,7 @@ const StartTestPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            {aiSummary && (
-                                <div className="mb-12 bg-blue-50 border border-blue-100 p-8 rounded-2xl">
-                                    <h3 className="text-blue-800 font-bold text-xs uppercase tracking-widest mb-4">Examiner's AI Summary</h3>
-                                    <p className="text-blue-900 text-lg leading-relaxed whitespace-pre-wrap">{aiSummary}</p>
-                                </div>
-                            )}
+
 
                             <div className="space-y-12">
                                 {report.qa.map((item, idx) => (
