@@ -185,8 +185,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
           <div className="border-t border-gray-100 my-2"></div>
 
           {/* Footer Stats & Price */}
-          <div className="flex items-center justify-between mt-auto pt-1">
-            <div className="flex gap-2">
+          <div className="flex flex-wrap items-center justify-between mt-auto pt-1 gap-y-2">
+            <div className="flex gap-1.5 flex-wrap sm:flex-nowrap">
               {isTeacher && (
                 <>
                   <button
@@ -195,9 +195,9 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
                       e.stopPropagation();
                       window.location.href = `/teacher/modules?courseId=${course_id}`;
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-100 transition-colors text-xs font-semibold"
+                    className="flex items-center justify-center gap-1.5 px-2 py-1.5 bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-100 transition-colors text-[11px] font-bold whitespace-nowrap flex-1 sm:flex-none"
                   >
-                    <BookOpen size={14} />
+                    <BookOpen size={13} />
                     Add Contents
                   </button>
                   <button
@@ -206,10 +206,20 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
                       e.stopPropagation();
                       createTestHandler(course.id);
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-600 rounded-md hover:bg-purple-100 transition-colors text-xs font-semibold"
+                    className="flex items-center justify-center gap-1.5 px-2 py-1.5 bg-purple-50 text-purple-600 rounded-md hover:bg-purple-100 transition-colors text-[11px] font-bold whitespace-nowrap flex-1 sm:flex-none"
                   >
-                    <GraduationCap size={14} />
                     Create Test
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (onDelete) onDelete(course);
+                    }}
+                    className="p-1.5 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                    title="Delete Course"
+                  >
+                    <Trash2 size={16} />
                   </button>
                 </>
               )}
@@ -228,20 +238,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
               )}
             </div>
 
-            <div className="flex items-end gap-3">
-              {isTeacher && (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (onDelete) onDelete(course);
-                  }}
-                  className="p-1.5 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
-                  title="Delete Course"
-                >
-                  <Trash2 size={16} />
-                </button>
-              )}
+            <div className="flex items-end gap-3 mx-auto">
               <div className="flex flex-col items-end">
                 <span className="text-xl font-bold text-indigo-500">
                   {course.price === 0 ? 'Free' : `₹${course.price}`}
