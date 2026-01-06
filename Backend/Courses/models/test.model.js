@@ -24,11 +24,7 @@ const testSchema = new mongoose.Schema(
         title: {
             type: String,
             required: true,
-        },
-        isdone: {
-            type: Boolean,
-            default: false,
-        },
+        }
     },
     { timestamps: true }
 );

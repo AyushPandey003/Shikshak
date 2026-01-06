@@ -138,6 +138,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
             </button>
           )}
 
+
+
           {/* Badge: Best Seller */}
           {!isTeacher && course.tags?.includes('Best Seller') && (
             <div className="absolute top-0 right-4 bg-indigo-500 text-white text-[10px] font-bold py-1 px-1.5 rounded-b-md shadow-md z-10 uppercase tracking-wide writing-mode-vertical">

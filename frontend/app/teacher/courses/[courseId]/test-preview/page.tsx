@@ -4,67 +4,97 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ChevronLeft, Search, User, FileText, CheckCircle } from 'lucide-react';
 import { dummyTests, dummySubmissions, dummyQuestions, Test, StudentSubmission, Question } from '@/types/test';
+import { useSearchParams } from 'next/navigation';
+import axios from 'axios';
+import { useAppStore } from '@/store/useAppStore';
 
 export default function TestPreviewPage() {
     const router = useRouter();
     const params = useParams();
     const courseId = params.courseId as string;
+    const searchParams = useSearchParams();
+    const { profile, user } = useAppStore()
 
     const [selectedTestId, setSelectedTestId] = useState<string | null>(null);
-    const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+    const [selectedResultId, setSelectedResultId] = useState<string | null>(null); // Changed from studentId to resultId for uniqueness
     const [searchTerm, setSearchTerm] = useState('');
+    const [testIds, setTestIds] = useState<any[]>([])
+    const [results, setResults] = useState<any[]>([]); // Store real results
 
     // Derived state
-    const selectedTest = dummyTests.find(t => t.id === selectedTestId);
-    
-    // Filter submissions based on selected test
-    const filteredSubmissions = dummySubmissions.filter(sub => sub.testId === selectedTestId);
-    
-    // Filter students by search
-    const displayedSubmissions = filteredSubmissions.filter(sub => 
-        sub.studentName.toLowerCase().includes(searchTerm.toLowerCase())
+    // Find the full test object if needed, though we rely on results mostly now
+    const selectedTest = testIds.find(t => t._id === selectedTestId);
+
+    // Filter results by search
+    const displayedResults = results.filter(res =>
+        res.user_id?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const questions = selectedTestId ? (dummyQuestions[selectedTestId] || []) : [];
-    const selectedSubmission = displayedSubmissions.find(s => s.studentId === selectedStudentId);
+    const selectedResult = results.find(r => r._id === selectedResultId);
 
-    // Grading State (Local) - allow string for empty input while typing
+    // Grading State (Local)
     const [marks, setMarks] = useState<Record<string, number | string>>({});
 
-    // Initialize marks when student/test changes
     useEffect(() => {
-        if (selectedSubmission) {
+        const fetchCourseData = async () => {
+            try {
+                const response = await axios.post(`http://localhost:4000/material/courses/get_course_by_id`, {
+                    course_id: courseId,
+                    user_id: user?.id,
+                    user_role: profile?.role
+                }, { withCredentials: true });
+                setTestIds(response.data.test_id || [])
+            } catch (error) {
+                console.error("Error fetching course data:", error);
+            }
+        }
+        if (courseId) fetchCourseData()
+    }, [courseId, user?.id, profile?.role]);
+
+    // Initialize marks when selected result changes
+    useEffect(() => {
+        if (selectedResult) {
             const initialMarks: Record<string, number> = {};
-            // Force ALL questions to start at 0, ignoring any dummy data "obtainedMarks"
-            questions.forEach(q => {
-                initialMarks[q.id] = 0;
+            const hasExistingMarks = selectedResult.marks !== null && selectedResult.marks !== undefined;
+            const prefillValue = hasExistingMarks ? Number(selectedResult.marks) : 0;
+
+            selectedResult.questions?.forEach((_: any, idx: number) => {
+                // If marks exist (normalized to 10), assign that value to each question
+                // Since each question is out of 10, and the total is out of 10, 
+                // the average score per question matches the normalized total.
+                initialMarks[idx] = prefillValue;
             });
             setMarks(initialMarks);
         } else {
             setMarks({});
         }
-    }, [selectedSubmission]); // questions is stable enough or can be omitted, but semantically depends on it. leaving as per current flow.
+    }, [selectedResult]);
 
-    const handleMarkChange = (questionId: string, val: string, max: number) => {
-        // Allow empty string to let user delete the number
+    const handleMarkChange = (questionIndex: string, val: string, max: number) => {
         if (val === '') {
-            setMarks(prev => ({ ...prev, [questionId]: '' }));
+            setMarks(prev => ({ ...prev, [questionIndex]: '' }));
             return;
         }
-
         const numVal = parseFloat(val);
-        if (isNaN(numVal)) return; 
+        if (isNaN(numVal)) return;
         if (numVal < 0) return;
-        if (numVal > max) return; // Prevent > max
-        
-        setMarks(prev => ({ ...prev, [questionId]: numVal }));
+        if (numVal > max) return;
+        setMarks(prev => ({ ...prev, [questionIndex]: numVal }));
     };
+
+    // Calculate totals
+    // Mock Max Marks per question since backend doesn't provide it in the Result object
+    const DEFAULT_MAX_MARKS = 10;
+
+    // Determine questions array from selected result
+    const currentQuestions = selectedResult?.questions || [];
 
     const totalObtained = Object.values(marks).reduce((acc: number, curr: number | string) => {
         const val = typeof curr === 'string' ? 0 : curr;
         return acc + val;
     }, 0);
-    const totalMax = questions.reduce((acc, q) => acc + q.maxMarks, 0);
+
+    const totalMax = currentQuestions.length * DEFAULT_MAX_MARKS;
     const percentage = totalMax > 0 ? ((totalObtained / totalMax) * 100).toFixed(1) : '0.0';
 
     // Mobile View State
@@ -72,21 +102,58 @@ export default function TestPreviewPage() {
 
     // Save Success Popup State
     const [showSuccess, setShowSuccess] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
-    const handleSave = () => {
-        // Here you would typically make an API call to save the marks
-        // console.log('Saving marks:', marks);
-        
-        setShowSuccess(true);
-        setTimeout(() => {
-            setShowSuccess(false);
-        }, 3000);
+    const handleSave = async () => {
+        if (!selectedResultId) return;
+
+        try {
+            // Normalize score to 0-10 range before sending
+            // If totalMax is 0 (no questions), avoid division by zero
+            // (totalObtained / totalMax) * 10
+            const normalizedScore = totalMax > 0 ? (totalObtained / totalMax) * 10 : 0;
+
+            console.log("Saving result:", selectedResultId, "Raw:", totalObtained, "Normalized:", normalizedScore);
+
+            await axios.post('http://localhost:4000/material/tests/give-marks', {
+                result_id: selectedResultId,
+                marks: Number(normalizedScore.toFixed(2))
+            }, { withCredentials: true });
+
+            setShowSuccess(true);
+
+            // Update local state to reflect the change immediately
+            setResults(prevResults => prevResults.map(r =>
+                r._id === selectedResultId ? { ...r, marks: normalizedScore } : r
+            ));
+            setTimeout(() => {
+                setShowSuccess(false);
+            }, 3000);
+
+            // Optionally refresh results to show updated status if we were tracking it
+        } catch (error) {
+            console.error("Failed to save marks:", error);
+            alert("Failed to save marks. Please try again.");
+        }
     };
+
+    const getresults = async (testId: string) => {
+        try {
+            const response = await axios.post(`http://localhost:4000/material/tests/get-results`, {
+                test_id: testId,
+            }, { withCredentials: true });
+
+            if (response.data.success) {
+                setResults(response.data.results);
+            }
+        } catch (error) {
+            console.error("Error fetching results:", error);
+            setResults([]);
+        }
+    }
 
     return (
         <div className="flex flex-col h-screen bg-gray-50 font-sans text-gray-900">
-            {/* Navbar removed as per request */}
-            
             {/* Success Popup */}
             {showSuccess && (
                 <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-xl z-50 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
@@ -94,7 +161,7 @@ export default function TestPreviewPage() {
                     <span className="font-bold">Grading Saved Successfully!</span>
                 </div>
             )}
-            
+
             <main className="flex-1 flex overflow-hidden relative">
                 {/* 1. Tests List (Left Sidebar) */}
                 <div className={`
@@ -108,25 +175,26 @@ export default function TestPreviewPage() {
                         <h2 className="font-bold text-lg">Course Tests</h2>
                     </div>
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
-                        {dummyTests.map(test => (
+                        {testIds.length === 0 && (
+                            <div className="p-4 text-gray-400 text-sm text-center">No tests found for this course.</div>
+                        )}
+                        {testIds.map((test, index) => (
                             <div
-                                key={test.id}
+                                key={test._id || index}
                                 onClick={() => {
-                                    setSelectedTestId(test.id);
-                                    setSelectedStudentId(null); // Reset student selection
+                                    setSelectedTestId(test._id);
+                                    setSelectedResultId(null);
+                                    setResults([]); // Clear previous results
                                     setMobileView('students');
+                                    getresults(test._id)
                                 }}
-                                className={`p-4 border-b border-gray-50 cursor-pointer transition-colors ${
-                                    selectedTestId === test.id ? 'bg-orange-50 border-orange-200' : 'hover:bg-gray-50'
-                                }`}
+                                className={`p-4 border-b border-gray-50 cursor-pointer transition-colors ${selectedTestId === test._id ? 'bg-orange-50 border-orange-200' : 'hover:bg-gray-50'
+                                    }`}
                             >
-                                <h3 className={`font-semibold text-sm mb-1 ${selectedTestId === test.id ? 'text-orange-800' : 'text-gray-800'}`}>
+                                <h4 className='font-semibold text-sm mb-1'>Test {index + 1}</h4>
+                                <h3 className={`font-semibold text-sm mb-1 ${selectedTestId === test._id ? 'text-orange-800' : 'text-gray-800'}`}>
                                     {test.title}
                                 </h3>
-                                <div className="text-xs text-gray-500 flex justify-between">
-                                    <span>{test.questions} Questions</span>
-                                    <span>{test.totalMarks} Marks</span>
-                                </div>
                             </div>
                         ))}
                     </div>
@@ -141,16 +209,16 @@ export default function TestPreviewPage() {
                         <>
                             <div className="p-4 border-b border-gray-100">
                                 <div className="flex items-center gap-2 mb-3 lg:hidden">
-                                     <button onClick={() => setMobileView('tests')} className="p-1 -ml-2 hover:bg-gray-100 rounded-full">
+                                    <button onClick={() => setMobileView('tests')} className="p-1 -ml-2 hover:bg-gray-100 rounded-full">
                                         <ChevronLeft className="w-5 h-5 text-gray-500" />
-                                     </button>
-                                     <span className="text-xs font-bold text-gray-400 uppercase">Back to Tests</span>
+                                    </button>
+                                    <span className="text-xs font-bold text-gray-400 uppercase">Back to Tests</span>
                                 </div>
-                                <h3 className="font-bold text-gray-800 mb-3">{selectedTest?.title}</h3>
+                                <h3 className="font-bold text-gray-800 mb-3">{selectedTest?.title || 'Test Results'}</h3>
                                 <div className="relative">
                                     <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         placeholder="Search student..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -160,36 +228,36 @@ export default function TestPreviewPage() {
                             </div>
 
                             <div className="flex-1 overflow-y-auto custom-scrollbar">
-                                    {displayedSubmissions.length === 0 ? (
+                                {displayedResults.length === 0 ? (
                                     <div className="p-8 text-center text-gray-400 text-sm">
                                         No submissions found.
                                     </div>
-                                    ) : (
-                                    displayedSubmissions.map(sub => (
+                                ) : (
+                                    displayedResults.map(res => (
                                         <div
-                                            key={sub.studentId}
+                                            key={res._id}
                                             onClick={() => {
-                                                setSelectedStudentId(sub.studentId);
+                                                setSelectedResultId(res._id);
                                                 setMobileView('grading');
                                             }}
-                                            className={`p-3 mx-2 my-1 rounded-lg cursor-pointer flex items-center gap-3 transition-colors ${
-                                                selectedStudentId === sub.studentId ? 'bg-orange-50 w-[calc(100%-16px)]' : 'hover:bg-gray-50 w-[calc(100%-16px)]'
-                                            }`}
+                                            className={`p-3 mx-2 my-1 rounded-lg cursor-pointer flex items-center gap-3 transition-colors ${selectedResultId === res._id ? 'bg-orange-50 w-[calc(100%-16px)]' : 'hover:bg-gray-50 w-[calc(100%-16px)]'
+                                                }`}
                                         >
                                             <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
                                                 <User className="w-4 h-4" />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className={`text-sm font-semibold truncate ${selectedStudentId === sub.studentId ? 'text-orange-900' : 'text-gray-900'}`}>
-                                                    {sub.studentName}
+                                                <p className={`text-sm font-semibold truncate ${selectedResultId === res._id ? 'text-orange-900' : 'text-gray-900'}`}>
+                                                    {res.user_id?.name || 'Unknown Student'}
                                                 </p>
-                                                <p className="text-xs text-gray-500">Submitted 2h ago</p>
+                                                <p className="text-xs text-gray-500">
+                                                    Submitted {new Date(res.createdAt).toLocaleDateString()}
+                                                </p>
                                             </div>
-                                            {/* Simple Logic to show checked status if graded (mock) */}
-                                                <CheckCircle className={`w-4 h-4 ${selectedStudentId === sub.studentId ? 'text-orange-400' : 'text-gray-200'}`} />
+                                            <CheckCircle className={`w-4 h-4 ${res.marks !== null ? 'text-orange-400' : 'text-gray-200'}`} />
                                         </div>
                                     ))
-                                    )}
+                                )}
                             </div>
                         </>
                     ) : (
@@ -204,22 +272,30 @@ export default function TestPreviewPage() {
                     flex-1 flex-col bg-slate-50 overflow-hidden
                     ${mobileView === 'grading' ? 'flex absolute inset-0 z-20 lg:static' : 'hidden lg:flex'}
                 `}>
-                    {selectedSubmission ? (
+                    {selectedResult ? (
                         <>
                             {/* Header */}
                             <div className="bg-white border-b border-gray-200 px-4 sm:px-8 py-4 shadow-sm">
                                 <div className="flex items-center gap-2 mb-3 lg:hidden">
-                                     <button onClick={() => setMobileView('students')} className="p-1 -ml-2 hover:bg-gray-100 rounded-full">
+                                    <button onClick={() => setMobileView('students')} className="p-1 -ml-2 hover:bg-gray-100 rounded-full">
                                         <ChevronLeft className="w-5 h-5 text-gray-500" />
-                                     </button>
-                                     <span className="text-xs font-bold text-gray-400 uppercase">Back to Students</span>
+                                    </button>
+                                    <span className="text-xs font-bold text-gray-400 uppercase">Back to Students</span>
                                 </div>
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div>
-                                        <h1 className="text-xl font-bold text-gray-900">{selectedSubmission.studentName}'s Submission</h1>
+                                        <h1 className="text-xl font-bold text-gray-900">{selectedResult.user_id?.name}'s Submission</h1>
                                         <p className="text-sm text-gray-500">Test: {selectedTest?.title}</p>
                                     </div>
                                     <div className="flex items-center gap-6">
+                                        {selectedResult.marks !== null && (
+                                            <div className="text-right hidden xl:block">
+                                                <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Saved Grade</p>
+                                                <p className="text-2xl font-black text-indigo-600 leading-none">
+                                                    {selectedResult.marks} <span className="text-lg text-gray-400 font-medium">/ 10</span>
+                                                </p>
+                                            </div>
+                                        )}
                                         <div className="text-right">
                                             <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Total Score</p>
                                             <p className="text-2xl font-black text-orange-600 leading-none">
@@ -236,24 +312,24 @@ export default function TestPreviewPage() {
 
                             {/* Questions List */}
                             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-8 max-w-4xl mx-auto w-full">
-                                {questions.map((q, idx) => {
-                                    const answer = selectedSubmission.answers.find(a => a.questionId === q.id);
-                                    // Default to 0 from state (or empty string if user is typing)
-                                    const currentMark = marks[q.id] ?? 0;
+                                {currentQuestions.map((qText: string, idx: number) => {
+                                    // Use index to pair question with answer since they are parallel arrays
+                                    const answerText = selectedResult.answers && selectedResult.answers[idx];
+                                    const currentMark = marks[idx] ?? 0;
 
                                     return (
-                                        <div key={q.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-8 overflow-hidden transition-all hover:shadow-md">
+                                        <div key={idx} className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-8 overflow-hidden transition-all hover:shadow-md">
                                             <div className="bg-gray-50/50 px-6 py-5 border-b border-gray-100 flex justify-between items-start gap-4">
                                                 <div className="flex gap-4">
                                                     <div className="flex flex-col items-center justify-center bg-white border border-gray-200 text-gray-500 font-bold text-xs w-10 h-10 rounded-lg shadow-sm shrink-0">
                                                         <span>Q{idx + 1}</span>
                                                     </div>
-                                                    <p className="font-medium text-gray-800 text-lg leading-snug mt-1">{q.text}</p>
+                                                    <p className="font-medium text-gray-800 text-lg leading-snug mt-1">{qText}</p>
                                                 </div>
                                                 <div className="shrink-0 flex flex-col items-end">
                                                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Max Marks</span>
                                                     <span className="text-sm font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
-                                                        {q.maxMarks}
+                                                        {DEFAULT_MAX_MARKS}
                                                     </span>
                                                 </div>
                                             </div>
@@ -265,7 +341,7 @@ export default function TestPreviewPage() {
                                                     </h4>
                                                     <div className="p-6 bg-white rounded-xl text-gray-700 text-base leading-relaxed border border-gray-100 shadow-inner relative group">
                                                         <div className="absolute top-0 left-0 w-1 h-full bg-orange-200 rounded-l-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                                        {answer ? answer.answerText : <span className="text-gray-400 italic font-medium">No answer provided by student.</span>}
+                                                        {answerText ? answerText : <span className="text-gray-400 italic font-medium">No answer provided by student.</span>}
                                                     </div>
                                                 </div>
 
@@ -273,18 +349,18 @@ export default function TestPreviewPage() {
                                                     <label className="text-sm font-bold text-gray-500 uppercase tracking-wide">Marks</label>
                                                     <div className="flex items-center gap-2">
                                                         <div className="relative">
-                                                            <input 
-                                                                type="number" 
+                                                            <input
+                                                                type="number"
                                                                 min="0"
-                                                                max={q.maxMarks}
+                                                                max={DEFAULT_MAX_MARKS}
                                                                 value={currentMark}
-                                                                onChange={(e) => handleMarkChange(q.id, e.target.value, q.maxMarks)}
+                                                                onChange={(e) => handleMarkChange(idx.toString(), e.target.value, DEFAULT_MAX_MARKS)}
                                                                 className="w-24 pl-4 pr-3 py-2.5 bg-gray-50 border-2 border-transparent hover:bg-white hover:border-orange-100 focus:bg-white focus:border-orange-400 rounded-xl text-right font-bold text-xl text-gray-900 focus:outline-none transition-all focus:ring-4 focus:ring-orange-500/10 placeholder-gray-300"
                                                                 placeholder="-"
                                                             />
                                                         </div>
                                                         <span className="text-xl font-medium text-gray-300">/</span>
-                                                        <span className="text-xl font-bold text-gray-400">{q.maxMarks}</span>
+                                                        <span className="text-xl font-bold text-gray-400">{DEFAULT_MAX_MARKS}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -296,18 +372,19 @@ export default function TestPreviewPage() {
                                     <button className="px-6 py-3 bg-white border border-gray-300 rounded-xl text-gray-700 font-bold shadow-sm hover:bg-gray-50 transition-all">
                                         Cancel
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={handleSave}
-                                        className="px-6 py-3 bg-orange-600 text-white rounded-xl font-bold shadow-lg shadow-orange-200 hover:bg-orange-700 hover:shadow-xl hover:scale-[1.02] transition-all"
+                                        disabled={isSaving}
+                                        className="px-6 py-3 bg-orange-600 text-white rounded-xl font-bold shadow-lg shadow-orange-200 hover:bg-orange-700 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                                     >
-                                        Save Grading
+                                        {isSaving ? 'Saving...' : 'Save Grading'}
                                     </button>
                                 </div>
                             </div>
                         </>
                     ) : (
-                         selectedTestId && !selectedStudentId && (
-                             <div className="flex-1 flex flex-col items-center justify-center bg-white">
+                        selectedTestId && !selectedResultId && (
+                            <div className="flex-1 flex flex-col items-center justify-center bg-white">
                                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                                     <User className="w-8 h-8 text-gray-300" />
                                 </div>
