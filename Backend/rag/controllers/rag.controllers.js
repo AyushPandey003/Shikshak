@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { v4 as uuidv4 } from 'uuid';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,6 +11,8 @@ dotenv.config({ path: path.resolve(__dirname, '../../../.config/.env') });
 
 import axios from 'axios';
 import FormData from 'form-data';
+import { uploadFileToAzure, generateSasUrl } from '../utils/azureStorage.js';
+import { pushIngestionJob, checkQueueHealth } from '../utils/azureQueue.js';
 
 // Hosted RAG Service Base URL - set in .config/.env
 const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL;
@@ -24,14 +27,18 @@ if (!RAG_SERVICE_URL) {
  */
 export const healthCheck = async (req, res) => {
     try {
-        const response = await axios.get(`${RAG_SERVICE_URL}`, {
+        const response = await axios.get(`${RAG_SERVICE_URL}/health`, {
             timeout: 20000
         });
-        console.log(response.data, "rag");
+
+        // Also check Azure Queue health
+        const queueHealthy = await checkQueueHealth();
+
         res.status(200).json({
             status: 'healthy',
             ragService: response.data,
-            proxyService: 'healthy'
+            proxyService: 'healthy',
+            queueService: queueHealthy ? 'healthy' : 'unhealthy'
         });
     } catch (error) {
         console.error('[RAG] Health check failed:', error.message);
@@ -45,8 +52,14 @@ export const healthCheck = async (req, res) => {
 };
 
 /**
- * Ingest Document - Ingest a file (PDF, DOCX, TXT, or video) into the RAG system
+ * Ingest Document - Upload file to Azure Blob and push job to Azure Queue
  * POST /api/rag/ingest
+ * 
+ * This follows the async architecture:
+ * 1. Upload file to Azure Blob Storage
+ * 2. Generate SAS URL for the blob
+ * 3. Push message to Azure Queue for the hosted worker to process
+ * 4. Return jobId immediately (async processing)
  * 
  * Request: multipart/form-data with:
  * - file: The file to ingest
@@ -89,48 +102,96 @@ export const ingestDocument = async (req, res) => {
             return res.status(400).json({ error: 'file is required' });
         }
 
-        // Create form data to forward to RAG service
-        const formData = new FormData();
-        formData.append('file', req.file.buffer, {
-            filename: req.file.originalname,
-            contentType: req.file.mimetype
+        // Generate unique job ID
+        const jobId = uuidv4();
+
+        console.log(`[RAG] Starting ingestion job ${jobId} for: ${req.file.originalname}`);
+
+        // Step 1: Upload file to Azure Blob Storage
+        const uploadResult = await uploadFileToAzure(
+            req.file.buffer,
+            req.file.originalname,
+            req.file.mimetype
+        );
+
+        console.log(`[RAG] File uploaded to blob: ${uploadResult.blobName}`);
+
+        // Step 2: Generate SAS URL for the blob (worker needs read access)
+        const sasUrl = generateSasUrl(uploadResult.blobName);
+
+        console.log(`[RAG] SAS URL generated for worker access`);
+
+        // Step 3: Push job to Azure Queue
+        const metadata = {
+            course_id,
+            module_id,
+            source_type,
+            video_id: video_id || null,
+            notes_id: notes_id || null
+        };
+
+        await pushIngestionJob(jobId, sasUrl, metadata);
+
+        console.log(`[RAG] Job ${jobId} queued successfully`);
+
+        // Step 4: Return immediate response with job ID
+        res.status(202).json({
+            job_id: jobId,
+            status: 'queued',
+            message: `Ingestion job queued for ${req.file.originalname}`,
+            blob_name: uploadResult.blobName
         });
-        formData.append('course_id', course_id);
-        formData.append('module_id', module_id);
-        formData.append('source_type', source_type);
 
-        if (video_id) {
-            formData.append('video_id', video_id);
-        }
-        if (notes_id) {
-            formData.append('notes_id', notes_id);
-        }
-
-        console.log(`[RAG] Ingesting document: ${req.file.originalname} for course ${course_id}, module ${module_id}`);
-
-        const response = await axios.post(`${RAG_SERVICE_URL}/ingest`, formData, {
-            headers: {
-                ...formData.getHeaders()
-            },
-            timeout: 300000, // 5 minutes timeout for large files/videos
-            maxBodyLength: Infinity,
-            maxContentLength: Infinity
-        });
-
-        console.log(`[RAG] Ingestion successful: ${JSON.stringify(response.data)}`);
-        res.status(200).json(response.data);
     } catch (error) {
-        console.error('[RAG] Ingestion failed:', error.response?.data || error.message);
+        console.error('[RAG] Ingestion failed:', error.message);
+        res.status(500).json({
+            error: 'Failed to queue ingestion job',
+            message: error.message
+        });
+    }
+};
 
-        if (error.response) {
-            // Forward the RAG service error response
-            res.status(error.response.status).json(error.response.data);
-        } else {
-            res.status(500).json({
-                error: 'Failed to ingest document',
-                message: error.message
-            });
+/**
+ * Get Job Status - Check the status of an ingestion job
+ * GET /api/rag/jobs/:jobId
+ * 
+ * Queries the hosted RAG service's Redis for job status
+ */
+export const getJobStatus = async (req, res) => {
+    try {
+        const { jobId } = req.params;
+
+        if (!jobId) {
+            return res.status(400).json({ error: 'jobId is required' });
         }
+
+        // Try to get job status from hosted service
+        // The hosted service stores job status in Redis with pattern: rag:job:{jobId}
+        // Since we can't directly access their Redis, we'll provide a basic status endpoint
+        // that the frontend can poll
+
+        // For now, return a pending status - in production, you'd either:
+        // 1. Have your own Redis instance that mirrors job status
+        // 2. Have the hosted service expose a /jobs/{jobId} endpoint
+        // 3. Use webhooks for status updates
+
+        console.log(`[RAG] Checking status for job ${jobId}`);
+
+        // You can optionally add Redis integration here if you have access
+        // to the same Redis instance as the hosted service
+
+        res.status(200).json({
+            job_id: jobId,
+            status: 'processing',
+            message: 'Job status tracking requires Redis integration with the hosted service'
+        });
+
+    } catch (error) {
+        console.error('[RAG] Job status check failed:', error.message);
+        res.status(500).json({
+            error: 'Failed to get job status',
+            message: error.message
+        });
     }
 };
 
@@ -299,4 +360,3 @@ export const deleteChunks = async (req, res) => {
         }
     }
 };
-
