@@ -7,6 +7,7 @@ import { AppState, AssessmentConfig, AssessmentReport, QuestionEntry } from '../
 import ProctoringComponent from '../../../components/ProctoringComponent';
 import { decode, decodeAudioData, createBlob } from '../../../utils/audio-utils';
 import axios from 'axios';
+import { useAppStore } from '@/store/useAppStore';
 
 
 
@@ -44,6 +45,7 @@ const StartTestPage: React.FC = () => {
     const accumulatedTranscriptionRef = useRef('');
     const phaseRef = useRef<'ASKING' | 'WAITING_FOR_ANSWER'>('ASKING');
     const isFinishingRef = useRef(false);
+    const hasSavedResultRef = useRef(false);
 
     // useEffect(() => {
     //     // Load config from local storage
@@ -69,6 +71,8 @@ const StartTestPage: React.FC = () => {
     // }, [router]);
 
     const searchParams = useSearchParams();
+    const { user } = useAppStore();
+    const name = user?.name;
 
 
     const fetchQuestions = async (cId: string, tId: string) => {
@@ -152,6 +156,8 @@ const StartTestPage: React.FC = () => {
 
         // Save result to backend
         try {
+            if (hasSavedResultRef.current) return;
+            hasSavedResultRef.current = true;
             // Validate required fields before sending
             if (!testId || !userId) {
                 console.warn("Test ID or User ID missing, cannot save result automatically.");
@@ -163,11 +169,19 @@ const StartTestPage: React.FC = () => {
             // even if it might not save it directly to the result model.
             const questionTexts = configRef.current?.questions || qaHistory.map(q => q.question);
 
+            console.log("answers", answers)
+            console.log("questionTexts", questionTexts)
+            console.log("testId", testId)
+            console.log("userId", userId)
+            console.log("name", name)
             await axios.post('http://localhost:4000/material/tests/save-result', {
                 test_id: testId,
                 user_id: userId,
                 answers: answers,
-                questions: questionTexts
+                questions: questionTexts,
+                name: name
+            }, {
+                withCredentials: true
             });
             console.log('Result saved successfully');
         } catch (error) {

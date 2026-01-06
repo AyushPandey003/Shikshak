@@ -76,9 +76,10 @@ export const fetchQuestions = async (req, res) => {
 // Save student result (answers)
 export const saveResult = async (req, res) => {
     try {
-        const { test_id, user_id, answers, questions } = req.body;
+        const { test_id, user_id, name, answers, questions } = req.body;
 
-        if (!test_id || !user_id || !answers || !questions) {
+        console.log(test_id, user_id, name, answers, questions);
+        if (!test_id || !user_id || !answers || !questions || !name) {
             return res.status(400).json({ error: "All fields are required" });
         }
 
@@ -89,7 +90,7 @@ export const saveResult = async (req, res) => {
         }
 
         // Check if student already submitted
-        const existingResult = await Result.findOne({ test_id, user_id });
+        const existingResult = await Result.findOne({ test_id, user_id: { _id: user_id, name } });
         if (existingResult) {
             return res.status(400).json({ error: "Result already submitted" });
         }
@@ -97,7 +98,7 @@ export const saveResult = async (req, res) => {
         // Create the result
         const result = new Result({
             test_id,
-            user_id,
+            user_id: { name, _id: user_id },
             answers,
             questions,
             marks: null,
@@ -125,7 +126,8 @@ export const getResults = async (req, res) => {
             return res.status(400).json({ error: "Test ID is required" });
         }
 
-        const results = await Result.find({ test_id });
+        const results = await Result.find({ test_id }).populate('test_id');
+
 
         res.status(200).json({
             success: true,
