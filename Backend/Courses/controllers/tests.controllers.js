@@ -49,23 +49,24 @@ export const createTest = async (req, res) => {
 export const fetchQuestions = async (req, res) => {
     try {
         const { course_id, test_id } = req.body;
-
+        console.log(course_id, test_id);
         if (!course_id || !test_id) {
             return res.status(400).json({ error: "Course ID and Test ID are required" });
         }
 
-        const course = await Course.findOne({ course_id });
+        const course = await Course.findOne({ _id: course_id });
         if (!course) {
             return res.status(404).json({ error: "Course not found" });
         }
-        const test = course.test_id.find((test) => test._id.toString() === test_id);
+        const test = await Test.findOne({ _id: test_id });
+        console.log(test);
         if (!test) {
             return res.status(404).json({ error: "Test not found" });
         }
         res.status(200).json({
             success: true,
             questions: test.questions,
-        }); 
+        });
     } catch (error) {
         console.error("Error fetching questions:", error);
         res.status(500).json({ error: "Internal Server Error" });
