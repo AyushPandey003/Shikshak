@@ -16,6 +16,11 @@ const resultSchema = new mongoose.Schema(
                 type: String,
             },
         ],
+        questions: [
+            {
+                type: String,
+            },
+        ],
         marks: {
             type: Number,
             default: null,
