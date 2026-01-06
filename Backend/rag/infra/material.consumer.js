@@ -57,23 +57,23 @@ async function startConsumer() {
           if (eventtype === 'video_created') {
 
             const { course_id, module_id, azureBlobUrl, video_id } = payload;
-            axios.post('http://localhost:4005/api/rag/ingest', {
-              course_id,
-              module_id,
-              azureBlobUrl,
-              video_id
-            })
+            // axios.post('http://localhost:4005/api/rag/ingest', {
+            //   course_id,
+            //   module_id,
+            //   azureBlobUrl,
+            //   video_id
+            // })
 
 
           }
           else if (eventtype === 'note_created') {
             const { course_id, module_id, azureBlobUrl, note_id } = payload;
-            axios.post('http://localhost:4005/api/rag/ingest', {
-              course_id,
-              module_id,
-              azureBlobUrl,
-              note_id
-            })
+            // axios.post('http://localhost:4005/api/rag/ingest', {
+            //   course_id,
+            //   module_id,
+            //   azureBlobUrl,
+            //   note_id
+            // })
 
 
 
@@ -81,18 +81,36 @@ async function startConsumer() {
           else if (eventtype === 'video_deleted') {
 
             const { video_id, azureBlobUrl } = payload;
-            axios.delete('http://localhost:4005/api/rag/delete', {
-              video_id,
-            })
+            console.log(video_id, "video_id")
+            try {
+              /* Correct Pattern */
+              axios.delete('http://localhost:4005/api/rag/delete', {
+                data: { video_id }, // Body goes here
+                withCredentials: true
+              })
+              console.log("Mai chal gaya hu")
+            } catch (error) {
+              console.log(error, "I am coming from kafka")
+            }
+            console.log("going for M2")
             deleteBlobFromAzure(azureBlobUrl)
           }
           else if (eventtype === 'note_deleted') {
 
             const { note_id, azureBlobUrl } = payload;
-            axios.delete('http://localhost:4005/api/rag/delete', {
-              note_id,
-            })
-            deleteBlobFromAzure(azureBlobUrl)
+            console.log(note_id, "note_id")
+            console.log(azureBlobUrl, "azureBlobUrl")
+            const notes_id = note_id;
+            try {
+              axios.delete('http://localhost:4005/api/rag/delete', {
+                data: { notes_id },
+                withCredentials: true
+              })
+            }
+            catch (error) {
+              console.log(error, "I am coming from kafka")
+            }
+            deleteBlobFromAzure(azureBlobUrl[0])
 
 
 

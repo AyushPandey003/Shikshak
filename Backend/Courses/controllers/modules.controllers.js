@@ -165,9 +165,9 @@ export const addVideo = async (req, res) => {
 // Add Notes
 export const addNotes = async (req, res) => {
     try {
-        const { module_id, azure_id } = req.body;
-
-        if (!module_id || !azure_id) {
+        const { module_id, azure_id, title } = req.body;
+        console.log(module_id, azure_id, title, "module_id, azure_id, title")
+        if (!module_id || !azure_id || !title) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -182,6 +182,7 @@ export const addNotes = async (req, res) => {
             module_id,
             azure_id,
             series_number,
+            title
         });
 
         const savedNotes = await newNotes.save();

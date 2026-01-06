@@ -10,15 +10,15 @@ interface AddItemModalProps {
 }
 
 export function AddItemModal({ isOpen, onClose, onConfirm }: AddItemModalProps) {
-    const [newItemData, setNewItemData] = useState<{ title: string; type: ContentItem['type']; duration: string; file?: File }>({ 
-        title: '', 
-        type: 'video', 
-        duration: '' 
+    const [newItemData, setNewItemData] = useState<{ title: string; type: ContentItem['type']; duration: string; file?: File }>({
+        title: '',
+        type: 'video',
+        duration: ''
     });
 
     // Reset when opening
     useEffect(() => {
-        if(isOpen) {
+        if (isOpen) {
             setNewItemData({ title: '', type: 'video', duration: '' });
         }
     }, [isOpen]);
@@ -34,9 +34,9 @@ export function AddItemModal({ isOpen, onClose, onConfirm }: AddItemModalProps) 
     };
 
     return (
-        <Modal 
-            isOpen={isOpen} 
-            onClose={onClose} 
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
             title="Add Content Item"
             size="md"
         >
@@ -44,7 +44,7 @@ export function AddItemModal({ isOpen, onClose, onConfirm }: AddItemModalProps) 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                        {(['video', 'reading', 'quiz', 'assignment', 'material'] as const).map((type) => (
+                        {(['video', 'reading'] as const).map((type) => (
                             <button
                                 key={type}
                                 onClick={() => setNewItemData({ ...newItemData, type })}
@@ -52,9 +52,7 @@ export function AddItemModal({ isOpen, onClose, onConfirm }: AddItemModalProps) 
                             >
                                 {type === 'video' && <Video size={20} className="mb-2" />}
                                 {type === 'reading' && <BookOpen size={20} className="mb-2" />}
-                                {type === 'quiz' && <HelpCircle size={20} className="mb-2" />}
-                                {type === 'assignment' && <FileQuestion size={20} className="mb-2" />}
-                                {type === 'material' && <FileText size={20} className="mb-2" />}
+
                                 <span className="text-xs uppercase tracking-wide truncate w-full text-center">{type === 'material' ? 'Material' : type}</span>
                             </button>
                         ))}
@@ -63,8 +61,8 @@ export function AddItemModal({ isOpen, onClose, onConfirm }: AddItemModalProps) 
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                         placeholder="e.g., Introduction to React"
                         value={newItemData.title}
@@ -78,17 +76,17 @@ export function AddItemModal({ isOpen, onClose, onConfirm }: AddItemModalProps) 
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             {newItemData.type === 'video' ? 'Video File' : (newItemData.type === 'material' ? 'Study Material (PDF/Image)' : 'Markdown File')}
                         </label>
-                        <input 
-                            type="file" 
+                        <input
+                            type="file"
                             accept={
-                                newItemData.type === 'video' ? "video/*" : 
-                                newItemData.type === 'material' ? ".pdf,image/*" : 
-                                ".md,.markdown"
+                                newItemData.type === 'video' ? "video/*" :
+                                    newItemData.type === 'material' ? ".pdf,image/*" :
+                                        ".md,.markdown"
                             }
                             className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                             onChange={handleFileChange}
                         />
-                         {newItemData.file && (
+                        {newItemData.file && (
                             <p className="mt-1 text-xs text-green-600">Selected: {newItemData.file.name}</p>
                         )}
                     </div>
@@ -96,8 +94,8 @@ export function AddItemModal({ isOpen, onClose, onConfirm }: AddItemModalProps) 
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Duration (optional)</label>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                         placeholder="e.g., 10m"
                         value={newItemData.duration}
@@ -107,13 +105,13 @@ export function AddItemModal({ isOpen, onClose, onConfirm }: AddItemModalProps) 
                 </div>
 
                 <div className="pt-4 flex justify-end gap-3">
-                    <button 
+                    <button
                         onClick={onClose}
                         className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                         Cancel
                     </button>
-                    <button 
+                    <button
                         onClick={handleConfirm}
                         disabled={!newItemData.title}
                         className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
@@ -123,6 +121,6 @@ export function AddItemModal({ isOpen, onClose, onConfirm }: AddItemModalProps) 
                     </button>
                 </div>
             </div>
-      </Modal>
+        </Modal>
     );
 }
