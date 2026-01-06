@@ -16,7 +16,7 @@ const CreateTestPage: React.FC = () => {
 
     useEffect(() => {
         if (profile?.role !== 'teacher') {
-            // router.push('/');
+            router.push('/');
         }
     }, [profile, router]);
 
