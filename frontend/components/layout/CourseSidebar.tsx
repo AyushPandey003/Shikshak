@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Heart, Share2, CheckCircle } from 'lucide-react';
 import { CustomLoader } from '@/components/ui/CustomLoader';
+import { ImageWithSkeleton } from '@/components/ui/ImageWithSkeleton';
 import { Course } from '@/types/coursedet';
 import { useRazorpay } from '@/hooks/useRazorpay';
 import { useRouter } from 'next/navigation';
@@ -49,7 +50,7 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({ course }) => {
 
                 {/* Thumbnail */}
                 <div className="relative group">
-                    <img src={course.thumbnail} alt="Preview" className="w-full h-52 object-cover transition-transform duration-700 group-hover:scale-105" />
+                    <ImageWithSkeleton src={course.thumbnail} alt="Preview" className="w-full h-52" />
                 </div>
 
                 <div className="p-8">

@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { CoursesGridSkeleton } from "@/components/dashboard/CoursesSkeleton";
 
 type Option = "All" | "In Progress" | "Completed";
 
@@ -121,6 +122,10 @@ export default function StudentCoursesPage() {
 
     fetchCourses();
   }, [user, profile]);
+
+  if (loading) {
+    return <CoursesGridSkeleton />;
+  }
 
   const tabs: Option[] = ["All", "In Progress", "Completed"];
 

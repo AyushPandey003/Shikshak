@@ -9,6 +9,7 @@ import AiAssistantCard from '@/components/dashboard/AiAssistantCard';
 import Footer from '@/components/layout/Footer';
 import { useAppStore } from '@/store/useAppStore';
 import axios from 'axios';
+import { LoadingDashboard } from '@/components/dashboard/DashboardSkeletons';
 
 // Dummy Data for Upcoming Events (Backend integration pending for events)
 const upcomingEvents = {
@@ -106,8 +107,8 @@ export default function StudentDashboardPage() {
     fetchDashboardData();
   }, [user, profile]);
 
-  if (!user || !profile) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (loading || !user || !profile) {
+    return <LoadingDashboard />;
   }
 
   return (

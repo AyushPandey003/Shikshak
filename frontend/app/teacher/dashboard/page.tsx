@@ -9,6 +9,7 @@ import Footer from '@/components/layout/Footer';
 import { useAppStore } from '@/store/useAppStore';
 import axios from 'axios';
 import { BookOpen, FileText, Award, Clock, Phone } from 'lucide-react';
+import { LoadingDashboard } from '@/components/dashboard/DashboardSkeletons';
 
 // Dummy Data for Teacher (Events still dummy as no backend for them yet)
 const upcomingEvents = {
@@ -73,8 +74,8 @@ export default function TeacherDashboardPage() {
     fetchCourses();
   }, [user]);
 
-  if (!user) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (loading || !user) {
+    return <LoadingDashboard />;
   }
 
   return (

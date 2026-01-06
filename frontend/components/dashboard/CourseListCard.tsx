@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, ClipboardList } from 'lucide-react';
+import { ImageWithSkeleton } from '@/components/ui/ImageWithSkeleton';
 
 interface Course {
   id: string;
@@ -55,10 +56,11 @@ const CourseListCard: React.FC<{ items: Course[]; title?: string }> = ({
                    */}
 
                    <div className="flex items-center gap-2">
-                      <img 
+                      <ImageWithSkeleton 
                         src={course.mentorImage || `https://ui-avatars.com/api/?name=${course.mentorName}`} 
                         alt="Mentor" 
-                        className="w-8 h-8 rounded-lg object-cover" 
+                        className="w-8 h-8 rounded-lg"
+                        skeletonClassName="rounded-lg"
                       />
                       <div className="flex flex-col leading-tight">
                          <span className="text-[10px] text-gray-400 font-semibold uppercase">Mentor</span>
