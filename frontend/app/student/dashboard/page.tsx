@@ -129,20 +129,6 @@ export default function StudentDashboardPage() {
                  bgClassName: "bg-purple-100"
               },
               {
-                 label: "Courses Enrolled",
-                 value: courses.length > 0 ? courses.map(c => c.title).join(', ') : "None",
-                 icon: BookOpen,
-                 className: "text-orange-600",
-                 bgClassName: "bg-orange-100"
-              },
-              {
-                 label: "Assignments",
-                 value: "0 Pending", // Placeholder
-                 icon: ClipboardList,
-                 className: "text-blue-600",
-                 bgClassName: "bg-blue-100"
-              },
-              {
                  label: "Phone Number",
                  value: profile?.phoneNumber || "N/A",
                  icon: Phone,

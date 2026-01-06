@@ -8,7 +8,7 @@ import AiAssistantCard from '@/components/dashboard/AiAssistantCard';
 import Footer from '@/components/layout/Footer';
 import { useAppStore } from '@/store/useAppStore';
 import axios from 'axios';
-import { BookOpen, FileText, Award, Clock } from 'lucide-react';
+import { BookOpen, FileText, Award, Clock, Phone } from 'lucide-react';
 
 // Dummy Data for Teacher (Events still dummy as no backend for them yet)
 const upcomingEvents = {
@@ -115,6 +115,13 @@ export default function TeacherDashboardPage() {
                 icon: Clock,
                 className: "text-green-600",
                 bgClassName: "bg-green-100"
+              },
+              {
+                label: "Phone Number",
+                value: profile?.phoneNumber || "N/A",
+                icon: Phone,
+                className: "text-rose-600",
+                bgClassName: "bg-rose-100"
               }
             ]}
             activityPercentage={92}

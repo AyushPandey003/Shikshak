@@ -25,7 +25,7 @@ const ProfileStatsCard: React.FC<ProfileStatsCardProps> = ({
   activityPercentage
 }) => {
   return (
-    <div className="bg-white rounded-[2rem] p-6 shadow-sm h-auto md:h-[550px] flex flex-col justify-between relative overflow-hidden">
+    <div className="bg-white rounded-[2rem] p-6 shadow-sm h-auto md:min-h-[550px] flex flex-col justify-between relative overflow-hidden">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold tracking-tight text-gray-800">Statistic</h2>
       </div>
@@ -55,19 +55,21 @@ const ProfileStatsCard: React.FC<ProfileStatsCardProps> = ({
 
       <div className="mt-4 mb-6"></div>
 
-      {/* Bottom Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 mt-auto">
+      {/* Bottom Stats List */}
+      <div className="flex flex-col gap-4 mt-auto">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <div key={index} className="flex flex-col items-center gap-2 p-2 relative text-center w-full">
+            <div key={index} className="flex flex-row items-center gap-4 p-2 relative w-full bg-gray-50 rounded-xl">
                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${stat.bgClassName}`}>
                   <Icon size={16} className={stat.className} />
                </div>
-               <span className={`font-bold text-gray-800 break-words w-full leading-tight ${typeof stat.value === 'string' && stat.value.length > 3 ? 'text-sm' : 'text-xl'}`}>
-                 {stat.value}
-               </span>
-               <span className="text-[10px] uppercase font-bold text-gray-400 text-center tracking-wide">{stat.label}</span>
+               <div className="flex flex-col items-start overflow-hidden flex-1">
+                 <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wide">{stat.label}</span>
+                 <span className={`font-bold text-gray-800 break-words leading-tight ${typeof stat.value === 'string' && stat.value.length > 20 ? 'text-xs' : 'text-sm'}`}>
+                   {stat.value}
+                 </span>
+               </div>
             </div>
           );
         })}
