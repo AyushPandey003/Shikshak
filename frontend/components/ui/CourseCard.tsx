@@ -94,6 +94,17 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
     router.push(`/aitest/create?${params.toString()}`);
   }
 
+  const startTestHandler = (course_id: string, test_id: string) => {
+    const params = new URLSearchParams();
+    params.append('course_id', course_id);
+    params.append('test_id', test_id);
+    if (user?.id) {
+      params.append('user_id', user.id);
+    }
+
+    console.log(params.toString());
+    router.push(`/aitest/start?${params.toString()}`);
+  }
   return (
     <>
       <Link href={href || `/courses/${course_id}`} className="group bg-white rounded-xl shadow-sm border cursor-pointer border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full relative">
@@ -227,6 +238,16 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
                 </button>
               )}
             </div>
+
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                startTestHandler(course.id, "695c0709c4dd41241d50206e");
+              }}
+              className='bg-blue-500 text-white absolute z-20 top-3 right-3 p-2 rounded-full hover:bg-blue-600 transition-colors'>
+              Start Test
+            </button>
 
             <div className="flex items-end gap-3">
               {isTeacher && (

@@ -1,14 +1,16 @@
 'use client';
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { GoogleGenAI, Modality, LiveServerMessage } from '@google/genai';
 import { AppState, AssessmentConfig, AssessmentReport, QuestionEntry } from '../../../types/types';
 import ProctoringComponent from '../../../components/ProctoringComponent';
 import { decode, decodeAudioData, createBlob } from '../../../utils/audio-utils';
 import axios from 'axios';
 
-const StartTestPage: React.FC = ({course_id,test_id}: {course_id: string, test_id: string}) => {
+
+
+const StartTestPage: React.FC = () => {
     const router = useRouter();
     // Start at PERMISSIONS directly, as SETUP is done in create page
     const [appState, setAppState] = useState<AppState>(AppState.PERMISSIONS);
@@ -23,6 +25,10 @@ const StartTestPage: React.FC = ({course_id,test_id}: {course_id: string, test_i
     const [report, setReport] = useState<AssessmentReport | null>(null);
     const [liveTranscription, setLiveTranscription] = useState('');
     const [aiSummary, setAiSummary] = useState<string | null>(null);
+    const [userId, setUserId] = useState<string>("")
+    const [courseId, setCourseId] = useState<string>("")
+    const [testId, setTestId] = useState<string>("")
+
 
     // Audio Contexts
     const inputAudioCtxRef = useRef<AudioContext | null>(null);
@@ -62,24 +68,59 @@ const StartTestPage: React.FC = ({course_id,test_id}: {course_id: string, test_i
     //     }
     // }, [router]);
 
-    useEffect(()=>{
-        console.log("im fetching questions")
-        fetchQuestions()
-    },[])
+    const searchParams = useSearchParams();
 
-    const fetchQuestions = async () => {
+
+    const fetchQuestions = async (cId: string, tId: string) => {
         try {
-            const response = await axios.post('http://localhost:4000/material/tests/fetch-questions',{
-                course_id,
-                test_id
+            console.log("courseId", cId)
+            console.log("testId", tId)
+
+            const response = await axios.post('http://localhost:4000/material/tests/fetch-questions', {
+                course_id: cId,
+                test_id: tId
             }, { withCredentials: true });
             console.log('Questions Result:', response.data);
-            setQuestions(response.data.questions);
-            questionsCountRef.current = response.data.questions.length;
+
+            // Map the questions to the correct format (handling strings or objects)
+            const rawQuestions = response.data.questions;
+            const formattedQuestions: QuestionEntry[] = rawQuestions.map((q: any, i: number) => {
+                if (typeof q === 'string') {
+                    return { id: `q-${i}`, text: q, answer: '' };
+                }
+                return { id: q.id || `q-${i}`, text: q.text || q, answer: '' };
+            });
+
+            setQuestions(formattedQuestions);
+            questionsCountRef.current = formattedQuestions.length;
+
+            // Set config to allow the test to start
+            const loadedConfig: AssessmentConfig = {
+                title: 'Assessment',
+                questions: formattedQuestions.map((q) => q.text),
+                validUntil: new Date(Date.now() + 3600000).toISOString()
+            };
+            setConfig(loadedConfig);
+            configRef.current = loadedConfig;
+
         } catch (error) {
             console.error('Error fetching questions:', error);
         }
     }
+
+    useEffect(() => {
+        const ncourseId = searchParams.get('course_id');
+        const ntestId = searchParams.get('test_id');
+        const nuserId = searchParams.get('user_id');
+
+        if (ncourseId) setCourseId(ncourseId)
+        if (ntestId) setTestId(ntestId)
+        if (nuserId) setUserId(nuserId)
+
+        if (ncourseId && ntestId) {
+            fetchQuestions(ncourseId, ntestId)
+        }
+    }, [searchParams])
 
     const requestPermissions = async () => {
         try {
@@ -110,7 +151,7 @@ const StartTestPage: React.FC = ({course_id,test_id}: {course_id: string, test_i
         setAppState(AppState.REPORT);
 
         // Load AI summary in background
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
         const prompt = `Review this oral English assessment and provide a brief professional summary of the candidate's performance. 
     Questions and Answers:
     ${qaHistory.map((qa, i) => `Q${i + 1}: ${qa.question}\nA: ${qa.answer}`).join('\n\n')}
@@ -249,7 +290,7 @@ const StartTestPage: React.FC = ({course_id,test_id}: {course_id: string, test_i
 
         setError(null);
         isFinishingRef.current = false;
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
 
         try {
             inputAudioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
@@ -340,7 +381,7 @@ const StartTestPage: React.FC = ({course_id,test_id}: {course_id: string, test_i
         if (appState === AppState.REPORT) {
             let activeCtx: AudioContext | null = null;
             const speakFinalMessage = async () => {
-                const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+                const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
                 try {
                     const response = await ai.models.generateContent({
                         model: "gemini-2.5-flash-preview-tts",
