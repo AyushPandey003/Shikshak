@@ -19,11 +19,13 @@
 
 ---
 
-## � Table of Contents
+## 📑 Table of Contents
 
 - [✨ Key Features](#-key-features)
 - [🏗️ System Architecture](#-system-architecture)
-- [🛠️ Tech Stack Strategy](#-tech-stack-strategy)
+- [� Data Model (ERD)](#-data-model-erd)
+- [🔄 User Journey Flows](#-user-journey-flows)
+- [�🛠️ Tech Stack Strategy](#-tech-stack-strategy)
 - [📂 Project Structure](#-project-structure)
 - [🚀 Service Overview](#-service-overview)
 - [⚙️ Installation & Setup](#-installation--setup)
@@ -96,7 +98,80 @@ sequenceDiagram
 
 ---
 
-## 🛠️ Tech Stack Strategy
+## � Data Model (ERD)
+
+The following diagram illustrates the relationship between the core entities in the system, utilizing MongoDB's flexible schema design with referenced relationships.
+
+```mermaid
+erDiagram
+    USER ||--|{ COURSE : "enrolled_in/teaches"
+    USER {
+        string _id PK
+        string email
+        string role "student/teacher"
+        string name
+    }
+    COURSE ||--|{ MODULE : contains
+    COURSE ||--|{ REVIEW : has
+    COURSE {
+        string _id PK
+        string title
+        string teacher_id FK
+        number price
+        string visibility
+    }
+    MODULE ||--|{ LESSON : contains
+    MODULE {
+        string _id PK
+        string title
+    }
+    LESSON {
+        string _id PK
+        string title
+        string video_url
+        string content
+    }
+    REVIEW {
+        string _id PK
+        string user_id FK
+        string comment
+        number rating
+    }
+```
+
+---
+
+## 🔄 User Journey Flows
+
+### Student Learning Path
+
+```mermaid
+graph LR
+    Start((Login)) --> Dashboard
+    Dashboard --> Browse[Browse Courses]
+    Browse -->|Select| Course[Course Details]
+    Course -->|Enroll| Payment{Payment}
+    Payment -->|Success| Content[Access Content]
+    Content -->|Watch| Video
+    Content -->|Take| Quiz
+    Quiz -->|Result| Certificate
+```
+
+### Teacher Content Creation
+
+```mermaid
+graph LR
+    Start((Login)) --> Dashboard
+    Dashboard --> Create[Create Course]
+    Create --> Module[Add Module]
+    Module --> Upload[Upload Video]
+    Upload --> Process[Processing (Kafka)]
+    Process --> Live((Publish))
+```
+
+---
+
+## �🛠️ Tech Stack Strategy
 
 We chose this stack to ensure **scalability**, **maintainability**, and **developer experience**.
 
@@ -113,10 +188,10 @@ We chose this stack to ensure **scalability**, **maintainability**, and **develo
 Shikshak/
 ├── Backend/                 # Microservices Cluster
 │   ├── ApiGateway/          # Central entry point (Port 4000)
-│   ├── Auth/                # Authentication Service
-│   ├── Courses/             # Course & Content Management
-│   ├── payment/             # Payment Processing
-│   └── rag/                 # RAG & AI Processing Service
+│   ├── Auth/                # Authentication Service (Port 4001)
+│   ├── Courses/             # Course & Content Management (Port 4002)
+│   ├── payment/             # Payment Processing (Port 4003)
+│   └── rag/                 # RAG & AI Processing Service (Port 4004)
 ├── frontend/                # Next.js Application
 │   ├── app/                 # App Router (Pages & Layouts)
 │   ├── components/          # Reusable UI Components
@@ -128,7 +203,7 @@ Shikshak/
 
 ---
 
-## � Service Overview
+## 🚀 Service Overview
 
 ### 1. API Gateway
 
@@ -139,6 +214,7 @@ Shikshak/
 
 - **Tech**: Node.js, Better-Auth
 - **Role**: Manages user registration, login (Google, Credential), and session tokens. Includes role management (Student/Teacher).
+- **Features**: `emailVerified`, `role` discrimination (Student schema vs Teacher schema).
 
 ### 3. Course Service
 
@@ -146,6 +222,7 @@ Shikshak/
 - **Role**: CRUD operations for Courses, Modules, and Lessons. Manages video metadata and file uploads.
 - **Key Features**:
   - AI Question Generation (`gen_questions.js`) using Gemini APIs.
+  - Complex aggregation pipelines for course analytics.
 
 ### 4. RAG Service
 
@@ -205,7 +282,7 @@ services:
 
 ## 🤝 Contributing
 
-We value open-source contributions!
+We welcome contributions!
 
 1.  **Fork** the repository.
 2.  **Create** a feature branch (`git checkout -b feature/NewFeature`).
@@ -215,6 +292,6 @@ We value open-source contributions!
 
 ---
 
-## � License
+## 📄 License
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
