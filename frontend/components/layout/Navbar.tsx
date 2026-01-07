@@ -8,6 +8,7 @@ import Logo from '@/components/ui/Logo';
 import { authClient } from '@/lib/auth-client';
 import { useAppStore } from '@/store/useAppStore';
 import { User, LogOut, ChevronDown } from 'lucide-react'; // Added icons
+import { useAuth } from '@/context/AuthContext';
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -36,8 +37,20 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const { role } = useAuth();
+
+  const getDashboardLink = () => {
+    if (!session) return null;
+    if (role === 'student') return '/student/dashboard';
+    if (role === 'teacher') return '/teacher/dashboard';
+    return '/student/dashboard'; // Default or handle other roles
+  };
+
+  const dashboardLink = getDashboardLink();
+
   const navLinks = [
-    { name: 'Dashboard', href: '/student/dashboard' },
+    { name: 'Home', href: '/' },
+    ...(dashboardLink ? [{ name: 'Dashboard', href: dashboardLink }] : []),
     { name: 'Courses', href: '/courses' },
     { name: 'Features', href: '/features' },
     { name: 'What we offer', href: '/offer' },
