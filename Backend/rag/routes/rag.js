@@ -5,7 +5,8 @@ import {
     ingestDocument,
     queryRAG,
     getSources,
-    deleteChunks
+    deleteChunks,
+    getJobStatus
 } from '../controllers/rag.controllers.js';
 
 const router = express.Router();
@@ -57,6 +58,13 @@ router.get('/health', healthCheck);
  * - notes_id: Notes ID (required if source_type is 'notes')
  */
 router.post('/ingest', upload.single('file'), ingestDocument);
+
+/**
+ * @route   GET /api/rag/jobs/:jobId
+ * @desc    Get the status of an ingestion job
+ * @access  Protected (for authenticated users)
+ */
+router.get('/jobs/:jobId', getJobStatus);
 
 /**
  * @route   POST /api/rag/query
