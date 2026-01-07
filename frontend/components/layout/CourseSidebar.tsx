@@ -102,9 +102,9 @@ const CourseSidebar: React.FC<CourseSidebarProps> = ({ course }) => {
                                 'Buy Now'
                             )}
                         </button>
-                        <button className="w-full py-4 rounded-xl cursor-pointer bg-white border-2 border-gray-100 text-gray-700 font-bold text-lg hover:border-gray-300 hover:bg-gray-50 transition-all duration-200">
+                        {/* <button className="w-full py-4 rounded-xl cursor-pointer bg-white border-2 border-gray-100 text-gray-700 font-bold text-lg hover:border-gray-300 hover:bg-gray-50 transition-all duration-200">
                             Add to Cart
-                        </button>
+                        </button> */}
                     </div>
 
                     <div className="text-center text-xs text-gray-400 mb-8 font-medium">

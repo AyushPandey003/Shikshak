@@ -59,7 +59,7 @@ const CourseDetailPage: React.FC = () => {
                     category: [data.board || "General", data.subject || "Subject", "Class"],
                     lastUpdated: "Recently", // This field doesn't exist in backend response yet
                     language: "English",
-                    rating: data.rating || 4.5,
+                    rating: data.rating || 0,
                     totalRatings: data.reviews?.length || 0,
                     students: 0, // Not in general info
                     price: data.price,
@@ -151,46 +151,53 @@ const CourseDetailPage: React.FC = () => {
             <Navbar />
 
             {/* Hero Section */}
-            <div className="relative bg-[#1c1d1f] text-white">
+            <div className="relative bg-[#1c1d1f] text-white overflow-hidden">
                 {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 to-gray-800/80 pointer-events-none"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-[#1c1d1f] to-gray-800 opacity-90 pointer-events-none"></div>
+                {/* Decorative background elements */}
+                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-                <div className="relative max-w-7xl mx-auto px-6 pt-16 pb-16 lg:py-20 lg:flex lg:gap-12">
+                <div className="relative max-w-7xl mx-auto px-6 pt-32 pb-12 lg:pt-40 lg:pb-20 lg:flex lg:gap-16">
                     <div className="lg:w-[65%]">
                         {/* Breadcrumbs */}
-                        <div className="text-sm font-medium text-blue-200 flex items-center gap-2 mb-6">
+                        <div className="text-sm font-medium text-indigo-200 flex items-center gap-2 mb-6">
                             {course.category.map((cat, idx) => (
                                 <span key={idx} className="flex items-center">
-                                    <span className="hover:text-white cursor-pointer transition-colors hover:underline decoration-blue-200/50 underline-offset-4">{cat}</span>
+                                    <span className="hover:text-white cursor-pointer transition-colors hover:underline decoration-indigo-200/50 underline-offset-4">{cat}</span>
                                     {idx < course.category.length - 1 && <span className="ml-2 text-gray-500 text-xs">›</span>}
                                 </span>
                             ))}
                         </div>
 
-                        <h1 className="text-3xl lg:text-5xl font-extrabold mb-6 leading-tight tracking-tight">
+                        <h1 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-6 leading-tight tracking-tight text-white">
                             {course.title}
                         </h1>
 
-                        <p className="text-lg text-gray-200 mb-8 leading-relaxed max-w-3xl">
-                            {course.subtitle}
+                        <p className="text-lg text-gray-300 mb-8 leading-relaxed max-w-3xl">
+                            {/* {course.subtitle} */}
                         </p>
 
                         <div className="flex items-center flex-wrap gap-4 mb-8 text-sm">
-                            <span className="bg-[#eceb98] text-[#3d3c0a] px-3 py-1 font-bold text-xs uppercase rounded-sm shadow-sm tracking-wide">Bestseller</span>
                             <span className="text-[#f3ca8c] font-bold flex items-center gap-1.5">
                                 <span className="text-base">{course.rating}</span>
                                 <div className="flex">
-                                    {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-3.5 h-3.5 fill-[#f3ca8c]" />)}
+                                    {[1, 2, 3, 4, 5].map(i => (
+                                        <Star
+                                            key={i}
+                                            className={`w-3.5 h-3.5 ${i <= Math.round(course.rating) ? "fill-[#f3ca8c] text-[#f3ca8c]" : "text-gray-500"}`}
+                                        />
+                                    ))}
                                 </div>
                             </span>
-                            <span className="text-blue-200 underline cursor-pointer hover:text-white decoration-blue-200/30 underline-offset-4 pointer-events-auto">({course.totalRatings.toLocaleString()} ratings)</span>
-                            <span className="text-gray-300 pointer-events-none">•</span>
-                            <span className="font-medium">{course.students.toLocaleString('en-IN')} students</span>
+                            <span className="text-indigo-200 underline cursor-pointer hover:text-white decoration-indigo-200/30 underline-offset-4 pointer-events-auto">({course.totalRatings.toLocaleString()} ratings)</span>
+                            <span className="text-gray-500 pointer-events-none">•</span>
+                            <span className="font-medium text-gray-300">{course.students.toLocaleString('en-IN')} students</span>
                         </div>
 
                         <div className="mb-8 text-sm flex items-center gap-2">
-                            <span className="text-gray-300">Created by</span>
-                            <span className="text-blue-200 underline cursor-pointer hover:text-white transition-colors decoration-blue-200/30 underline-offset-4 font-medium">{course.instructors[0].name}</span>
+                            <span className="text-gray-400">Created by</span>
+                            <span className="text-indigo-200 underline cursor-pointer hover:text-white transition-colors decoration-indigo-200/30 underline-offset-4 font-medium">{course.instructors[0].name}</span>
                         </div>
 
                         <div className="flex items-center flex-wrap gap-6 text-sm text-gray-300 font-medium">
@@ -220,18 +227,18 @@ const CourseDetailPage: React.FC = () => {
             </div>
 
             {/* Content Section */}
-            <div className="max-w-7xl mx-auto px-6 py-12 flex lg:flex-row flex-col items-start gap-12 relative">
+            <div className="max-w-7xl mx-auto px-6 py-12 flex lg:flex-row flex-col items-start gap-12 lg:gap-16 relative">
 
                 <div className="flex-1 w-full lg:max-w-[65%]">
 
                     {/* What you'll learn */}
-                    <div className="border border-gray-200 p-8 mb-12 rounded-xl bg-gray-50/50">
+                    <div className="border border-gray-200 bg-white p-8 mb-12 rounded-2xl shadow-sm">
                         <h2 className="text-2xl font-bold text-gray-900 mb-6 font-display">What you'll learn</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                             {course.whatYouWillLearn.map((item, idx) => (
                                 <div key={idx} className="flex items-start text-sm text-gray-700 leading-relaxed gap-3">
-                                    <CheckCircle2 className="w-5 h-5 text-gray-900 shrink-0 mt-0.5" />
-                                    <span>{item}</span>
+                                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                                    <span className="text-gray-600 font-medium">{item}</span>
                                 </div>
                             ))}
                         </div>
@@ -246,11 +253,11 @@ const CourseDetailPage: React.FC = () => {
                     {/* Requirements */}
                     <div className="mb-14">
                         <h2 className="text-2xl font-bold text-gray-900 mb-6 font-display">Requirements</h2>
-                        <ul className="space-y-3 text-gray-700 text-sm list-inside">
+                        <ul className="space-y-4 text-gray-700 text-sm list-none">
                             {course.requirements.map((req, i) => (
-                                <li key={i} className="flex items-start gap-3 pl-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-900 mt-2 shrink-0" />
-                                    <span className="leading-relaxed">{req}</span>
+                                <li key={i} className="flex items-start gap-3">
+                                    <span className="w-2 h-2 rounded-full bg-gray-900 mt-2 shrink-0 opacity-80" />
+                                    <span className="leading-relaxed font-medium">{req}</span>
                                 </li>
                             ))}
                         </ul>
@@ -259,37 +266,39 @@ const CourseDetailPage: React.FC = () => {
                     {/* Description */}
                     <div className="mb-14">
                         <h2 className="text-2xl font-bold text-gray-900 mb-6 font-display">Description</h2>
-                        <div className="text-sm text-gray-700 leading-7 space-y-4" dangerouslySetInnerHTML={{ __html: course.description }}></div>
+                        <div className="text-sm text-gray-700 leading-7 space-y-4 prose prose-indigo max-w-none" dangerouslySetInnerHTML={{ __html: course.description }}></div>
                     </div>
 
                     {/* Instructor */}
                     <div className="mb-14">
                         <h2 className="text-2xl font-bold text-gray-900 mb-6 font-display">Instructors</h2>
-                        <div className="bg-white border border-gray-100 p-6 rounded-xl shadow-sm">
+                        <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm transition-shadow hover:shadow-md">
                             <div className="text-lg font-bold text-indigo-600 underline decoration-indigo-200 underline-offset-4 mb-1">{course.instructors[0].name}</div>
-                            <div className="text-gray-500 text-sm mb-6">{course.instructors[0].title}</div>
+                            <div className="text-gray-500 text-sm mb-6 font-medium">{course.instructors[0].title}</div>
 
                             <div className="flex gap-6 items-start mb-6">
                                 <img src={course.instructors[0].avatar} alt={course.instructors[0].name} className="w-28 h-28 rounded-full object-cover border-4 border-gray-50 shadow-inner" />
-                                <ul className="text-sm text-gray-700 space-y-2 mt-2">
-                                    <li className="flex items-center gap-2"><Star className="w-4 h-4 fill-gray-900 text-gray-900" /> {course.instructors[0].rating} Instructor Rating</li>
-                                    <li className="flex items-center gap-2"><Award className="w-4 h-4 text-gray-700" /> {course.instructors[0].students.toLocaleString('en-IN')} Students</li>
-                                    <li className="flex items-center gap-2"><Play className="w-4 h-4 text-gray-700 fill-gray-700" /> {course.instructors[0].courses} Courses</li>
+                                <ul className="text-sm text-gray-700 space-y-3 mt-2">
+                                    <li className="flex items-center gap-2 font-medium"><Star className="w-4 h-4 fill-amber-400 text-amber-400" /> {course.instructors[0].rating} Instructor Rating</li>
+                                    <li className="flex items-center gap-2 font-medium"><Award className="w-4 h-4 text-indigo-500" /> {course.instructors[0].students.toLocaleString('en-IN')} Students</li>
+                                    <li className="flex items-center gap-2 font-medium"><Play className="w-4 h-4 text-indigo-500 fill-indigo-500" /> {course.instructors[0].courses} Courses</li>
                                 </ul>
                             </div>
-                            <p className="text-sm text-gray-700 leading-relaxed">{course.instructors[0].bio}</p>
+                            <p className="text-sm text-gray-600 leading-relaxed">{course.instructors[0].bio}</p>
                         </div>
                     </div>
 
                     {/* Reviews */}
-                    <CourseReviews courseTitle={course.title} reviewsList={reviews} />
+                    <div className="mt-16 pt-10 border-t border-gray-100">
+                        <CourseReviews courseTitle={course.title} reviewsList={reviews} />
+                    </div>
 
                 </div>
 
                 <CourseSidebar course={course} />
             </div>
 
-            <div className="h-5"></div> {/* Spacer */}
+            <div className="h-20"></div> {/* Spacer */}
 
             <MobileAction course={course} />
         </div>

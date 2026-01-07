@@ -12,6 +12,7 @@ import CourseInfoTabs from '@/components/learn/CourseInfoTabs';
 import LearnPageFooter from '@/components/learn/LearnPageFooter';
 import AIAssistant from '@/components/learn/AIAssistant';
 import TestView from '@/components/learn/TestView';
+import PdfViewer from '@/components/learn/PdfViewer';
 import axios from 'axios';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -29,7 +30,7 @@ export default function ModulePage() {
     const [tests, setTests] = useState<Test[]>([]);
 
     const [activeLectureId, setActiveLectureId] = useState<string | null>(null);
-    const [currentVideoUrl, setCurrentVideoUrl] = useState<string>("");
+    const [currentContentUrl, setCurrentContentUrl] = useState<string>("");
 
     // UI State
     const [isSidebarOpen, setSidebarOpen] = useState(true);
@@ -192,13 +193,13 @@ export default function ModulePage() {
         .find((l: any) => l.id === activeLectureId);
 
     useEffect(() => {
-        const fetchVideoUrl = async () => {
+        const fetchContentUrl = async () => {
             if (!activeLecture) return;
 
-            if (activeLecture.type === 'video' && activeLecture.contentUrl) {
+            if ((activeLecture.type === 'video' || activeLecture.type === 'article') && activeLecture.contentUrl) {
                 // If it's already a full URL, use it
                 if (activeLecture.contentUrl.startsWith("http")) {
-                    setCurrentVideoUrl(activeLecture.contentUrl);
+                    setCurrentContentUrl(activeLecture.contentUrl);
                 } else {
                     // It's a blob name, fetch SAS
                     try {
@@ -206,18 +207,18 @@ export default function ModulePage() {
                             withCredentials: true
                         });
                         if (sasRes.data?.url) {
-                            setCurrentVideoUrl(sasRes.data.url);
+                            setCurrentContentUrl(sasRes.data.url);
                         }
                     } catch (err) {
-                        console.error("Failed to fetch video URL", err);
+                        console.error("Failed to fetch content URL", err);
                     }
                 }
             } else {
-                setCurrentVideoUrl("");
+                setCurrentContentUrl("");
             }
         };
 
-        fetchVideoUrl();
+        fetchContentUrl();
     }, [activeLectureId, activeLecture]);
 
 
@@ -259,6 +260,46 @@ export default function ModulePage() {
         // router.push(`/aitest/result?${params.toString()}`);
         console.log("View Result Clicked (Navigation Disabled)", course_id, test_id);
     }
+
+    // Handle Next Item Navigation
+    const handleNextItem = () => {
+        if (!course || !course.sections) return;
+
+        let currentSectionIndex = -1;
+        let currentLectureIndex = -1;
+
+        // Find current position
+        course.sections.forEach((section: any, sIdx: number) => {
+            section.lectures.forEach((lecture: any, lIdx: number) => {
+                if (lecture.id === activeLectureId) {
+                    currentSectionIndex = sIdx;
+                    currentLectureIndex = lIdx;
+                }
+            });
+        });
+
+        if (currentSectionIndex !== -1 && currentLectureIndex !== -1) {
+            const currentSection = course.sections[currentSectionIndex];
+
+            // Check if there is a next lecture in the current section
+            if (currentLectureIndex < currentSection.lectures.length - 1) {
+                const nextLecture = currentSection.lectures[currentLectureIndex + 1];
+                setActiveLectureId(nextLecture.id);
+                setActiveView('lecture');
+                return;
+            }
+
+            // Check if there is a next section
+            if (currentSectionIndex < course.sections.length - 1) {
+                const nextSection = course.sections[currentSectionIndex + 1];
+                if (nextSection.lectures.length > 0) {
+                    setActiveLectureId(nextSection.lectures[0].id);
+                    setActiveView('lecture');
+                    return;
+                }
+            }
+        }
+    };
 
     if (loading) {
         return <div className="flex h-screen items-center justify-center">Loading Course Content...</div>;
@@ -356,28 +397,34 @@ export default function ModulePage() {
                 <div className="flex-1 flex flex-col w-full relative overflow-hidden bg-white">
 
                     {/* Content Scrollable Area */}
-                    <div className="flex-1 overflow-y-auto scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-                        <div className="p-4 pt-0 sm:p-6 sm:pt-0 lg:p-8 lg:pt-0 max-w-[1200px] mx-auto w-full">
+                    <div className="flex-1 overflow-y-auto scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] bg-gray-50/50">
+                        <div className="p-6 lg:p-8 max-w-[1200px] mx-auto w-full">
 
                             {/* Content Display Area */}
                             {activeView === 'lecture' ? (
-                                <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-black mb-6 sm:mb-8">
-                                    <div className="aspect-video w-full">
-                                        {activeLecture?.type === 'video' ? (
-                                            currentVideoUrl ? (
-                                                <VideoPlayer src={currentVideoUrl} poster={course.thumbnail} />
+                                activeLecture?.type === 'video' ? (
+                                    <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-black mb-6 sm:mb-8">
+                                        <div className="aspect-video w-full">
+                                            {currentContentUrl ? (
+                                                <VideoPlayer src={currentContentUrl} poster={course.thumbnail} />
                                             ) : (
                                                 <div className="flex items-center justify-center h-full bg-black text-white">
                                                     Loading Video...
                                                 </div>
-                                            )
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="mb-6 sm:mb-8">
+                                        {currentContentUrl ? (
+                                            <PdfViewer url={currentContentUrl} title={activeLecture?.title} />
                                         ) : (
-                                            <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
-                                                {activeLecture?.type === 'article' ? "Reading Material" : "Content Placeholder"}
+                                            <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-gray-100 flex items-center justify-center min-h-[400px] text-gray-500">
+                                                Loading Document...
                                             </div>
                                         )}
                                     </div>
-                                </div>
+                                )
                             ) : (
                                 <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-white mb-6 sm:mb-8 min-h-[400px]">
                                     {activeTest ? (
@@ -416,6 +463,7 @@ export default function ModulePage() {
                         onToggleSidebar={toggleSidebar}
                         isAiOpen={isAiOpen}
                         onToggleAI={() => setIsAiOpen(!isAiOpen)}
+                        onNext={handleNextItem}
                     />
 
                 </div>
