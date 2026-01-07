@@ -123,18 +123,18 @@ export default function StudentDashboardPage() {
             imageSrc={user.photoUrl || "https://ui-avatars.com/api/?name=Student&background=random"}
             stats={[
               {
-                 label: "Class",
-                 value: profile?.studentDetails?.classGrade || profile?.class || "N/A",
-                 icon: GraduationCap,
-                 className: "text-purple-600",
-                 bgClassName: "bg-purple-100"
+                label: "Class",
+                value: profile?.studentDetails?.classGrade || profile?.class || "N/A",
+                icon: GraduationCap,
+                className: "text-purple-600",
+                bgClassName: "bg-purple-100"
               },
               {
-                 label: "Phone Number",
-                 value: profile?.phoneNumber || "N/A",
-                 icon: Phone,
-                 className: "text-green-600",
-                 bgClassName: "bg-green-100"
+                label: "Phone Number",
+                value: profile?.phoneNumber || "N/A",
+                icon: Phone,
+                className: "text-green-600",
+                bgClassName: "bg-green-100"
               }
             ]}
             activityPercentage={78}

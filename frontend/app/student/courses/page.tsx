@@ -49,12 +49,14 @@ export default function StudentCoursesPage() {
             try {
               console.log(`Student Courses Debug: Fetching details for ${courseId}`);
               // Using general endpoint to allow viewing if public, bypassing strict student list check
-              const response = await axios.post("http://localhost:4000/material/courses/get_course_by_id_general", {
+              const response = await axios.post("http://localhost:4000/material/courses/get_course_by_id", {
+                user_id: user?.id,
+                user_role: profile.role,
                 course_id: courseId
               }, {
-                headers: user.accessToken ? { Authorization: `Bearer ${user.accessToken}` } : {},
                 withCredentials: true
               });
+
 
               let imageUrl = "https://picsum.photos/seed/course/400/300";
 
@@ -121,7 +123,7 @@ export default function StudentCoursesPage() {
     };
 
     fetchCourses();
-  }, [user, profile]);
+  }, []);
 
   if (loading) {
     return <CoursesGridSkeleton />;
