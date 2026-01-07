@@ -108,7 +108,7 @@ export default function ProcessSteps() {
                <span className="text-7xl md:text-9xl font-light text-indigo-100 block -ml-2 mb-4">04</span>
                <h3 className="text-4xl font-medium mb-6">Secure Assessment</h3>
                <p className="text-lg text-gray-500 leading-relaxed mb-8">
-                  Conduct fair exams with real-time AI proctoring. Our system monitors the environment using MediaPipe & TensorFlow.js to ensure integrity without human intervention.
+                  Conduct fair exams with real-time AI proctoring. If you close your eyes, the AI detects it and monitors the session to ensure integrity without complex setup.
                </p>
                 <ul className="space-y-2 text-sm font-bold text-gray-800">
                   <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-[#FF6B6B] rounded-full"></div>Real-time Face Shield</li>
