@@ -36,8 +36,8 @@ const Footer = () => {
            <nav className="flex flex-wrap gap-x-8 gap-y-4 md:gap-12 text-lg font-medium text-gray-500">
               <a href="/how-it-works" className="hover:text-black transition-colors">How It Works</a>
               <a href="#" className="hover:text-black transition-colors">Benefits</a>
-              <a href="#" className="hover:text-black transition-colors">Features</a>
-              <a href="#" className="hover:text-black transition-colors">Team</a>
+              <a href="/features" className="hover:text-black transition-colors">Features</a>
+              <a href="/team" className="hover:text-black transition-colors">Team</a>
            </nav>
         </div>
 
