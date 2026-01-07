@@ -1,7 +1,20 @@
-// infra/email.consumer.js
+// infra/material.consumer.js
 import { kafka } from "./client.js";
-import { deleteBlobFromAzure } from "../utils/azureStorage.js";
+import { deleteBlobFromAzure, uploadFileToAzure, generateSasUrl } from "../utils/azureStorage.js";
+import { pushIngestionJob } from "../utils/azureQueue.js";
 import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load centralized environment configuration
+dotenv.config({ path: path.resolve(__dirname, '../../../.config/.env') });
+
+const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL;
 
 const consumer = kafka.consumer({
   groupId: "material-group",
@@ -54,8 +67,8 @@ async function startConsumer() {
 
           const payload = JSON.parse(value);
           const { eventtype } = payload;
-          if (eventtype === 'video_created') {
 
+          if (eventtype === 'video_created') {
             const { course_id, module_id, azureBlobUrl, video_id } = payload;
             // axios.post('http://localhost:4005/api/rag/ingest', {
             //   course_id,
@@ -64,7 +77,23 @@ async function startConsumer() {
             //   video_id
             // })
 
+            // Generate a job ID
+            const jobId = uuidv4();
 
+            // Generate SAS URL from blob URL (extract blob name)
+            const blobName = azureBlobUrl.split('/').pop().split('?')[0];
+            const sasUrl = generateSasUrl(blobName);
+
+            // Push to Azure Queue for processing by hosted worker
+            const metadata = {
+              courseId: course_id,
+              moduleId: module_id,
+              sourceType: 'video',
+              videoId: video_id
+            };
+
+            await pushIngestionJob(jobId, sasUrl, metadata);
+            console.log(`✓ Video ingestion job ${jobId} queued`);
           }
           else if (eventtype === 'note_created') {
             const { course_id, module_id, azureBlobUrl, note_id } = payload;
@@ -75,11 +104,25 @@ async function startConsumer() {
             //   note_id
             // })
 
+            // Generate a job ID
+            const jobId = uuidv4();
 
+            // Generate SAS URL from blob URL (extract blob name)
+            const blobName = azureBlobUrl.split('/').pop().split('?')[0];
+            const sasUrl = generateSasUrl(blobName);
 
+            // Push to Azure Queue for processing by hosted worker
+            const metadata = {
+              courseId: course_id,
+              moduleId: module_id,
+              sourceType: 'notes',
+              notesId: note_id
+            };
+
+            await pushIngestionJob(jobId, sasUrl, metadata);
+            console.log(`✓ Note ingestion job ${jobId} queued`);
           }
           else if (eventtype === 'video_deleted') {
-
             const { video_id, azureBlobUrl } = payload;
             console.log(video_id, "video_id")
             try {
@@ -96,7 +139,6 @@ async function startConsumer() {
             deleteBlobFromAzure(azureBlobUrl)
           }
           else if (eventtype === 'note_deleted') {
-
             const { note_id, azureBlobUrl } = payload;
             console.log(note_id, "note_id")
             console.log(azureBlobUrl, "azureBlobUrl")
@@ -114,6 +156,25 @@ async function startConsumer() {
 
 
 
+            // Call hosted RAG service to delete chunks
+            try {
+              await axios.delete(`${RAG_SERVICE_URL}/delete`, {
+                data: { notes_id: note_id },
+                headers: { 'Content-Type': 'application/json' }
+              });
+              console.log(`✓ Deleted RAG chunks for note ${note_id}`);
+            } catch (err) {
+              console.error(`❌ Failed to delete RAG chunks for note ${note_id}:`, err.message);
+            }
+
+            // Delete blob from storage
+            try {
+              const blobName = azureBlobUrl.split('/').pop().split('?')[0];
+              await deleteBlobFromAzure(blobName);
+              console.log(`✓ Deleted blob for note ${note_id}`);
+            } catch (err) {
+              console.error(`❌ Failed to delete blob:`, err.message);
+            }
           }
           else {
             console.log("Unknown event type:", eventtype);
