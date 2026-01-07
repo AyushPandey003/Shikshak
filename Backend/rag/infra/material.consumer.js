@@ -152,7 +152,7 @@ async function startConsumer() {
             catch (error) {
               console.log(error, "I am coming from kafka")
             }
-            deleteBlobFromAzure(azureBlobUrl[0])
+            deleteBlobFromAzure(azureBlobUrl)
 
 
 

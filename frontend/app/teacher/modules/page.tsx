@@ -268,46 +268,81 @@ export default function ModulesPage() {
                     formData.append('video_id', response.data._id);
 
                     response2 = await axios.post(`${INGEST_URL}`, formData, {
-                        withCredentials: true
+                        withCredentials: true,
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
                     });
                     console.log(response2.data)
                 }
                 const response3 = await axios.post(`${API_URL}/update_material`, {
                     material_id: response.data._id,
-                    azure_id: response2.data.azure_id,
+                    azure_id: response2?.data.blob_name,
+                    type: 'video'
                 }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     withCredentials: true
                 })
 
                 console.log(response3.data)
                 // Map backend video to frontend item
-                // newItem = {
-                //     id: response.data._id,
-                //     type: 'video',
-                //     title: response.data.title,
-                //     duration: data.duration || '0m', // Backend doesn't store duration yet
-                //     fileName: data.file?.name,
-                //     azureId: azureId
-                // };
+                newItem = {
+                    id: response.data._id,
+                    type: 'video',
+                    title: response.data.title,
+                    duration: data.duration || '0m', // Backend doesn't store duration yet
+                    fileName: data.file?.name,
+                    azureId: response3.data.azure_id
+                };
 
             } else if (data.type === 'reading') { // Notes
-                if (!azureId) {
-                    alert("A document file is required for notes");
-                    return;
-                }
                 const response = await axios.post(`${API_URL}/add_notes`, {
                     module_id: currentModuleForItem,
-                    azure_id: azureId,
+                    azure_id: uuid,
                     title: data.title
+                }, {
+                    withCredentials: true
                 });
+                console.log(response.data)
+                let response2
+                if (data.file) {
+                    console.log(courseId, "courseid", currentModuleForItem, "moduleid", response.data._id, "responseid")
+                    const formData = new FormData();
+                    formData.append('file', data.file);
+                    formData.append('module_id', currentModuleForItem);
+                    formData.append('course_id', courseId);
+                    formData.append('source_type', "notes");
+                    formData.append('notes_id', response.data._id);
 
+                    response2 = await axios.post(`${INGEST_URL}`, formData, {
+                        withCredentials: true,
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    });
+                    console.log(response2.data)
+                }
+                const response3 = await axios.post(`${API_URL}/update_material`, {
+                    material_id: response.data._id,
+                    azure_id: response2?.data.blob_name,
+                    type: 'notes'
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    withCredentials: true
+                })
+
+                console.log(response3.data)
                 newItem = {
                     id: response.data._id,
                     type: 'reading',
-                    title: data.title, // Backend doesn't store title for notes, but we keep it in UI
-                    duration: data.duration || '5m',
+                    title: response.data.title,
+                    duration: data.duration || '0m', // Backend doesn't store duration yet
                     fileName: data.file?.name,
-                    azureId: azureId
+                    azureId: response3.data.azure_id
                 };
             } else {
                 // Fallback for other types (Quiz/Assignment) - Local only for now as no API

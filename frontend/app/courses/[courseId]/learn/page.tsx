@@ -19,12 +19,14 @@ export default function ModulePage() {
     const router = useRouter();
     const params = useParams();
     const courseId = params.courseId as string;
-    const { user } = useAppStore();
+    const { user, profile } = useAppStore();
 
     // State for course data
     /* eslint-disable @typescript-eslint/no-explicit-any */
     const [course, setCourse] = useState<any>(null); // Using any temporarily to bridge types, ideally match Section interface
     const [loading, setLoading] = useState(true);
+
+    const [tests, setTests] = useState<Test[]>([]);
 
     const [activeLectureId, setActiveLectureId] = useState<string | null>(null);
     const [currentVideoUrl, setCurrentVideoUrl] = useState<string>("");
@@ -48,11 +50,76 @@ export default function ModulePage() {
 
                 // 1. Fetch Basic Course Info
                 // Using general endpoint for metadata
-                const courseRes = await axios.post("http://localhost:4000/material/courses/get_course_by_id_general", {
-                    course_id: courseId
+                const courseRes = await axios.post("http://localhost:4000/material/courses/get_course_by_id", {
+                    course_id: courseId,
+                    user_id: user?.id,
+                    user_role: profile?.role
                 }, { withCredentials: true });
 
                 const courseData = courseRes.data;
+
+                // Map Tests
+                if (courseData.test_id && Array.isArray(courseData.test_id)) {
+                    const mappedTests: Test[] = await Promise.all(courseData.test_id.map(async (t: any) => {
+                        let status: Test['status'] = 'unattempted';
+                        let obtainedMarks: number | undefined = undefined;
+
+                        // console.log("user", user?.id);
+                        // console.log("test", t._id);
+                        // 1. Check if attempted
+                        if (user?.id) {
+                            try {
+                                const resultRes = await axios.post("http://localhost:4000/material/tests/get-student-result", {
+                                    test_id: t._id,
+                                    user_id: user.id
+                                }, { withCredentials: true });
+
+                                // Assuming API returns an array of results or a single object. 
+                                // If array has length > 0, or object exists, it's attempted.
+                                const data = resultRes.data;
+
+                                // Check for { success: true, result: ... } wrapper
+                                const resultData = data.result || (Array.isArray(data) ? data[0] : data);
+
+                                if (resultData) {
+                                    status = 'completed';
+                                    if (typeof resultData.marks === 'number') {
+                                        obtainedMarks = resultData.marks;
+                                    }
+                                }
+                            } catch (err) {
+                                // console.log("Error checking test status", err);
+                                // Fallback to unattempted if error (or handle specifically)
+                            }
+                        }
+
+                        // 2. Check expiration if not completed
+                        if (status === 'unattempted' && t.valid_until) {
+                            const deadline = new Date(t.valid_until);
+                            const now = new Date();
+                            if (now > deadline) {
+                                status = 'expired';
+                            }
+                        }
+
+                        return {
+                            id: t._id,
+                            title: t.title,
+                            duration: t.duration || "30 mins",
+                            questions: t.questions?.length || 0,
+                            totalMarks: t.total_marks || 10,
+                            status: status,
+                            obtainedMarks: obtainedMarks
+                        };
+                    }));
+
+                    setTests(mappedTests);
+
+                    // Auto-select the first test if available
+                    if (mappedTests.length > 0) {
+                        setActiveTest(mappedTests[0]);
+                    }
+                }
 
                 // 2. Fetch Modules (Sections)
                 const modulesRes = await axios.post("http://localhost:4000/material/module/get_all_module", {
@@ -117,7 +184,7 @@ export default function ModulePage() {
         if (courseId) {
             fetchCourseData();
         }
-    }, [courseId]);
+    }, [courseId, user, profile]); // Include user and profile dependencies
 
     // Handle Active Lecture Change (Video URL Fetching)
     const activeLecture = course?.sections
@@ -154,6 +221,19 @@ export default function ModulePage() {
     }, [activeLectureId, activeLecture]);
 
 
+    // Start Test Handler
+    const startTestHandler = (course_id: string, test_id: string) => {
+        const params = new URLSearchParams();
+        params.append('course_id', course_id);
+        params.append('test_id', test_id);
+        if (user?.id) {
+            params.append('user_id', user.id);
+        }
+
+        console.log(params.toString());
+        router.push(`/aitest/start?${params.toString()}`);
+    }
+
     // Resize Logic
     useEffect(() => {
         const handleResize = () => {
@@ -168,6 +248,17 @@ export default function ModulePage() {
     }, []);
 
     const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
+
+    // View Result Handler
+    const viewResultHandler = (course_id: string, test_id: string) => {
+        if (!user?.id) return;
+        // const params = new URLSearchParams();
+        // params.append('test_id', test_id);
+        // params.append('user_id', user.id);
+        // params.append('course_id', course_id);
+        // router.push(`/aitest/result?${params.toString()}`);
+        console.log("View Result Clicked (Navigation Disabled)", course_id, test_id);
+    }
 
     if (loading) {
         return <div className="flex h-screen items-center justify-center">Loading Course Content...</div>;
@@ -246,7 +337,7 @@ export default function ModulePage() {
                                 />
                             ) : (
                                 <TestSidebar
-                                    tests={dummyTests}
+                                    tests={tests}
                                     courseTitle={course.title}
                                     onTestSelect={(test) => {
                                         console.log('Selected test:', test);
@@ -290,7 +381,11 @@ export default function ModulePage() {
                             ) : (
                                 <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-white mb-6 sm:mb-8 min-h-[400px]">
                                     {activeTest ? (
-                                        <TestView test={activeTest} />
+                                        <TestView
+                                            test={activeTest}
+                                            onStartTest={() => startTestHandler(courseId, activeTest.id)}
+                                            onViewResult={() => viewResultHandler(courseId, activeTest.id)}
+                                        />
                                     ) : (
                                         <div className="flex items-center justify-center h-full text-gray-400 p-8">
                                             Select a test to view details

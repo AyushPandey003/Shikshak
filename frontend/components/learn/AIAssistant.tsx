@@ -61,9 +61,10 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ modules, isOpen, onClose, cou
 
     try {
       // Construct payload with explicit check for selected module
-      const payload: { query: string; course_id: string; module_id?: string } = {
+      const payload: { query: string; course_id: string; module_id?: string; top_k?: number } = {
         query: inputValue,
-        course_id: courseId
+        course_id: courseId,
+        top_k: 10
       };
 
       // Only include module_id if a specific module is selected (not the default option)

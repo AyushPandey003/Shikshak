@@ -4,7 +4,8 @@ export interface Test {
     duration: string;
     questions: number;
     totalMarks: number;
-    status: 'unattempted' | 'attempted' | 'completed';
+    status: 'unattempted' | 'attempted' | 'completed' | 'expired';
+    obtainedMarks?: number;
 }
 
 export interface Question {
@@ -94,7 +95,7 @@ export const dummySubmissions: StudentSubmission[] = [
             { questionId: 'q3', answerText: '10', obtainedMarks: 3 },
         ]
     },
-     {
+    {
         studentId: 'std-3',
         studentName: 'Charlie Brown',
         testId: 'test-1',

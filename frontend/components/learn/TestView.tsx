@@ -4,23 +4,24 @@ import { Play, CheckCircle2, Clock, Award, HelpCircle, AlertCircle, ArrowRight, 
 
 interface TestViewProps {
     test: Test;
+    onStartTest: () => void;
+    onViewResult?: () => void;
 }
 
-const TestView: React.FC<TestViewProps> = ({ test }) => {
+const TestView: React.FC<TestViewProps> = ({ test, onStartTest, onViewResult }) => {
     const isSubmitted = test.status === 'completed' || test.status === 'attempted';
     const externalTestUrl = `https://example.com/tests/${test.id}/start`;
 
     return (
         <div className="flex flex-col h-full bg-white font-sans">
             {/* Header Section */}
-            <div className="px-8 py-10 bg-gradient-to-br from-slate-50 to-white border-b border-gray-100">
+            <div className="px-8 py-10 bg-linear-to-br from-slate-50 to-white border-b border-gray-100">
                 <div className="max-w-4xl mx-auto">
                     <div className="flex items-center gap-2 mb-4">
-                        <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full ${
-                            isSubmitted 
-                                ? 'bg-green-100 text-green-700' 
-                                : 'bg-indigo-100 text-indigo-700'
-                        }`}>
+                        <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full ${isSubmitted
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-indigo-100 text-indigo-700'
+                            }`}>
                             {isSubmitted ? 'Completed' : 'Assessment'}
                         </span>
                         {test.status === 'attempted' && (
@@ -29,13 +30,13 @@ const TestView: React.FC<TestViewProps> = ({ test }) => {
                             </span>
                         )}
                     </div>
-                    
+
                     <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-4">
                         {test.title}
                     </h1>
-                    
+
                     <p className="text-lg text-gray-500 max-w-2xl leading-relaxed">
-                        Evaluates your understanding of the core concepts covered in this module. 
+                        Evaluates your understanding of the core concepts covered in this module.
                         Please review the instructions carefully before starting.
                     </p>
                 </div>
@@ -44,7 +45,7 @@ const TestView: React.FC<TestViewProps> = ({ test }) => {
             {/* Content Section */}
             <div className="flex-1 overflow-y-auto">
                 <div className="max-w-4xl mx-auto px-8 py-12">
-                    
+
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
                         <div className="p-6 rounded-2xl bg-white border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex items-center gap-4">
@@ -72,8 +73,12 @@ const TestView: React.FC<TestViewProps> = ({ test }) => {
                                 <Award className="w-6 h-6" />
                             </div>
                             <div>
-                                <p className="text-sm font-medium text-gray-500">Total Marks</p>
-                                <p className="text-xl font-bold text-gray-900">{test.totalMarks}</p>
+                                <p className="text-sm font-medium text-gray-500">
+                                    {test.obtainedMarks !== undefined ? "Your Score" : "Total Marks"}
+                                </p>
+                                <p className="text-xl font-bold text-gray-900">
+                                    {test.obtainedMarks !== undefined ? `${test.obtainedMarks} / ${test.totalMarks}` : test.totalMarks}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -91,8 +96,28 @@ const TestView: React.FC<TestViewProps> = ({ test }) => {
                                         You have successfully submitted this test. You can review your detailed performance report in the dashboard.
                                     </p>
                                 </div>
-                                <button className="px-6 py-3 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors shadow-sm">
-                                    View Results
+                                {test.obtainedMarks !== undefined && (
+                                    <div className="px-6 py-3 bg-indigo-50 border border-indigo-100 rounded-xl flex flex-col items-center shadow-sm shrink-0">
+                                        <span className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-1">Your Score</span>
+                                        <span className="text-3xl font-black text-indigo-700 leading-none">
+                                            {test.obtainedMarks}<span className="text-lg text-indigo-400 font-bold">/{test.totalMarks}</span>
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        ) : test.status === 'expired' ? (
+                            <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+                                <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                                    <Clock className="w-8 h-8 text-red-600" />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-1">Assessment Expired</h3>
+                                    <p className="text-gray-500">
+                                        The deadline for this assessment has passed. You can no longer attempt this test.
+                                    </p>
+                                </div>
+                                <button disabled className="px-6 py-3 bg-red-500 text-white font-semibold rounded-xl opacity-75 cursor-not-allowed shadow-sm">
+                                    Test Deadline Reached
                                 </button>
                             </div>
                         ) : (
@@ -119,17 +144,12 @@ const TestView: React.FC<TestViewProps> = ({ test }) => {
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row gap-4">
-                                    <a 
-                                        href={externalTestUrl} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="flex-1"
-                                    >
-                                        <button className="w-full py-4 px-8 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-lg shadow-[0_4px_14px_0_rgba(79,70,229,0.3)] transition-all hover:translate-y-[-2px] hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] active:translate-y-[0px] flex items-center justify-center gap-2">
-                                            Start Assessment
-                                            <ArrowRight className="w-5 h-5" />
-                                        </button>
-                                    </a>
+                                    <button
+                                        onClick={onStartTest}
+                                        className="flex-1 py-4 px-8 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-lg shadow-[0_4px_14px_0_rgba(79,70,229,0.3)] transition-all hover:translate-y-[-2px] hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] active:translate-y-0 flex items-center justify-center gap-2">
+                                        Start Assessment
+                                        <ArrowRight className="w-5 h-5" />
+                                    </button>
                                     <button className="px-8 py-4 bg-white border-2 border-transparent text-gray-500 font-semibold rounded-xl hover:text-gray-700 hover:bg-gray-100 transition-colors">
                                         Practice Mode
                                     </button>
