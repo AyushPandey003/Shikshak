@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { CoursesGridSkeleton } from "@/components/dashboard/CoursesSkeleton";
 
 type Option = "All" | "Public" | "Private" | "Draft";
 
@@ -138,6 +139,10 @@ export default function Page() {
 
     fetchCourses();
   }, [user]);
+  
+  if (loading) {
+    return <CoursesGridSkeleton />;
+  }
 
   const myCourse: Course[] = courses;
 
@@ -186,6 +191,7 @@ export default function Page() {
                 isTeacher={true}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                href={`/teacher/courses/${course.id}/test-preview`}
               />
             ))}
           </div>

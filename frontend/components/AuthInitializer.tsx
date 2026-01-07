@@ -37,7 +37,7 @@ export default function AuthInitializer() {
                     const profile: any = {
                         name: userData.name,
                         phoneNumber: userData.phoneNumber,
-                        role: userData.role,
+                        role: userData.role?.toLowerCase(),
                         id: userData._id,
                         // New flattened fields
                         courses: userData.courses || [],
@@ -68,7 +68,11 @@ export default function AuthInitializer() {
     };
 
     useEffect(() => {
-        setAuthLoading(isPending);
+        // If the session hook is still working, we are definitely loading.
+        if (isPending) {
+            setAuthLoading(true);
+            return;
+        }
 
         if (session) {
             // 1. Set basic session from hook immediately
@@ -81,12 +85,19 @@ export default function AuthInitializer() {
             };
             setSession(session, authUser);
 
-            // 2. Fetch latest details from backend (in background)
+            // 2. Fetch latest details from backend
             if (!userFetched) {
+                // Keep loading true while fetching user details
+                setAuthLoading(true);
                 fetchUserDetails();
+            } else {
+                // Session is there, and user details are fetched -> Loading Done
+                setAuthLoading(false);
             }
-        } else if (!isPending) {
+        } else {
+            // No session and not pending -> User is logged out -> Loading Done
             clearAuth();
+            setAuthLoading(false);
         }
     }, [session, isPending, setSession, setAuthLoading, clearAuth, userFetched]);
 

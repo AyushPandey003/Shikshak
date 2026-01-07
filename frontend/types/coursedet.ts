@@ -1,4 +1,5 @@
 export interface Review {
+    userId: string[];
     id: string;
     author: string;
     initials: string;
@@ -14,6 +15,7 @@ export interface Lecture {
     isPreview: boolean;
     type: 'video' | 'article' | 'quiz' | 'assignment';
     description?: string;
+    contentUrl?: string; // For storing Azure Blob ID or URL
 }
 
 export interface Section {

@@ -51,7 +51,7 @@ export default function CoursesPage() {
         }
 
         const mappedCourses: Course[] = await Promise.all(fetchedData.map(async (c: any) => {
-          let imageUrl = "https://picsum.photos/300/200";
+          let imageUrl = "https://images.pexels.com/photos/28216688/pexels-photo-28216688.png";
 
           // If thumbnail is a blob name (doesn't start with http), fetch SAS URL
           if (c.thumbnail && !c.thumbnail.startsWith("http")) {

@@ -1,16 +1,46 @@
 
 import React, { useState } from 'react';
+import axios from 'axios';
+import { Modal } from './ui/Modal';
+
 import { AssessmentConfig } from '../types/types';
 
 interface AssessmentFormProps {
   onStart: (config: AssessmentConfig) => void;
+  course_id?: string;
 }
 
-const AssessmentForm: React.FC<AssessmentFormProps> = ({ onStart }) => {
-  const [title, setTitle] = useState('English Proficiency Assessment');
-  const [questionsInput, setQuestionsInput] = useState(
-    'Introduce yourself and your background.\nWhat are your professional goals for the next five years?'
-  );
+const AssessmentForm: React.FC<AssessmentFormProps> = ({ onStart, course_id }) => {
+  const [title, setTitle] = useState('');
+  const [validUntil, setValidUntil] = useState('');
+  const [questionsInput, setQuestionsInput] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userQuery, setUserQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+
+
+  const handleGenerateQuestions = async () => {
+    if (!userQuery.trim()) return;
+
+    setLoading(true);
+    try {
+      // const newCourseId = "TEST_COURSE_001"
+      const response = await axios.post('http://localhost:4000/material/tests/aitest', {
+        query: userQuery,
+        course_id: course_id
+      }, { withCredentials: true });
+      console.log('Generated Questions Result:', response.data);
+      setQuestionsInput(prev => prev + '\n' + response.data.questions.join('\n'));
+      setIsModalOpen(false);
+      setUserQuery('');
+    } catch (error) {
+      console.error('Error generating questions:', error);
+      alert('Failed to generate questions. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,13 +48,18 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({ onStart }) => {
       .split('\n')
       .map((q) => q.trim())
       .filter((q) => q.length > 0);
-    
+
     if (questions.length === 0) {
       alert('Please enter at least one question.');
       return;
     }
 
-    onStart({ title, questions });
+    if (!validUntil) {
+      alert('Please select a valid until date.');
+      return;
+    }
+
+    onStart({ title, questions, validUntil });
   };
 
   return (
@@ -48,13 +83,35 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({ onStart }) => {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Questions (One per line)</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Valid Until</label>
+          <input
+            type="datetime-local"
+            value={validUntil}
+            onChange={(e) => setValidUntil(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+            required
+          />
+        </div>
+
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <label className="block text-sm font-semibold text-gray-700">Questions (One per line)</label>
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 transition-colors"
+            >
+              Generate Questions
+            </button>
+          </div>
           <textarea
             value={questionsInput}
             onChange={(e) => setQuestionsInput(e.target.value)}
             rows={6}
             className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none resize-none font-sans"
-            placeholder="Question 1&#10;Question 2..."
+            placeholder={`Question 1
+Question 2
+...`}
             required
           />
           <p className="mt-2 text-xs text-gray-400">The AI will ask these in the exact order provided.</p>
@@ -70,6 +127,41 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({ onStart }) => {
           </svg>
         </button>
       </form>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Generate Questions"
+      >
+        <div className="p-6">
+          <p className="text-gray-600 mb-4">
+            Enter a topic or description to generate questions using AI.
+          </p>
+          <textarea
+            value={userQuery}
+            onChange={(e) => setUserQuery(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none mb-6"
+            placeholder="e.g. key concepts of quantum mechanics..."
+            rows={4}
+          />
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleGenerateQuestions}
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Generating...' : 'Generate'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
     </div>
   );
 };

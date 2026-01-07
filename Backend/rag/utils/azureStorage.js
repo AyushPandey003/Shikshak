@@ -104,6 +104,7 @@ export const deleteBlobFromAzure = async (blobName) => {
     await initAzureStorage();
 
     try {
+        console.log(blobName, "blobName")
         const blockBlobClient = containerClient.getBlockBlobClient(blobName);
         const exists = await blockBlobClient.exists();
 

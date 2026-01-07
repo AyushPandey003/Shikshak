@@ -13,6 +13,7 @@ import { Module, ContentItem, GuidedStep, SidebarRecommendation } from '@/compon
 
 const API_URL = "http://localhost:4000/material/module";
 const UPLOAD_URL = "http://localhost:4000/material/upload";
+// const INGEST_URL = "http://localhost:4005/api/rag/ingest";
 
 // Configure axios defaults to send credentials
 axios.defaults.withCredentials = true;
@@ -77,7 +78,7 @@ export default function ModulesPage() {
             const response = await axios.post(`${API_URL}/get_all_module`, {
                 course_id: cleanCourseId
             });
-
+            console.log(response.data, "response.data")
             if (response.data) {
                 // Map backend data to frontend Module type
                 const mappedModules: Module[] = response.data.map((m: any) => ({
@@ -97,7 +98,7 @@ export default function ModulesPage() {
                         ...(m.notes_id || []).map((n: any) => ({
                             id: n._id,
                             type: 'reading',
-                            title: 'Module Notes', // Notes don't have titles in backend
+                            title: n.title || 'Module Notes',
                             duration: '5m', // Placeholder
                             azureId: n.azure_id
                         }))
@@ -213,7 +214,7 @@ export default function ModulesPage() {
     };
 
 
-    const handleConfirmAddItem = async (data: { title: string; type: ContentItem['type']; duration: string; file?: File }) => {
+    const handleConfirmAddItem = async (data: { title: string; type: ContentItem['type']; duration: string; file?: File; moduleId: string; courseId: string }) => {
         if (!currentModuleForItem) return;
 
         try {
@@ -223,6 +224,8 @@ export default function ModulesPage() {
             if (data.file) {
                 const formData = new FormData();
                 formData.append('file', data.file);
+                // formData.append('course_id', data.courseId);
+                // formData.append('module_id', data.moduleId);
 
                 // Assuming gateway forwards /material/upload to /api/upload
                 const uploadResponse = await axios.post(UPLOAD_URL, formData, {
@@ -269,7 +272,8 @@ export default function ModulesPage() {
                 }
                 const response = await axios.post(`${API_URL}/add_notes`, {
                     module_id: currentModuleForItem,
-                    azure_id: azureId
+                    azure_id: azureId,
+                    title: data.title
                 });
 
                 newItem = {
@@ -309,8 +313,26 @@ export default function ModulesPage() {
         setCurrentModuleForItem(null);
     };
 
-    const handleDeleteItem = (moduleId: string, itemId: string) => {
+    const handleDeleteItem = (moduleId: string, itemId: string, type: string) => {
         if (confirm('Are you sure you want to delete this item?')) {
+            try {
+                if (type === 'video') {
+                    axios.post(`${API_URL}/delete_video`, {
+                        video_id: itemId
+                    }, {
+                        withCredentials: true
+                    });
+                }
+                else if (type === 'reading') {
+                    axios.post(`${API_URL}/delete_notes`, {
+                        notes_id: itemId
+                    }, {
+                        withCredentials: true
+                    });
+                }
+            } catch (error) {
+                console.error("Error deleting item:", error);
+            }
             setModules(modules.map(m =>
                 m.id === moduleId
                     ? { ...m, items: m.items.filter(i => i.id !== itemId) }

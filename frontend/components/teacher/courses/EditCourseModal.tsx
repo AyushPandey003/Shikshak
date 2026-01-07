@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { X, Upload, Loader2 } from 'lucide-react';
+import { X, Upload } from 'lucide-react';
+import { CustomLoader } from '@/components/ui/CustomLoader';
 import Image from 'next/image';
 import { Course } from '@/types/course';
 import { useAppStore } from '@/store/useAppStore';
@@ -278,7 +279,7 @@ export const EditCourseModal: React.FC<EditCourseModalProps> = ({ isOpen, onClos
                         disabled={loading}
                         className="flex-1 px-4 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                     >
-                        {loading ? <Loader2 className="animate-spin" size={18} /> : 'Save Changes'}
+                        {loading ? <CustomLoader size={20} className="text-white" color="white" /> : 'Save Changes'}
                     </button>
                 </div>
             </div>

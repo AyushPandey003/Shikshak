@@ -12,7 +12,7 @@ interface ModuleListProps {
     onEditValueChange: (val: string) => void;
     onSaveEdit: (id: string, type: 'module' | 'item', parentId?: string) => void;
     onDeleteModule: (id: string) => void;
-    onDeleteItem: (moduleId: string, itemId: string) => void;
+    onDeleteItem: (moduleId: string, itemId: string, type: string) => void;
     onAddItem: (moduleId: string) => void;
     onAddModule: () => void;
     onCollapseAll: () => void;

@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { Course } from '@/types/coursedet';
 import { useRazorpay } from '@/hooks/useRazorpay';
 import { useRouter } from 'next/navigation';
-import { Loader2, CheckCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
+import { CustomLoader } from '@/components/ui/CustomLoader';
 
 interface MobileActionProps {
     course: Course;
@@ -51,7 +52,7 @@ const MobileAction: React.FC<MobileActionProps> = ({ course }) => {
                 >
                     {loading ? (
                         <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <CustomLoader size={16} className="text-white" color="white" />
                             Processing...
                         </>
                     ) : paymentSuccess ? (

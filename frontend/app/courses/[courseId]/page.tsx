@@ -98,8 +98,11 @@ const CourseDetailPage: React.FC = () => {
 
                 const reviewsData = reviewsRes.data;
 
+                console.log("reviewsData", reviewsData);
+
                 const mappedReviews: Review[] = Array.isArray(reviewsData) ? reviewsData.map((r: any) => ({
                     id: r._id,
+                    userId: r.user_id,
                     author: r.isAnonymous ? "Anonymous" : "Student",
                     initials: r.isAnonymous ? "A" : "S",
                     rating: r.rating || 5,
@@ -109,6 +112,7 @@ const CourseDetailPage: React.FC = () => {
 
                 setCourse(mappedCourse);
                 setReviews(mappedReviews);
+
             } catch (error) {
                 console.error("Failed to fetch course", error);
             } finally {
