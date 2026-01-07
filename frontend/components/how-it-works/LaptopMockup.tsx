@@ -3,7 +3,7 @@ import { MoveRight } from 'lucide-react';
 
 export default function LaptopMockup() {
   return (
-    <div className="relative h-[800px] w-full flex items-center justify-center perspective-[2000px]">
+    <div className="relative h-[600px] w-full flex items-center justify-center perspective-[2000px]">
              
      {/* Abstract Star/Burst Shape Behind */}
      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] pointer-events-none">

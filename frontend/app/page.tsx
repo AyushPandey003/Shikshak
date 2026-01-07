@@ -21,7 +21,7 @@ export default function Home() {
         HERO SECTION
         =============================================
       */}
-      <section className="relative pt-24 pb-20 px-6 md:px-12 max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <section className="relative pt-36 pb-0 px-6 md:px-12 max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
          
          <div className="z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-bold tracking-wider mb-8 uppercase">
