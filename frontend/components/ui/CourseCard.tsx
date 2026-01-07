@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Heart, ShoppingCart, User, BookOpen, GraduationCap, Pencil, Trash2, MessageSquarePlus, Star } from 'lucide-react';
+import { ImageWithSkeleton } from '@/components/ui/ImageWithSkeleton';
 import { Course } from '@/types/course';
 import Link from 'next/link';
 import ReviewModal from './ReviewModal';
@@ -111,7 +112,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
 
         {/* Image Container */}
         <div className="relative h-48 w-full overflow-hidden bg-gray-200">
-          <img
+          <ImageWithSkeleton
             src={course.image}
             alt={course.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -166,10 +167,11 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
 
           {/* Instructor */}
           <div className="flex items-center gap-2 mb-3">
-            <img
+            <ImageWithSkeleton
               src={course.instructor?.avatar || "https://ui-avatars.com/api/?name=Instructor"}
               alt={course.instructor?.name || "Instructor"}
-              className="w-6 h-6 rounded-full object-cover"
+              className="w-6 h-6 rounded-full"
+              skeletonClassName="rounded-full"
             />
             <span className="text-sm text-gray-500">{course.instructor?.name || "Instructor"}</span>
           </div>

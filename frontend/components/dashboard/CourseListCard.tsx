@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, ClipboardList } from 'lucide-react';
+import { ImageWithSkeleton } from '@/components/ui/ImageWithSkeleton';
 
 interface Course {
   id: string;
@@ -18,7 +19,7 @@ const CourseListCard: React.FC<{ items: Course[]; title?: string }> = ({
   title = "Your courses"
 }) => {
   return (
-    <div className="bg-[#FF6B6B] rounded-[2rem] p-8 text-white relative overflow-hidden h-auto md:h-[550px] flex flex-col">
+    <div className="bg-[#FF6B6B] rounded-[2rem] p-8 text-white relative overflow-hidden h-auto md:min-h-[650px] flex flex-col">
        {/* Header */}
        <div className="flex items-center justify-between mb-8 relative z-10 flex-nowrap">
           <h2 className="text-2xl md:text-3xl font-medium truncate mr-2">{title}</h2>
@@ -55,10 +56,11 @@ const CourseListCard: React.FC<{ items: Course[]; title?: string }> = ({
                    */}
 
                    <div className="flex items-center gap-2">
-                      <img 
+                      <ImageWithSkeleton 
                         src={course.mentorImage || `https://ui-avatars.com/api/?name=${course.mentorName}`} 
                         alt="Mentor" 
-                        className="w-8 h-8 rounded-lg object-cover" 
+                        className="w-8 h-8 rounded-lg"
+                        skeletonClassName="rounded-lg"
                       />
                       <div className="flex flex-col leading-tight">
                          <span className="text-[10px] text-gray-400 font-semibold uppercase">Mentor</span>
