@@ -426,6 +426,7 @@ export default function ModulesPage() {
                     }
                     : m
             ));
+            alert("Module created and saved successfully!")
         }
         setEditItemModalOpen(false);
         setCurrentItem(null);

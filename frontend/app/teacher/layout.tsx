@@ -45,7 +45,7 @@ export default function TeacherLayout({
       </header>
 
       {/* Main Layout Area */}
-      <div className="flex flex-1 relative">
+      <div className="flex flex-1 relative ">
         <Sidebar />
         <main className="flex-1 w-full bg-white">
           {children}

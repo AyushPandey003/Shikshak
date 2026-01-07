@@ -251,7 +251,7 @@ const CourseDetailPage: React.FC = () => {
                     </div>
 
                     {/* Requirements */}
-                    <div className="mb-14">
+                    {/* <div className="mb-14">
                         <h2 className="text-2xl font-bold text-gray-900 mb-6 font-display">Requirements</h2>
                         <ul className="space-y-4 text-gray-700 text-sm list-none">
                             {course.requirements.map((req, i) => (
@@ -261,7 +261,7 @@ const CourseDetailPage: React.FC = () => {
                                 </li>
                             ))}
                         </ul>
-                    </div>
+                    </div> */}
 
                     {/* Description */}
                     <div className="mb-14">
