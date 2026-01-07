@@ -209,9 +209,8 @@ export default function ModulePage() {
                                     // Switch back to lecture view when modules tab is clicked
                                     setActiveView('lecture');
                                 }}
-                                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
-                                    sidebarView === 'modules' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:bg-gray-50'
-                                }`}
+                                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${sidebarView === 'modules' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:bg-gray-50'
+                                    }`}
                             >
                                 Modules
                             </button>
@@ -221,14 +220,13 @@ export default function ModulePage() {
                                     // Switch to test view when tests tab is clicked
                                     setActiveView('test');
                                 }}
-                                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${
-                                    sidebarView === 'tests' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:bg-gray-50'
-                                }`}
+                                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors ${sidebarView === 'tests' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:bg-gray-50'
+                                    }`}
                             >
                                 Tests
                             </button>
                         </div>
-                        
+
                         <div className="flex-1 overflow-hidden">
                             {sidebarView === 'modules' ? (
                                 <ModuleSidebar

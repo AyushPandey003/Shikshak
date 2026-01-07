@@ -42,7 +42,10 @@ export default function TestPreviewPage() {
                     course_id: courseId,
                     user_id: user?.id,
                     user_role: profile?.role
-                }, { withCredentials: true });
+                }, {
+                    headers: user?.accessToken ? { Authorization: `Bearer ${user.accessToken}` } : {},
+                    withCredentials: true
+                });
                 setTestIds(response.data.test_id || [])
             } catch (error) {
                 console.error("Error fetching course data:", error);
