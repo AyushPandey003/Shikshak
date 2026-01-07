@@ -15,7 +15,7 @@
 
 **Shikshak** is an enterprise-grade Learning Management System (LMS) engineered with a microservices-first approach. It leverages event-driven architecture to provide a seamless, scalable, and intelligent platform for students and educators. By integrating Real-Time AI Proctoring, RAG (Retrieval-Augmented Generation) based study assistance, and robust course management, Shikshak offers a futuristic learning environment.
 
-![Shikshak Banner](https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2070&auto=format&fit=crop)
+![Shikshak Banner](frontend/public/preview.png)
 
 ---
 
@@ -23,9 +23,9 @@
 
 - [✨ Key Features](#-key-features)
 - [🏗️ System Architecture](#-system-architecture)
-- [� Data Model (ERD)](#-data-model-erd)
+- [💾 Data Model (ERD)](#-data-model-erd)
 - [🔄 User Journey Flows](#-user-journey-flows)
-- [�🛠️ Tech Stack Strategy](#-tech-stack-strategy)
+- [🛠️ Tech Stack Strategy](#-tech-stack-strategy)
 - [📂 Project Structure](#-project-structure)
 - [🚀 Service Overview](#-service-overview)
 - [⚙️ Installation & Setup](#-installation--setup)
@@ -98,7 +98,7 @@ sequenceDiagram
 
 ---
 
-## � Data Model (ERD)
+## 💾 Data Model (ERD)
 
 The following diagram illustrates the relationship between the core entities in the system, utilizing MongoDB's flexible schema design with referenced relationships.
 
@@ -165,13 +165,13 @@ graph LR
     Dashboard --> Create[Create Course]
     Create --> Module[Add Module]
     Module --> Upload[Upload Video]
-    Upload --> Process[Processing (Kafka)]
+    Upload --> Process["Processing (Kafka)"]
     Process --> Live((Publish))
 ```
 
 ---
 
-## �🛠️ Tech Stack Strategy
+## 🛠️ Tech Stack Strategy
 
 We chose this stack to ensure **scalability**, **maintainability**, and **developer experience**.
 
@@ -236,11 +236,52 @@ Shikshak/
 ### Prerequisites
 
 - **Node.js** v18 or higher
-- **Docker** (Recommended for Kafka/Redis)
+- **Docker Desktop** or **Docker Cloud** (Recommended for managing Kafka & Redis)
 - **MongoDB** Instance
 - **Apache Kafka** & **Zookeeper**
 
-### 1. Frontend Setup
+### 1. Infrastructure Setup (Docker)
+
+We recommend using **Docker Desktop** or **Docker Cloud** to easily manage infrastructure dependencies.
+
+Create a `docker-compose.yml` file in the root directory (if not present) with the following content to install and start **Kafka** and **Redis** services:
+
+```yaml
+version: "3"
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    ports: ["2181:2181"]
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    ports: ["9092:9092"]
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+  redis:
+    image: redis:alpine
+    ports: ["6379:6379"]
+```
+
+Run the infrastructure:
+
+```bash
+docker-compose up -d
+```
+
+### 2. Frontend Setup
 
 ```bash
 cd frontend
@@ -251,7 +292,7 @@ npm run dev
 
 Visit `http://localhost:3000`
 
-### 2. Backend Services Setup
+### 3. Backend Services Setup
 
 For **each** service directory (`Backend/ApiGateway`, `Backend/Auth`, etc.):
 
@@ -262,21 +303,19 @@ npm install
 npm run dev
 ```
 
-### 3. Infrastructure (Docker)
+### 4. Run Everything (Monorepo)
 
-Use the provided docker-compose file (if available) or create one to spin up Kafka and Redis:
+You can start the **Frontend**, **API Gateway**, **Auth**, **Courses**, and **Payment** services concurrently from the root directory.
 
-```yaml
-version: "3"
-services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    ports: ["2181:2181"]
-  kafka:
-    image: confluentinc/cp-kafka:latest
-    ports: ["9092:9092"]
-    depends_on: [zookeeper]
+```bash
+# In the root 'Shikshak' folder
+npm install
+npm run dev
 ```
+
+This command uses `concurrently` to spin up all microservices and the frontend client.
+
+> **Note**: Ensure all environment variables `.env` are correctly set in each service directory before starting.
 
 ---
 
