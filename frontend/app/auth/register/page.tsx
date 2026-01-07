@@ -160,13 +160,13 @@ export const UserDetailsPage: React.FC<UserDetailsPageProps> = ({ authUser: init
                                     title="Teacher"
                                     description="I want to create courses and teach."
                                 />
-                                <RoleCard
+                                {/* <RoleCard
                                     selected={role}
                                     value={UserRole.PARENT}
                                     icon={Users}
                                     title="Parent"
                                     description="I want to track my child's progress."
-                                />
+                                /> */}
                             </div>
 
                             <div className="flex justify-center">

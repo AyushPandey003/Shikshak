@@ -152,8 +152,8 @@ export default function CoursesPage() {
     if (activeTab !== 'All') {
       if (activeTab === 'Paid') result = result.filter(c => c.price > 0);
       if (activeTab === 'Free') result = result.filter(c => c.price === 0);
-      if (activeTab === 'Sale') result = result.filter(c => c.tags?.includes('Sale'));
-      if (activeTab === 'Bundle') result = result.filter(c => c.isBundle);
+      // if (activeTab === 'Sale') result = result.filter(c => c.tags?.includes('Sale'));
+      // if (activeTab === 'Bundle') result = result.filter(c => c.isBundle);
     }
 
     // Filter by Grades

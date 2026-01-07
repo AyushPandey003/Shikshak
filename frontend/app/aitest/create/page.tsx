@@ -48,6 +48,7 @@ const CreateTestPage: React.FC = () => {
             valid_until: config.validUntil,
         }, { withCredentials: true });
         alert('Test created successfully.');
+        router.push('/teacher/courses');
     };
 
     return (

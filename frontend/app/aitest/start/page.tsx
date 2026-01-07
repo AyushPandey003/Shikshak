@@ -568,11 +568,8 @@ const StartTestPage: React.FC = () => {
                             </div>
 
                             <div className="mt-16 pt-8 border-t flex gap-4 no-print">
-                                <button onClick={() => router.push('/aitest/create')} className="flex-1 py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all">
-                                    Conduct New Assessment
-                                </button>
-                                <button onClick={() => window.print()} className="flex-1 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg">
-                                    Export PDF Report
+                                <button onClick={() => router.push('/student/courses')} className="flex-1 py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all">
+                                    Go to courses
                                 </button>
                             </div>
                         </div>

@@ -101,7 +101,6 @@ export const saveResult = async (req, res) => {
             user_id: { name, _id: user_id },
             answers,
             questions,
-            marks: 8,
         });
 
         await result.save();
