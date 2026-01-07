@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 
-import { createModule, editModule, getAllModules, deleteModule, addVideo, addNotes, deleteVideo, deleteNotes } from "../controllers/modules.controllers.js";
+import { createModule, updateMaterial, editModule, getAllModules, deleteModule, addVideo, addNotes, deleteVideo, deleteNotes } from "../controllers/modules.controllers.js";
 
 const router = Router();
 
@@ -13,6 +13,7 @@ router.post("/add_video", addVideo);
 router.post("/add_notes", addNotes);
 router.post("/delete_video", deleteVideo);
 router.post("/delete_notes", deleteNotes);
+router.post("/update_material", updateMaterial);
 
 export default router;
 

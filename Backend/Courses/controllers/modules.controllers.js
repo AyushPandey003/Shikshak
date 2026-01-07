@@ -147,13 +147,13 @@ export const addVideo = async (req, res) => {
 
         module.video_id.push(savedVideo._id);
         await module.save();
-        const course_id = module.course_id;
-        const azureBlobUrl = savedVideo.azure_id;
-        const video_id = savedVideo._id;
-        const note_id = null;
-        const eventtype = 'video_created';
-        await produceMaterialCreated(course_id, module_id, azureBlobUrl, video_id, note_id, eventtype);
-        await disconnectMaterialProducer();
+        // const course_id = module.course_id;
+        // const azureBlobUrl = savedVideo.azure_id;
+        // const video_id = savedVideo._id;
+        // const note_id = null;
+        // const eventtype = 'video_created';
+        // await produceMaterialCreated(course_id, module_id, azureBlobUrl, video_id, note_id, eventtype);
+        // await disconnectMaterialProducer();
 
         res.status(201).json(savedVideo);
     } catch (error) {
@@ -189,13 +189,13 @@ export const addNotes = async (req, res) => {
 
         module.notes_id.push(savedNotes._id);
         await module.save();
-        const course_id = module.course_id;
-        const azureBlobUrl = savedNotes.azure_id;
-        const video_id = null;
-        const note_id = savedNotes._id;
-        const eventtype = 'note_created';
-        await produceMaterialCreated(course_id, module_id, azureBlobUrl, video_id, note_id, eventtype);
-        await disconnectMaterialProducer();
+        // const course_id = module.course_id;
+        // const azureBlobUrl = savedNotes.azure_id;
+        // const video_id = null;
+        // const note_id = savedNotes._id;
+        // const eventtype = 'note_created';
+        // await produceMaterialCreated(course_id, module_id, azureBlobUrl, video_id, note_id, eventtype);
+        // await disconnectMaterialProducer();
 
         res.status(201).json(savedNotes);
     } catch (error) {
@@ -271,6 +271,39 @@ export const deleteNotes = async (req, res) => {
         res.status(200).json({ message: "Notes deleted successfully" });
     } catch (error) {
         console.error("Error deleting notes:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+// Update Material
+export const updateMaterial = async (req, res) => {
+    try {
+        const { material_id, azure_id, type } = req.body;
+
+        if (!material_id || !azure_id || !type) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+
+        if(type=="video"){
+            const video = await Video.findById(material_id);
+            if (!video) {
+                return res.status(404).json({ message: "Video not found" });
+            }
+            video.azure_id = azure_id;
+            await video.save();
+            res.status(200).json(video);
+        }
+        if(type=="notes"){
+            const notes = await Notes.findById(material_id);
+            if (!notes) {
+                return res.status(404).json({ message: "Notes not found" });
+            }
+            notes.azure_id = azure_id;
+            await notes.save();
+            res.status(200).json(notes);
+        }
+    } catch (error) {
+        console.error("Error updating material:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
