@@ -23,4 +23,4 @@ app.use('/api/rag', ragRoutes);
 
 app.listen(PORT, () => {
     console.log(`RAG Service running on port ${PORT}`);
-});
+}); 
