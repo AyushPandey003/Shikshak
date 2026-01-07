@@ -10,17 +10,18 @@ import { AddItemModal } from '@/components/teacher/modules/AddItemModal';
 import { EditContentItemModal } from '@/components/teacher/modules/EditContentItemModal';
 import { CreationSidebar } from '@/components/teacher/modules/CreationSidebar';
 import { Module, ContentItem, GuidedStep, SidebarRecommendation } from '@/components/teacher/modules/types';
+import { v4 as uuidv4 } from 'uuid';
 
 const API_URL = "http://localhost:4000/material/module";
-const UPLOAD_URL = "http://localhost:4000/material/upload";
-// const INGEST_URL = "http://localhost:4005/api/rag/ingest";
+// const UPLOAD_URL = "http://localhost:4000/material/upload";
+const INGEST_URL = "http://localhost:4000/rag/ingest";
 
 // Configure axios defaults to send credentials
 axios.defaults.withCredentials = true;
 
 export default function ModulesPage() {
     const searchParams = useSearchParams();
-    const courseId = searchParams.get('courseId');
+    const courseId = searchParams.get('courseId') || '';
     const [modules, setModules] = useState<Module[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -218,43 +219,74 @@ export default function ModulesPage() {
         if (!currentModuleForItem) return;
 
         try {
-            let azureId = '';
+            // let azureId = '';
 
-            // 1. Upload File if present
-            if (data.file) {
-                const formData = new FormData();
-                formData.append('file', data.file);
-                // formData.append('course_id', data.courseId);
-                // formData.append('module_id', data.moduleId);
+            // // 1. Upload File if present
+            // if (data.file) {
+            //     const formData = new FormData();
+            //     formData.append('file', data.file);
+            //     // formData.append('course_id', data.courseId);
+            //     // formData.append('module_id', data.moduleId);
 
-                // Assuming gateway forwards /material/upload to /api/upload
-                const uploadResponse = await axios.post(UPLOAD_URL, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
+            //     // Assuming gateway forwards /material/upload to /api/upload
+            //     const uploadResponse = await axios.post(INGEST_URL, formData, {
+            //         headers: {
+            //             'Content-Type': 'multipart/form-data'
+            //         }
+            //     });
 
-                if (uploadResponse.data && uploadResponse.data.blobName) {
-                    azureId = uploadResponse.data.blobName;
-                } else {
-                    throw new Error("Upload failed: No blob name received");
-                }
-            }
+            //     if (uploadResponse.data && uploadResponse.data.blobName) {
+            //         azureId = uploadResponse.data.blobName;
+            //     } else {
+            //         throw new Error("Upload failed: No blob name received");
+            //     }
+            // }
 
             // 2. Call specific API based on type
             let newItem: ContentItem | null = null;
-
+            const uuid = uuidv4();
             if (data.type === 'video') {
-                if (!azureId) {
-                    alert("A video file is required");
-                    return;
-                }
+                // if (!azureId) {
+                //     alert("A video file is required");
+                //     return;
+                // }
                 const response = await axios.post(`${API_URL}/add_video`, {
                     module_id: currentModuleForItem,
-                    azure_id: azureId,
+                    azure_id: uuid,
                     title: data.title
+                }, {
+                    withCredentials: true
                 });
+                console.log(response.data)
+                let response2
+                if (data.file) {
+                    const formData = new FormData();
+                    formData.append('file', data.file);
+                    formData.append('module_id', currentModuleForItem);
+                    formData.append('course_id', courseId);
+                    formData.append('source_type', "video");
+                    formData.append('video_id', response.data._id);
 
+                    response2 = await axios.post(`${INGEST_URL}`, formData, {
+                        withCredentials: true,
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    });
+                    console.log(response2.data)
+                }
+                const response3 = await axios.post(`${API_URL}/update_material`, {
+                    material_id: response.data._id,
+                    azure_id: response2?.data.blob_name,
+                    type: 'video'
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    withCredentials: true
+                })
+
+                console.log(response3.data)
                 // Map backend video to frontend item
                 newItem = {
                     id: response.data._id,
@@ -262,27 +294,55 @@ export default function ModulesPage() {
                     title: response.data.title,
                     duration: data.duration || '0m', // Backend doesn't store duration yet
                     fileName: data.file?.name,
-                    azureId: azureId
+                    azureId: response3.data.azure_id
                 };
 
             } else if (data.type === 'reading') { // Notes
-                if (!azureId) {
-                    alert("A document file is required for notes");
-                    return;
-                }
                 const response = await axios.post(`${API_URL}/add_notes`, {
                     module_id: currentModuleForItem,
-                    azure_id: azureId,
+                    azure_id: uuid,
                     title: data.title
+                }, {
+                    withCredentials: true
                 });
+                console.log(response.data)
+                let response2
+                if (data.file) {
+                    console.log(courseId, "courseid", currentModuleForItem, "moduleid", response.data._id, "responseid")
+                    const formData = new FormData();
+                    formData.append('file', data.file);
+                    formData.append('module_id', currentModuleForItem);
+                    formData.append('course_id', courseId);
+                    formData.append('source_type', "notes");
+                    formData.append('notes_id', response.data._id);
 
+                    response2 = await axios.post(`${INGEST_URL}`, formData, {
+                        withCredentials: true,
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    });
+                    console.log(response2.data)
+                }
+                const response3 = await axios.post(`${API_URL}/update_material`, {
+                    material_id: response.data._id,
+                    azure_id: response2?.data.blob_name,
+                    type: 'notes'
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    withCredentials: true
+                })
+
+                console.log(response3.data)
                 newItem = {
                     id: response.data._id,
                     type: 'reading',
-                    title: data.title, // Backend doesn't store title for notes, but we keep it in UI
-                    duration: data.duration || '5m',
+                    title: response.data.title,
+                    duration: data.duration || '0m', // Backend doesn't store duration yet
                     fileName: data.file?.name,
-                    azureId: azureId
+                    azureId: response3.data.azure_id
                 };
             } else {
                 // Fallback for other types (Quiz/Assignment) - Local only for now as no API

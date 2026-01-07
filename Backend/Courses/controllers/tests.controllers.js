@@ -101,7 +101,7 @@ export const saveResult = async (req, res) => {
             user_id: { name, _id: user_id },
             answers,
             questions,
-            marks: null,
+            marks: 8,
         });
 
         await result.save();
@@ -179,7 +179,7 @@ export const getStudentResult = async (req, res) => {
             return res.status(400).json({ error: "Test ID and User ID are required" });
         }
 
-        const result = await Result.findOne({ test_id, user_id });
+        const result = await Result.findOne({ test_id, "user_id._id": user_id });
 
         if (!result) {
             return res.status(404).json({ error: "Result not found" });

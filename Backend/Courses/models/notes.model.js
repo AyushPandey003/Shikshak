@@ -2,12 +2,12 @@ import mongoose from "mongoose";
 
 const NotesSchema = new mongoose.Schema(
     {
-        azure_id: [
-            {
-                type: String,
-                required: true,
-            }
-        ],
+        azure_id:
+        {
+            type: String,
+            required: true,
+        }
+        ,
         module_id: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Module",
