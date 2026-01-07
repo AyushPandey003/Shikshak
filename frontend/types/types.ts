@@ -15,6 +15,7 @@ export interface QuestionEntry {
 export interface AssessmentConfig {
   title: string;
   questions: string[];
+  validUntil: string;
 }
 
 export interface AssessmentReport {

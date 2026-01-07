@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import { GraduationCap, BookOpen, ClipboardList, Phone } from 'lucide-react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import ProfileStatsCard from '@/components/dashboard/ProfileStatsCard';
 import CourseListCard from '@/components/dashboard/CourseListCard';
@@ -8,6 +9,7 @@ import AiAssistantCard from '@/components/dashboard/AiAssistantCard';
 import Footer from '@/components/layout/Footer';
 import { useAppStore } from '@/store/useAppStore';
 import axios from 'axios';
+import { LoadingDashboard } from '@/components/dashboard/DashboardSkeletons';
 
 // Dummy Data for Upcoming Events (Backend integration pending for events)
 const upcomingEvents = {
@@ -48,6 +50,7 @@ export default function StudentDashboardPage() {
                 headers: user.accessToken ? { Authorization: `Bearer ${user.accessToken}` } : {},
                 withCredentials: true
               });
+              console.log("response", response);
 
               let imageUrl = "https://picsum.photos/seed/course/400/300";
 
@@ -104,8 +107,8 @@ export default function StudentDashboardPage() {
     fetchDashboardData();
   }, [user, profile]);
 
-  if (!user || !profile) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (loading || !user || !profile) {
+    return <LoadingDashboard />;
   }
 
   return (
@@ -118,9 +121,23 @@ export default function StudentDashboardPage() {
             name={user.name || "Student"}
             roleTag="Student"
             imageSrc={user.photoUrl || "https://ui-avatars.com/api/?name=Student&background=random"}
-            upcomingCourses={upcomingEvents.courses}
-            upcomingTests={upcomingEvents.tests}
-            activityPercentage={78} // Dummy activity stats
+            stats={[
+              {
+                label: "Class",
+                value: profile?.studentDetails?.classGrade || profile?.class || "N/A",
+                icon: GraduationCap,
+                className: "text-purple-600",
+                bgClassName: "bg-purple-100"
+              },
+              {
+                label: "Phone Number",
+                value: profile?.phoneNumber || "N/A",
+                icon: Phone,
+                className: "text-green-600",
+                bgClassName: "bg-green-100"
+              }
+            ]}
+            activityPercentage={78}
           />
         }
         courses={

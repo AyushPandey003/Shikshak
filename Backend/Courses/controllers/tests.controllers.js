@@ -6,9 +6,9 @@ import axios from "axios";
 // Create a new test
 export const createTest = async (req, res) => {
     try {
-        const { questions, course_id, user_id, valid_until } = req.body;
+        const { questions, course_id, user_id, valid_until, title } = req.body;
 
-        if (!questions || !course_id || !user_id || !valid_until) {
+        if (!questions || !course_id || !user_id || !valid_until || !title) {
             return res.status(400).json({ error: "All fields are required" });
         }
 
@@ -24,6 +24,7 @@ export const createTest = async (req, res) => {
             course_id,
             user_id,
             valid_until: new Date(valid_until),
+            title
         });
 
         await test.save();
@@ -47,21 +48,24 @@ export const createTest = async (req, res) => {
 // Fetch questions for a test
 export const fetchQuestions = async (req, res) => {
     try {
-        const { course_id, query } = req.body;
-
-        if (!course_id || !query) {
-            return res.status(400).json({ error: "Course ID and Query are required" });
+        const { course_id, test_id } = req.body;
+        console.log(course_id, test_id);
+        if (!course_id || !test_id) {
+            return res.status(400).json({ error: "Course ID and Test ID are required" });
         }
 
-        const course = await Course.findOne({ course_id });
+        const course = await Course.findOne({ _id: course_id });
         if (!course) {
             return res.status(404).json({ error: "Course not found" });
         }
-        // create function for ai rag to create questions on given course id and query
-        const questions = await generateQuestions(course_id, query);
+        const test = await Test.findOne({ _id: test_id });
+        console.log(test);
+        if (!test) {
+            return res.status(404).json({ error: "Test not found" });
+        }
         res.status(200).json({
             success: true,
-            questions: course.test_id,
+            questions: test.questions,
         });
     } catch (error) {
         console.error("Error fetching questions:", error);
@@ -72,9 +76,10 @@ export const fetchQuestions = async (req, res) => {
 // Save student result (answers)
 export const saveResult = async (req, res) => {
     try {
-        const { test_id, user_id, answers, questions } = req.body;
+        const { test_id, user_id, name, answers, questions } = req.body;
 
-        if (!test_id || !user_id || !answers || !questions) {
+        console.log(test_id, user_id, name, answers, questions);
+        if (!test_id || !user_id || !answers || !questions || !name) {
             return res.status(400).json({ error: "All fields are required" });
         }
 
@@ -85,7 +90,7 @@ export const saveResult = async (req, res) => {
         }
 
         // Check if student already submitted
-        const existingResult = await Result.findOne({ test_id, user_id });
+        const existingResult = await Result.findOne({ test_id, user_id: { _id: user_id, name } });
         if (existingResult) {
             return res.status(400).json({ error: "Result already submitted" });
         }
@@ -93,8 +98,9 @@ export const saveResult = async (req, res) => {
         // Create the result
         const result = new Result({
             test_id,
-            user_id,
+            user_id: { name, _id: user_id },
             answers,
+            questions,
             marks: null,
         });
 
@@ -120,7 +126,8 @@ export const getResults = async (req, res) => {
             return res.status(400).json({ error: "Test ID is required" });
         }
 
-        const results = await Result.find({ test_id });
+        const results = await Result.find({ test_id }).populate('test_id');
+
 
         res.status(200).json({
             success: true,
@@ -191,10 +198,10 @@ export const getStudentResult = async (req, res) => {
 // Generate AI questions using RAG
 export const generateAiQuestions = async (req, res) => {
     try {
-        const { module_id, course_id, number_of_questions = 5, query } = req.body;
+        const { course_id, number_of_questions = 5, query } = req.body;
 
-        if (!module_id && !course_id && !query) {
-            return res.status(400).json({ error: "Module ID, Course ID, or Query is required" });
+        if (!course_id && !query) {
+            return res.status(400).json({ error: "Course ID, or Query is required" });
         }
 
         const ragServiceUrl = process.env.RAG_PROXY_URL || 'http://localhost:4005';
@@ -202,22 +209,22 @@ export const generateAiQuestions = async (req, res) => {
         // Construct the prompt for the RAG service
         // If a specific query/text is provided by the user (like the chunk in the prompt), we use that.
         // Otherwise, we ask RAG to generate questions based on the module/course context.
-        let ragQuery = query;
+        // let ragQuery = query;
 
-        if (!ragQuery) {
-            ragQuery = `Generate ${number_of_questions} multiple choice questions (with 4 options and the correct answer indicated) based on the content of ${module_id ? 'module ' + module_id : 'course ' + course_id}. 
-            Format strictly as a JSON array of objects with keys: question, options (array of strings), answer (string).`;
-        }
+        // if (!ragQuery) {
+        //     ragQuery = `Generate ${number_of_questions} multiple choice questions (with 4 options and the correct answer indicated) based on the content of ${'course ' + course_id}. 
+        //     Format strictly as a JSON array of objects with keys: question, options (array of strings), answer (string).`;
+        // }
+        let ragQuery = `Generate ${number_of_questions} questions based on the content of ${'course ' + course_id} and query ${query}. Only just return questions in a JSON nothing else.`;
 
         // Call the RAG service query endpoint
         // logic: RAG service takes "query" and finds relevant chunks.
         // If we want questions *covering* the module, we might need "full_context: true" or just rely on semantic search.
         const response = await axios.post(`${ragServiceUrl}/api/rag/query`, {
             query: ragQuery,
-            ...(module_id && { module_id }),
             ...(course_id && { course_id }),
             top_k: 5, // Get enough context
-            full_context: true // or true if we want comprehensive coverage, but it might be slow
+            full_context: false // or true if we want comprehensive coverage, but it might be slow
         });
 
         // The RAG service returns { answer: "...", sources: [...] }

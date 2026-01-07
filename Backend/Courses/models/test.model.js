@@ -21,6 +21,10 @@ const testSchema = new mongoose.Schema(
             type: Date,
             required: true,
         },
+        title: {
+            type: String,
+            required: true,
+        }
     },
     { timestamps: true }
 );

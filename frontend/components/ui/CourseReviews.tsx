@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { Star, ThumbsUp, ThumbsDown, MoreVertical, BadgeCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Star, ThumbsUp, ThumbsDown, MoreVertical, BadgeCheck, Trash2 } from 'lucide-react';
 import { Review } from '@/types/coursedet';
 import { STATIC_REVIEWS } from '@/constants/coursedetails';
+import { useAppStore } from '@/store/useAppStore';
+import axios from 'axios';
 
 interface CourseReviewsProps {
     courseTitle: string;
@@ -10,7 +12,32 @@ interface CourseReviewsProps {
 
 const CourseReviews: React.FC<CourseReviewsProps> = ({ courseTitle, reviewsList }) => {
     // Use provided reviews or fallback to static
-    const reviews = reviewsList && reviewsList.length > 0 ? reviewsList : STATIC_REVIEWS;
+    const [reviews, setReviews] = useState<Review[]>(reviewsList && reviewsList.length > 0 ? reviewsList : []);
+
+    useEffect(() => {
+        if (reviewsList && reviewsList.length > 0) {
+            setReviews(reviewsList);
+        }
+    }, [reviewsList]);
+    const { profile } = useAppStore();
+
+    const deleteReview = async function (reviewId: string) {
+        if (!window.confirm("Are you sure you want to delete this review?")) {
+            return;
+        }
+        try {
+            await axios.post('http://localhost:4000/material/reviews/delete_review', {
+                review_id: reviewId
+            }, {
+                withCredentials: true
+            });
+            setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+        }
+        catch (error) {
+            console.error(error);
+            alert("Failed to delete review");
+        }
+    }
 
     return (
         <div className="mb-12">
@@ -20,7 +47,7 @@ const CourseReviews: React.FC<CourseReviewsProps> = ({ courseTitle, reviewsList 
                 </div>
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900 font-display">Student Feedback</h2>
-                    <p className="text-sm text-gray-500 font-medium">4.6 course rating • {reviews.length} ratings</p>
+                    <p className="text-sm text-gray-500 font-medium">{reviews.length} ratings</p>
                 </div>
             </div>
 
@@ -48,10 +75,21 @@ const CourseReviews: React.FC<CourseReviewsProps> = ({ courseTitle, reviewsList 
                                     {review.content}
                                 </p>
 
-                                <div className="flex items-center gap-4 mt-4">
-                                    <span className="text-xs text-gray-400 font-medium">Was this review helpful?</span>
-                                    <button className="p-1.5 hover:bg-white hover:shadow-sm rounded-full transition-all text-gray-400 hover:text-gray-700"><ThumbsUp className="w-4 h-4" /></button>
-                                    <button className="p-1.5 hover:bg-white hover:shadow-sm rounded-full transition-all text-gray-400 hover:text-gray-700"><ThumbsDown className="w-4 h-4" /></button>
+                                <div className="flex items-center justify-between mt-4">
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-xs text-gray-400 font-medium">Was this review helpful?</span>
+                                        <button className="p-1.5 hover:bg-white hover:shadow-sm rounded-full transition-all text-gray-400 hover:text-gray-700"><ThumbsUp className="w-4 h-4" /></button>
+                                        <button className="p-1.5 hover:bg-white hover:shadow-sm rounded-full transition-all text-gray-400 hover:text-gray-700"><ThumbsDown className="w-4 h-4" /></button>
+                                    </div>
+                                    {profile && review.userId && review.userId[0] === profile.id && (
+                                        <button
+                                            onClick={() => deleteReview(review.id)}
+                                            className="p-1.5 hover:bg-red-50 hover:shadow-sm rounded-full transition-all text-gray-400 hover:text-red-500"
+                                            title="Delete review"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -59,9 +97,9 @@ const CourseReviews: React.FC<CourseReviewsProps> = ({ courseTitle, reviewsList 
                 ))}
             </div>
 
-            <button className="mt-8 px-8 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200">
+            {/* <button className="mt-8 px-8 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200">
                 Show all reviews
-            </button>
+            </button> */}
         </div>
     );
 };

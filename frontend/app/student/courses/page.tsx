@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { CoursesGridSkeleton } from "@/components/dashboard/CoursesSkeleton";
 
 type Option = "All" | "In Progress" | "Completed";
 
@@ -48,12 +49,14 @@ export default function StudentCoursesPage() {
             try {
               console.log(`Student Courses Debug: Fetching details for ${courseId}`);
               // Using general endpoint to allow viewing if public, bypassing strict student list check
-              const response = await axios.post("http://localhost:4000/material/courses/get_course_by_id_general", {
+              const response = await axios.post("http://localhost:4000/material/courses/get_course_by_id", {
+                user_id: user?.id,
+                user_role: profile.role,
                 course_id: courseId
               }, {
-                headers: user.accessToken ? { Authorization: `Bearer ${user.accessToken}` } : {},
                 withCredentials: true
               });
+
 
               let imageUrl = "https://picsum.photos/seed/course/400/300";
 
@@ -120,7 +123,11 @@ export default function StudentCoursesPage() {
     };
 
     fetchCourses();
-  }, [user, profile]);
+  }, []);
+
+  if (loading) {
+    return <CoursesGridSkeleton />;
+  }
 
   const tabs: Option[] = ["All", "In Progress", "Completed"];
 
@@ -165,6 +172,7 @@ export default function StudentCoursesPage() {
                 course={course}
                 isTeacher={false} // Student view
                 canReview={true}
+                href={`/courses/${course.id}/learn`}
               />
             ))}
           </div>

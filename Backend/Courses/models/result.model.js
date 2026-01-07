@@ -8,10 +8,18 @@ const resultSchema = new mongoose.Schema(
             required: true,
         },
         user_id: {
-            type: String,
+            type: Object({
+                name: String,
+                _id: String,
+            }),
             required: true,
         },
         answers: [
+            {
+                type: String,
+            },
+        ],
+        questions: [
             {
                 type: String,
             },
