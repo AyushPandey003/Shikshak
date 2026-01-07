@@ -63,7 +63,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ modules, isOpen, onClose, cou
     try {
       const payload: { query: string; course_id: string; module_id?: string; top_k?: number } = {
         query: inputValue,
-        course_id: courseId,1
+        course_id: courseId,
         top_k: 10
       };
 
