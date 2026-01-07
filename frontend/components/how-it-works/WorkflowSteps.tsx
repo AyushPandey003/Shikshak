@@ -7,7 +7,7 @@ export default function WorkflowSteps() {
             <div className="w-16 h-1 bg-[#FF6B6B] mx-auto mb-6 rounded-full"></div>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">How it works</h2>
             <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-               Our event-driven pipeline ensures that from the moment you interact, our system scales instantly to meet demand.
+               Our intelligent pipeline takes your content from raw video to an interactive learning experience in seconds.
             </p>
         </div>
 
@@ -37,8 +37,8 @@ export default function WorkflowSteps() {
                     {/* Circle badge */}
                      <div className="absolute -bottom-4 -right-4 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-[#FF6B6B] font-bold border border-gray-50">1</div>
                  </div>
-                 <h3 className="text-xl font-bold text-gray-900 mb-2">User Action</h3>
-                 <p className="text-center text-gray-500 text-sm">Upload video or enroll</p>
+                 <h3 className="text-xl font-bold text-gray-900 mb-2">Upload</h3>
+                 <p className="text-center text-gray-500 text-sm">Upload lectures & notes</p>
               </div>
 
                {/* Step 2 */}
@@ -53,8 +53,8 @@ export default function WorkflowSteps() {
                     {/* Circle badge */}
                      <div className="absolute -bottom-4 -right-4 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-[#FF6B6B] font-bold border border-gray-50">2</div>
                  </div>
-                 <h3 className="text-xl font-bold text-gray-900 mb-2">Event Queue</h3>
-                 <p className="text-center text-gray-500 text-sm">Kafka creates message</p>
+                 <h3 className="text-xl font-bold text-gray-900 mb-2">Analyze</h3>
+                 <p className="text-center text-gray-500 text-sm">AI extracts knowledge</p>
               </div>
 
                {/* Step 3 */}
@@ -70,8 +70,8 @@ export default function WorkflowSteps() {
                     {/* Circle badge */}
                      <div className="absolute -bottom-4 -right-4 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-[#FF6B6B] font-bold border border-gray-50">3</div>
                  </div>
-                 <h3 className="text-xl font-bold text-gray-900 mb-2">Processing</h3>
-                 <p className="text-center text-gray-500 text-sm">AI analysis & Vectorizing</p>
+                 <h3 className="text-xl font-bold text-gray-900 mb-2">Index</h3>
+                 <p className="text-center text-gray-500 text-sm">Content becomes searchable</p>
               </div>
 
                {/* Step 4 */}
@@ -91,8 +91,8 @@ export default function WorkflowSteps() {
                     {/* Circle badge */}
                      <div className="absolute -bottom-4 -right-4 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-[#FF6B6B] font-bold border border-gray-50">4</div>
                  </div>
-                 <h3 className="text-xl font-bold text-gray-900 mb-2">Delivery</h3>
-                 <p className="text-center text-gray-500 text-sm">Instant access & RAG</p>
+                 <h3 className="text-xl font-bold text-gray-900 mb-2">Engage</h3>
+                 <p className="text-center text-gray-500 text-sm">Students learn faster</p>
               </div>
            </div>
         </div>
