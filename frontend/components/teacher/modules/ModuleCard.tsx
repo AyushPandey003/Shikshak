@@ -15,7 +15,7 @@ interface ModuleCardProps {
     onEditValueChange: (val: string) => void;
     onSaveEdit: (id: string, type: 'module' | 'item', parentId?: string) => void;
     onDeleteModule: (id: string) => void;
-    onDeleteItem: (moduleId: string, itemId: string) => void;
+    onDeleteItem: (moduleId: string, itemId: string, type: string) => void;
     onAddItem: (moduleId: string) => void;
     onDescriptionChange: (id: string, description: string) => void;
     onEditModule: (module: Module) => void;
@@ -99,7 +99,9 @@ export function ModuleCard({
                                     className="p-1 md:p-1.5 hover:bg-red-50 hover:text-red-500 rounded text-gray-400 transition-colors"
                                     title="Delete module"
                                 >
-                                    <Trash2 size={14} className="md:w-4 md:h-4" />
+                                    <Trash2 size={14}
+
+                                        className="md:w-4 md:h-4" />
                                 </button>
                             </div>
                         </div>

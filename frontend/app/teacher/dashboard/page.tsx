@@ -24,7 +24,7 @@ const upcomingEvents = {
 };
 
 export default function TeacherDashboardPage() {
-  const { user, profile } = useAppStore();
+  const { user,profile } = useAppStore();
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
