@@ -233,7 +233,7 @@ const StartTestPage: React.FC = () => {
     const handleLiveMessage = useCallback(async (message: LiveServerMessage) => {
         if (isFinishingRef.current) return;
         try {
-            const base64Audio = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
+            const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (base64Audio && outputAudioCtxRef.current) {
                 setIsAiSpeaking(true);
                 const ctx = outputAudioCtxRef.current;
