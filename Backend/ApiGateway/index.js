@@ -21,6 +21,9 @@ import authMiddleware from "./middleware/authMiddleware.js";
 
 const app = express();
 
+// Trust proxy for Azure Load Balancer (required for correct IP detection)
+app.set('trust proxy', 1);
+
 app.use(cors({
   origin: process.env.CORS_ORIGIN || "http://localhost:3001",
   credentials: true
@@ -30,6 +33,9 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 1000, // Limit each IP to 1000 requests per windowMs
   message: "Too many requests from this IP, please try again later",
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false }, // Disable X-Forwarded-For validation since we trust proxy
 });
 
 app.use(limiter);

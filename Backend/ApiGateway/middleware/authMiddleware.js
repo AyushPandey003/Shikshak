@@ -6,6 +6,8 @@ const authMiddleware = async (req, res, next) => {
   // Skip auth validation for public authentication routes
   // These routes either don't require auth or are part of the auth flow itself
   const publicAuthPaths = [
+    "/",                             // Root health check
+    "/health",                       // Health endpoint
     "/authentication/get-session",
     "/authentication/sign-in",      // Better Auth sign-in routes
     "/authentication/signin",       // Legacy format
@@ -47,7 +49,7 @@ const authMiddleware = async (req, res, next) => {
     // BUT the user questioned "if its correct or wrong", implying they might send *something*.
     // So let's forward even empty to let Auth service decide (it will 401).
 
-    const authServiceUrl = "http://localhost:3000/api/auth/get_user";
+    const authServiceUrl = `${process.env.AUTH_SERVICE_URL || "http://localhost:3000"}/api/auth/get_user`;
     console.log(`[AUTH MIDDLEWARE] Validating token via ${authServiceUrl}`);
 
     const response = await fetch(authServiceUrl, {
