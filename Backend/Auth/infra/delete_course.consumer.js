@@ -1,5 +1,5 @@
 // infra/delete_course.consumer.js - Azure Event Hubs version
-import { subscribeToEvents, closeAllConsumers } from "./client.js";
+const { subscribeToEvents, closeAllConsumers } = require("./client.js");
 
 // Event Hub topic
 const COURSE_HUB = "course";

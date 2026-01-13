@@ -1,7 +1,7 @@
 // infra/startConsumer.js
-import "./email.consumer.js";
-import "./add_course.consumer.js";
-import "./delete_course.consumer.js";
+require("./email.consumer.js");
+require("./add_course.consumer.js");
+require("./delete_course.consumer.js");
 
 console.log("Email Consumer Service Started!");
 console.log("Add Course Consumer Service Started!");

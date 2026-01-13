@@ -1,8 +1,8 @@
 // infra/add_course.consumer.js - Azure Event Hubs version
 // Handles payment_done events - adds user to course
 
-import { subscribeToEvents, closeAllConsumers } from "./client.js";
-import mongoose from "mongoose";
+const { subscribeToEvents, closeAllConsumers } = require("./client.js");
+const mongoose = require("mongoose");
 
 // Event Hub topic
 const PAYMENT_DONE_HUB = "payment-done";

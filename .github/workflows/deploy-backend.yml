@@ -112,13 +112,16 @@ jobs:
             --ingress internal \
             --min-replicas 0 --max-replicas 10 \
             --command "node" --args "/app/Auth/dist/server.js" \
-            --secrets "mongo-uri=${{ secrets.MONGO_URI }}" "better-auth-secret=${{ secrets.BETTER_AUTH_SECRET }}" \
+            --secrets "mongo-uri=${{ secrets.MONGO_URI }}" "better-auth-secret=${{ secrets.BETTER_AUTH_SECRET }}" "eventhub-connection-string=${{ secrets.EVENTHUB_CONNECTION_STRING }}" "google-refresh-token=${{ secrets.GOOGLE_REFRESH_TOKEN }}" "gmail-user-email=${{ secrets.GMAIL_USER_EMAIL }}" \
             --env-vars \
               NODE_ENV=production \
               PORT=3000 \
               NEXT_PUBLIC_API_GATEWAY_URL=${{ secrets.NEXT_PUBLIC_API_GATEWAY_URL }} \
               GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
               GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
+              EVENTHUB_CONNECTION_STRING=secretref:eventhub-connection-string \
+              GOOGLE_REFRESH_TOKEN=secretref:google-refresh-token \
+              GMAIL_USER_EMAIL=secretref:gmail-user-email \
               MONGO_URI=secretref:mongo-uri \
               BETTER_AUTH_SECRET=secretref:better-auth-secret
 

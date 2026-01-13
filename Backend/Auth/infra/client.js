@@ -1,5 +1,5 @@
 // infra/client.js - Azure Event Hubs Consumer Client
-import { EventHubConsumerClient } from "@azure/event-hubs";
+const { EventHubConsumerClient } = require("@azure/event-hubs");
 
 const connectionString = process.env.EVENTHUB_CONNECTION_STRING;
 
@@ -14,7 +14,7 @@ const activeSubscriptions = [];
  * @param {function} processError - Error handler: async (err, context) => void
  * @param {string} consumerGroup - Consumer group (default: "$Default")
  */
-export async function subscribeToEvents(eventHubName, processEvent, processError, consumerGroup = "$Default") {
+async function subscribeToEvents(eventHubName, processEvent, processError, consumerGroup = "$Default") {
   if (!connectionString) {
     throw new Error("EVENTHUB_CONNECTION_STRING environment variable is not set");
   }
@@ -41,7 +41,7 @@ export async function subscribeToEvents(eventHubName, processEvent, processError
 /**
  * Close all consumer connections
  */
-export async function closeAllConsumers() {
+async function closeAllConsumers() {
   for (const { consumer, eventHubName } of activeSubscriptions) {
     await consumer.close();
     console.log(`✓ Closed consumer for ${eventHubName}`);

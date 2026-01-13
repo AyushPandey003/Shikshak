@@ -1,6 +1,5 @@
-// infra/email.consumer.js - Azure Event Hubs version
-import { subscribeToEvents, closeAllConsumers } from "./client.js";
-import { getCourseData, getUserAndCourseData, sendModuleNotification, sendPaymentConfirmation } from "./emailService.js";
+const { subscribeToEvents, closeAllConsumers } = require("./client.js");
+const { getCourseData, getUserAndCourseData, sendModuleNotification, sendPaymentConfirmation } = require("./emailService.js");
 
 // Event Hub topics (must match producer topic names)
 const MODULE_CREATED_HUB = "module-created";

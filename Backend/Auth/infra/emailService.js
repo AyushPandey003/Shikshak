@@ -1,7 +1,7 @@
 // infra/emailService.js
 // Industry-Grade Email Service with Security Best Practices
 
-import { google } from "googleapis";
+const { google } = require("googleapis");
 
 // ============================================================================
 // CONFIGURATION & VALIDATION
@@ -230,7 +230,7 @@ function createRawEmail({ to, subject, body }) {
 // SEND EMAIL FUNCTION
 // ============================================================================
 
-export async function sendEmailViaGmail({ to, subject, body }) {
+async function sendEmailViaGmail({ to, subject, body }) {
     // Input validation
     if (!isValidEmail(to)) {
         log('ERROR', 'Invalid email address', { to });
@@ -287,7 +287,7 @@ async function getMongoConnection() {
     }
 
     connectionPromise = (async () => {
-        const mongoose = await import("mongoose");
+        const mongoose = require("mongoose");
         const mongoUri = process.env.MONGO_URI;
 
         if (!mongoUri) {
@@ -332,7 +332,7 @@ async function getMongoConnection() {
 // DATA FETCHING FUNCTIONS
 // ============================================================================
 
-export async function getCourseData(module_id) {
+async function getCourseData(module_id) {
     // Validate input
     if (!isValidMongoId(module_id)) {
         log('WARN', 'Invalid module_id provided', { module_id: module_id?.substring(0, 10) });
@@ -340,7 +340,7 @@ export async function getCourseData(module_id) {
     }
 
     try {
-        const mongoose = await import("mongoose");
+        const mongoose = require("mongoose");
         const connection = await getMongoConnection();
 
         const courseSchema = new mongoose.Schema({
@@ -397,7 +397,7 @@ export async function getCourseData(module_id) {
     }
 }
 
-export async function getUserAndCourseData(user_id, course_id) {
+async function getUserAndCourseData(user_id, course_id) {
     // Validate inputs
     if (!isValidMongoId(user_id) || !isValidMongoId(course_id)) {
         log('WARN', 'Invalid IDs provided', {
@@ -408,7 +408,7 @@ export async function getUserAndCourseData(user_id, course_id) {
     }
 
     try {
-        const mongoose = await import("mongoose");
+        const mongoose = require("mongoose");
         const connection = await getMongoConnection();
 
         const courseSchema = new mongoose.Schema({
@@ -463,7 +463,7 @@ export async function getUserAndCourseData(user_id, course_id) {
 // EMAIL NOTIFICATION FUNCTIONS
 // ============================================================================
 
-export async function sendModuleNotification(students, module, course) {
+async function sendModuleNotification(students, module, course) {
     if (!Array.isArray(students) || students.length === 0) {
         log('INFO', 'No students to notify');
         return { sent: 0, failed: 0 };
@@ -527,7 +527,7 @@ export async function sendModuleNotification(students, module, course) {
     return { sent, failed };
 }
 
-export async function sendPaymentConfirmation(user, course) {
+async function sendPaymentConfirmation(user, course) {
     if (!user?.email || !isValidEmail(user.email)) {
         log('WARN', 'Invalid user email for payment confirmation');
         return false;
@@ -591,7 +591,7 @@ try {
 // EXPORTS
 // ============================================================================
 
-export default {
+module.exports = {
     sendEmailViaGmail,
     getCourseData,
     getUserAndCourseData,
