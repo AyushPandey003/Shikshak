@@ -3,8 +3,9 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 const authProxy = createProxyMiddleware({
   target: process.env.AUTH_SERVICE_URL || "http://shikshak-auth",
   changeOrigin: true,
+  xfwd: true,
   // Cookie handling for session management
-  cookieDomainRewrite: "localhost",
+  // Cookie handling for session management
   cookiePathRewrite: {
     "/api/auth": "/api/auth"
   },
