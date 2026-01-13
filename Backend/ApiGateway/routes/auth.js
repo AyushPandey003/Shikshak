@@ -6,6 +6,7 @@ const authProxy = createProxyMiddleware({
   xfwd: true,
   // Cookie handling for session management
   // Cookie handling for session management
+  cookieDomainRewrite: "shikshak-backend.whitetree-88f47ee0.eastus2.azurecontainerapps.io",
   cookiePathRewrite: {
     "/api/auth": "/api/auth"
   },
@@ -17,14 +18,16 @@ const authProxy = createProxyMiddleware({
     console.log(`[AUTH PROXY] Proxying to: ${proxyReq.path}`);
     // Forward cookies
     if (req.headers.cookie) {
-      console.log(`[AUTH PROXY] Forwarding cookies`);
+      console.log(`[AUTH PROXY] Forwarding cookies:`, req.headers.cookie);
+    } else {
+      console.log(`[AUTH PROXY] No cookies found in request`);
     }
   },
   onProxyRes(proxyRes, req, res) {
     console.log(`[AUTH PROXY] Response: ${proxyRes.statusCode} for ${req.originalUrl}`);
     // Log if there are set-cookie headers
     if (proxyRes.headers['set-cookie']) {
-      console.log(`[AUTH PROXY] Set-Cookie headers present`);
+      console.log(`[AUTH PROXY] Set-Cookie headers:`, JSON.stringify(proxyRes.headers['set-cookie']));
     }
   },
   onError(err, req, res) {

@@ -33,6 +33,11 @@ const server = http.createServer(async (req, res) => {
 
     const start = Date.now();
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    if (req.headers.cookie) {
+        console.log(`[DEBUG-AUTH] Received Cookies:`, req.headers.cookie);
+    } else {
+        console.log(`[DEBUG-AUTH] No cookies received`);
+    }
 
     // Health check endpoint for PM2/container monitoring
     if (req.url === '/api/health') {
