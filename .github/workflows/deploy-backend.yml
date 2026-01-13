@@ -23,7 +23,7 @@ on:
 env:
   ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
   AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
-  CONTAINER_APPS_ENVIRONMENT: ${{ secrets.CONTAINER_APPS_ENVIRONMENT || 'shikshak-env' }}
+  CONTAINER_APPS_ENVIRONMENT: ${{ secrets.CONTAINER_APPS_ENVIRONMENT || 'managedEnvironment-rgblob-bb4b' }}
   EVENTHUB_NAMESPACE: shikshak-events-dev
   PNPM_VERSION: 8
 
