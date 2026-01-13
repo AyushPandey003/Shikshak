@@ -11,8 +11,18 @@ dotenv.config({ path: path.resolve(__dirname, '../../../.config/.env') });
 const client = new MongoClient(process.env.MONGO_URI || "mongodb://localhost:27017/database");
 const db = client.db();
 
+const trustedOrigins = [
+    `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}`,
+    `${process.env.FRONTEND_URL}`,
+    "https://mshikshak.vercel.app",
+    "http://localhost:3001",
+    "http://localhost:3000"
+];
+console.log("[DEBUG-AUTH] Trusted Origins:", trustedOrigins);
+
 export const auth = betterAuth({
-    trustedOrigins: [`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}`, "http://localhost:3001", "http://localhost:3000"],
+    baseURL: `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/api/auth`,
+    trustedOrigins: trustedOrigins,
     database: mongodbAdapter(db,
         {
             // Optional: if you don't provide a client, database transactions won't be enabled.
