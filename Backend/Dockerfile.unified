@@ -51,8 +51,6 @@ COPY Auth/package*.json ./
 COPY Auth/pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile --prod
 COPY --from=auth-builder /app/Auth/dist ./dist
-# Copy public folder if exists
-COPY Auth/public ./public 2>/dev/null || true
 
 # ----------------------------------------
 # Courses setup
