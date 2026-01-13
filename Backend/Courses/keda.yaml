@@ -1,0 +1,9 @@
+trigger:
+  type: azure-eventhub
+  metadata:
+    connectionFromEnv: EVENTHUB_CONNECTION_STRING
+    storageConnectionFromEnv: AZURE_STORAGE_CONNECTION_STRING
+    consumerGroup: '$Default'
+    unprocessedEventThreshold: '1'
+    blobContainer: 'eventhub-checkpoints'
+    eventHubName: 'course'
