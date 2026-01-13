@@ -20,7 +20,7 @@ RUN npm install -g "pnpm@^${PNPM_VERSION}"
 COPY Auth/package.json Auth/pnpm-lock.yaml ./
 
 # Install deps (strict)
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Copy source & build
 COPY Auth/ .
@@ -45,7 +45,7 @@ COPY ecosystem.config.cjs ./
 # ========================================
 WORKDIR /app/ApiGateway
 COPY ApiGateway/package.json ApiGateway/pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --no-frozen-lockfile --prod
 COPY ApiGateway/ .
 
 # ========================================
@@ -53,7 +53,7 @@ COPY ApiGateway/ .
 # ========================================
 WORKDIR /app/Auth
 COPY Auth/package.json Auth/pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --no-frozen-lockfile --prod
 COPY --from=auth-builder /app/Auth/dist ./dist
 
 # ========================================
@@ -61,7 +61,7 @@ COPY --from=auth-builder /app/Auth/dist ./dist
 # ========================================
 WORKDIR /app/Courses
 COPY Courses/package.json Courses/pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --no-frozen-lockfile --prod
 COPY Courses/ .
 
 # ========================================
@@ -69,7 +69,7 @@ COPY Courses/ .
 # ========================================
 WORKDIR /app/payment
 COPY payment/package.json payment/pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --no-frozen-lockfile --prod
 COPY payment/ .
 
 # ========================================
