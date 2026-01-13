@@ -132,6 +132,12 @@ jobs:
                 RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
           else
             echo "Updating existing container app..."
+            # First ensure secrets exist
+            az containerapp secret set \
+              --name shikshak-backend \
+              --resource-group $AZURE_RESOURCE_GROUP \
+              --secrets "mongo-uri=${{ secrets.MONGO_URI }}" "better-auth-secret=${{ secrets.BETTER_AUTH_SECRET }}"
+            # Then update the app
             az containerapp update \
               --name shikshak-backend \
               --resource-group $AZURE_RESOURCE_GROUP \
