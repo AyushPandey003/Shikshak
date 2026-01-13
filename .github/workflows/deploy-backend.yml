@@ -24,7 +24,7 @@ env:
   ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
   AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
   CONTAINER_APPS_ENVIRONMENT: ${{ secrets.CONTAINER_APPS_ENVIRONMENT || 'managedEnvironment-rgblob-bb4b' }}
-  EVENTHUB_NAMESPACE: shikshak-events-dev
+  EVENTHUB_NAMESPACE: shikshak-hub
   PNPM_VERSION: 8
 
 concurrency:
@@ -61,8 +61,7 @@ jobs:
               --resource-group $AZURE_RESOURCE_GROUP \
               --namespace-name $EVENTHUB_NAMESPACE \
               --name $topic \
-              --partition-count 1 \
-              --message-retention 1 || true
+              --partition-count 1 || true
           done
 
       # ========================================
@@ -116,13 +115,14 @@ jobs:
               --memory 1Gi \
               --min-replicas 0 \
               --max-replicas 10 \
-              --secrets "mongo-uri=${{ secrets.MONGO_URI }}" \
+              --secrets "mongo-uri=${{ secrets.MONGO_URI }}" "better-auth-secret=${{ secrets.BETTER_AUTH_SECRET }}" \
               --env-vars \
                 NODE_ENV=production \
                 PORT_GATEWAY=4000 \
                 PORT=3000 \
                 PORT_COURSES=4002 \
                 MONGO_URI=secretref:mongo-uri \
+                BETTER_AUTH_SECRET=secretref:better-auth-secret \
                 CORS_ORIGIN=${{ secrets.FRONTEND_URL }} \
                 RAG_SERVICE_URL=${{ secrets.RAG_SERVICE_URL }} \
                 AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }} \
@@ -142,6 +142,7 @@ jobs:
                 PORT=3000 \
                 PORT_COURSES=4002 \
                 MONGO_URI=secretref:mongo-uri \
+                BETTER_AUTH_SECRET=secretref:better-auth-secret \
                 CORS_ORIGIN=${{ secrets.FRONTEND_URL }} \
                 RAG_SERVICE_URL=${{ secrets.RAG_SERVICE_URL }} \
                 AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }} \
