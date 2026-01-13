@@ -9,6 +9,7 @@ import { useAppStore } from "@/store/useAppStore";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { CoursesGridSkeleton } from "@/components/dashboard/CoursesSkeleton";
+import { API_CONFIG } from '@/lib/api-config';
 
 type Option = "All" | "Public" | "Private" | "Draft";
 
@@ -73,7 +74,7 @@ export default function Page() {
           headers["Authorization"] = `Bearer ${user.accessToken}`;
         }
 
-        const response = await axios.post("http://localhost:4000/material/courses/get_all", {
+        const response = await axios.post(`${API_CONFIG.courses}/get_all`, {
           user_id: user.id,
           user_role: "teacher"
         }, {
@@ -89,7 +90,7 @@ export default function Page() {
             if (c.thumbnail && !c.thumbnail.startsWith("http")) {
               try {
                 // Use encodeURIComponent to handle spaces or special chars safe
-                const sasRes = await axios.get(`http://localhost:4000/material/upload/${encodeURIComponent(c.thumbnail)}`, {
+                const sasRes = await axios.get(`${API_CONFIG.upload}/${encodeURIComponent(c.thumbnail)}`, {
                   headers: user?.accessToken ? { "Authorization": `Bearer ${user.accessToken}` } : {},
                   withCredentials: true
                 });
@@ -139,7 +140,7 @@ export default function Page() {
 
     fetchCourses();
   }, [user]);
-  
+
   if (loading) {
     return <CoursesGridSkeleton />;
   }

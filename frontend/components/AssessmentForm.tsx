@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Modal } from './ui/Modal';
+import { API_CONFIG } from '@/lib/api-config';
 
 import { AssessmentConfig } from '../types/types';
 
@@ -25,7 +26,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({ onStart, course_id }) =
     setLoading(true);
     try {
       // const newCourseId = "TEST_COURSE_001"
-      const response = await axios.post('http://localhost:4000/material/tests/aitest', {
+      const response = await axios.post(`${API_CONFIG.tests}/aitest`, {
         query: userQuery,
         course_id: course_id
       }, { withCredentials: true });

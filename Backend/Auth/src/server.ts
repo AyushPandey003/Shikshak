@@ -28,6 +28,14 @@ const server = http.createServer(async (req, res) => {
 
     const start = Date.now();
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+
+    // Health check endpoint for PM2/container monitoring
+    if (req.url === '/api/health') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ status: 'ok', service: 'auth', timestamp: new Date().toISOString() }));
+        return;
+    }
+
     if (req.url?.startsWith('/api/auth')) {
         console.log(`[DEBUG] Checking auth route: ${req.url}`);
         // Handle custom auth endpoints first (before Better Auth)

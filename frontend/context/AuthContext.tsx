@@ -5,6 +5,7 @@ import { authClient } from '@/lib/auth-client';
 import { useAppStore } from '@/store/useAppStore';
 import { AuthUser } from '@/types/auth';
 import axios from 'axios';
+import { API_CONFIG } from '@/lib/api-config';
 
 interface AuthContextType {
     user: AuthUser | null;
@@ -21,10 +22,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const fetchUserDetails = async () => {
         try {
-            const res = await axios.get('http://localhost:4000/authentication/get_user', {
+            const res = await axios.get(`${API_CONFIG.auth}/get_user`, {
                 withCredentials: true, // Include cookies for session auth
             });
-            
+
             const userData = res.data;
             const authUser: AuthUser = {
                 id: userData._id || userData.id,

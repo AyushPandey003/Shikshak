@@ -3,8 +3,9 @@ import { BookOpen, FileQuestion, HelpCircle, Video, FileText } from 'lucide-reac
 import { Modal } from '@/components/ui/Modal';
 import { ContentItem } from './types';
 import axios from 'axios';
+import { API_CONFIG } from '@/lib/api-config';
 
-const UPLOAD_URL = "http://localhost:4000/material/upload"; // Or pass as prop
+const UPLOAD_URL = API_CONFIG.upload;
 
 interface EditContentItemModalProps {
     isOpen: boolean;
@@ -89,8 +90,8 @@ export function EditContentItemModal({ isOpen, onClose, onConfirm, item }: EditC
                                 key={type}
                                 onClick={() => setFormData({ ...formData, type })}
                                 className={`p-3 border-2 rounded-lg flex flex-col items-center gap-2 transition-all ${formData.type === type
-                                        ? 'border-blue-500 bg-blue-50'
-                                        : 'border-gray-200 hover:border-gray-300'
+                                    ? 'border-blue-500 bg-blue-50'
+                                    : 'border-gray-200 hover:border-gray-300'
                                     }`}
                             >
                                 {getTypeIcon(type)}

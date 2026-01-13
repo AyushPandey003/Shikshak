@@ -10,6 +10,7 @@ import { useAppStore } from '@/store/useAppStore';
 import axios from 'axios';
 import { BookOpen, FileText, Award, Clock, Phone } from 'lucide-react';
 import { LoadingDashboard } from '@/components/dashboard/DashboardSkeletons';
+import { API_CONFIG } from '@/lib/api-config';
 
 // Dummy Data for Teacher (Events still dummy as no backend for them yet)
 const upcomingEvents = {
@@ -24,7 +25,7 @@ const upcomingEvents = {
 };
 
 export default function TeacherDashboardPage() {
-  const { user,profile } = useAppStore();
+  const { user, profile } = useAppStore();
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +40,7 @@ export default function TeacherDashboardPage() {
           headers["Authorization"] = `Bearer ${user.accessToken}`;
         }
 
-        const response = await axios.post("http://localhost:4000/material/courses/get_all", {
+        const response = await axios.post(`${API_CONFIG.courses}/get_all`, {
           user_id: user.id,
           user_role: "teacher"
         }, {

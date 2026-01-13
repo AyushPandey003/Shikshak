@@ -5,6 +5,7 @@ import Image from "next/image";
 import axios from "axios";
 import { useAppStore } from "@/store/useAppStore";
 import { useRouter } from "next/navigation";
+import { API_CONFIG } from '@/lib/api-config';
 
 export default function CreateCoursePage() {
   const router = useRouter();
@@ -49,7 +50,7 @@ export default function CreateCoursePage() {
         headers["Authorization"] = `Bearer ${user.accessToken}`;
       }
 
-      const res = await axios.post("http://localhost:4000/material/upload", formData, {
+      const res = await axios.post(`${API_CONFIG.upload}`, formData, {
         headers,
         withCredentials: true
       });
@@ -103,7 +104,7 @@ export default function CreateCoursePage() {
         headers["Authorization"] = `Bearer ${user.accessToken}`;
       }
 
-      await axios.post("http://localhost:4000/material/courses/create_course", payload, {
+      await axios.post(`${API_CONFIG.courses}/create_course`, payload, {
         headers,
         withCredentials: true
       });

@@ -16,3 +16,4 @@ Backend/Auth/.env
 Backend/Auth/.env
 
 package-lock.json
+frontend/package-lock.json

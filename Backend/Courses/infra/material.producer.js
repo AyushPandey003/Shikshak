@@ -1,46 +1,20 @@
-import { kafka } from "./client.js";
+import { sendEvents } from "./client.js";
 
-const producer = kafka.producer();
-let isConnected = false;
-let connectionPromise = null;
-
-export async function connectProducer() {
-  if (isConnected) return;
-
-  if (connectionPromise) {
-    await connectionPromise;
-    return;
-  }
-
-  connectionPromise = (async () => {
-    console.log("Connecting Producer...");
-    await producer.connect();
-    isConnected = true;
-    console.log("Producer Connected Successfully");
-  })();
-
-  await connectionPromise;
-  connectionPromise = null;
-}
+const EVENT_HUB_NAME = "material-data";
 
 export async function produceMaterialCreated(course_id, module_id, azureBlobUrl, video_id, note_id, eventtype) {
-  await connectProducer();
   console.log("Producing Material Created...");
-  await producer.send({
-    topic: "materail_data",
-    messages: [
-      {
-        key: video_id,
-        value: JSON.stringify({ course_id, module_id, azureBlobUrl, video_id, note_id, eventtype }),
-      },
-    ],
-  });
+
+  await sendEvents(EVENT_HUB_NAME, [
+    {
+      body: { course_id, module_id, azureBlobUrl, video_id, note_id, eventtype },
+      properties: { key: video_id || note_id }
+    }
+  ]);
+
+  console.log(`✓ Material event produced: ${eventtype}`);
 }
 
-export async function disconnectMaterialProducer() {
-  if (isConnected) {
-    await producer.disconnect();
-    isConnected = false;
-    console.log("Producer Disconnected");
-  }
-}
+// No-op for backwards compatibility
+export async function connectProducer() { }
+export async function disconnectMaterialProducer() { }

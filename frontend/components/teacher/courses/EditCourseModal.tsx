@@ -5,6 +5,7 @@ import { CustomLoader } from '@/components/ui/CustomLoader';
 import Image from 'next/image';
 import { Course } from '@/types/course';
 import { useAppStore } from '@/store/useAppStore';
+import { API_CONFIG } from '@/lib/api-config';
 
 // Local extension to avoid modifying global types
 
@@ -49,7 +50,7 @@ export const EditCourseModal: React.FC<EditCourseModalProps> = ({ isOpen, onClos
                 headers["Authorization"] = `Bearer ${user.accessToken}`;
             }
 
-            const res = await axios.post("http://localhost:4000/material/upload", formData, {
+            const res = await axios.post(`${API_CONFIG.upload}`, formData, {
                 headers,
                 withCredentials: true
             });
@@ -101,7 +102,7 @@ export const EditCourseModal: React.FC<EditCourseModalProps> = ({ isOpen, onClos
             };
 
             await axios.post(
-                'http://localhost:4000/material/courses/edit_course',
+                `${API_CONFIG.courses}/edit_course`,
                 payload,
                 {
                     headers: {

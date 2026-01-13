@@ -1,46 +1,20 @@
-import { kafka } from "./client.js";
+import { sendEvents } from "./client.js";
 
-const producer = kafka.producer();
-let isConnected = false;
-let connectionPromise = null;
-
-export async function connectProducer() {
-  if (isConnected) return;
-
-  if (connectionPromise) {
-    await connectionPromise;
-    return;
-  }
-
-  connectionPromise = (async () => {
-    console.log("Connecting Producer...");
-    await producer.connect();
-    isConnected = true;
-    console.log("Producer Connected Successfully");
-  })();
-
-  await connectionPromise;
-  connectionPromise = null;
-}
+const EVENT_HUB_NAME = "course";
 
 export async function produceCourse(course_id, eventtype) {
-  await connectProducer();
-  console.log("Producing Course Created...");
-  await producer.send({
-    topic: "course",
-    messages: [
-      {
-        key: course_id,
-        value: JSON.stringify({ course_id, eventtype }),
-      },
-    ],
-  });
+  console.log("Producing Course Event...");
+
+  await sendEvents(EVENT_HUB_NAME, [
+    {
+      body: { course_id, eventtype },
+      properties: { key: course_id }
+    }
+  ]);
+
+  console.log(`✓ Course event produced: ${eventtype}`);
 }
 
-export async function disconnectCourseProducer() {
-  if (isConnected) {
-    await producer.disconnect();
-    isConnected = false;
-    console.log("Producer Disconnected");
-  }
-}
+// No-op for backwards compatibility (Event Hubs handles connections automatically)
+export async function connectProducer() { }
+export async function disconnectCourseProducer() { }

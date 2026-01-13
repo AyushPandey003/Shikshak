@@ -1,7 +1,7 @@
 import { createProxyMiddleware } from "http-proxy-middleware";
 
 const ragProxy = createProxyMiddleware({
-    target: "http://localhost:4005",
+    target: process.env.RAG_SERVICE_URL || "http://localhost:4005",
     changeOrigin: true,
     pathRewrite: {
         "^/rag": "/api/rag"

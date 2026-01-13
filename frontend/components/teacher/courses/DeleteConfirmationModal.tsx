@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import axios from 'axios';
 import { useAppStore } from '@/store/useAppStore';
+import { API_CONFIG } from '@/lib/api-config';
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
@@ -26,7 +27,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
-      await axios.post("http://localhost:4000/material/courses/delete_course", {
+      await axios.post(`${API_CONFIG.courses}/delete_course`, {
         course_id: courseId
       }, {
         headers: {

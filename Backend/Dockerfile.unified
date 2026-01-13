@@ -1,0 +1,89 @@
+# Multi-stage build for unified Node.js backend services
+# Services: ApiGateway, Auth, Courses, Payment
+
+# ========================================
+# Stage 1: Build Auth TypeScript service
+# ========================================
+FROM node:20-alpine AS auth-builder
+
+WORKDIR /app/Auth
+
+# Copy package files
+COPY Auth/package*.json ./
+COPY Auth/pnpm-lock.yaml* ./
+
+# Install pnpm and all dependencies (including dev for build)
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
+
+# Copy source code
+COPY Auth/ .
+
+# Build TypeScript
+RUN pnpm run build
+
+# ========================================
+# Stage 2: Production image with all services
+# ========================================
+FROM node:20-alpine
+
+# Install PM2 globally for process management
+RUN npm install -g pm2 pnpm
+
+WORKDIR /app
+
+# Copy PM2 ecosystem config
+COPY ecosystem.config.cjs ./
+
+# ----------------------------------------
+# ApiGateway setup
+# ----------------------------------------
+WORKDIR /app/ApiGateway
+COPY ApiGateway/package*.json ./
+COPY ApiGateway/pnpm-lock.yaml* ./
+RUN pnpm install --frozen-lockfile --prod
+COPY ApiGateway/ .
+
+# ----------------------------------------
+# Auth setup (built files)
+# ----------------------------------------
+WORKDIR /app/Auth
+COPY Auth/package*.json ./
+COPY Auth/pnpm-lock.yaml* ./
+RUN pnpm install --frozen-lockfile --prod
+COPY --from=auth-builder /app/Auth/dist ./dist
+# Copy public folder if exists
+COPY Auth/public ./public 2>/dev/null || true
+
+# ----------------------------------------
+# Courses setup
+# ----------------------------------------
+WORKDIR /app/Courses
+COPY Courses/package*.json ./
+COPY Courses/pnpm-lock.yaml* ./
+RUN pnpm install --frozen-lockfile --prod
+COPY Courses/ .
+
+# ----------------------------------------
+# Payment setup
+# ----------------------------------------
+WORKDIR /app/payment
+COPY payment/package*.json ./
+COPY payment/pnpm-lock.yaml* ./
+RUN pnpm install --frozen-lockfile --prod
+COPY payment/ .
+
+# ----------------------------------------
+# Start all services
+# ----------------------------------------
+WORKDIR /app
+
+# Expose ports (API Gateway is the main entry point)
+# ApiGateway: 4000, Auth: 3000, Courses: 4002, Payment: 4003
+EXPOSE 4000 3000 4002 4003
+
+# Health check for API Gateway
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:4000/ || exit 1
+
+# Start all services with PM2
+CMD ["pm2-runtime", "ecosystem.config.cjs"]

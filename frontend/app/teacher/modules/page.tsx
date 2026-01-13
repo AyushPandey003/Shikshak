@@ -11,10 +11,11 @@ import { EditContentItemModal } from '@/components/teacher/modules/EditContentIt
 import { CreationSidebar } from '@/components/teacher/modules/CreationSidebar';
 import { Module, ContentItem, GuidedStep, SidebarRecommendation } from '@/components/teacher/modules/types';
 import { v4 as uuidv4 } from 'uuid';
+import { API_CONFIG } from '@/lib/api-config';
 
-const API_URL = "http://localhost:4000/material/module";
-// const UPLOAD_URL = "http://localhost:4000/material/upload";
-const INGEST_URL = "http://localhost:4000/rag/ingest";
+const API_URL = `${API_CONFIG.modules}`;
+// const UPLOAD_URL = `${API_CONFIG.upload}`;
+const INGEST_URL = `${API_CONFIG.rag}/ingest`;
 
 // Configure axios defaults to send credentials
 axios.defaults.withCredentials = true;
@@ -492,7 +493,7 @@ function ModulesPageContent() {
         }
     };
 
-    const COURSES_API_URL = "http://localhost:4000/material/courses";
+    const COURSES_API_URL = API_CONFIG.courses;
 
     const handleSaveCourseContent = async () => {
         if (!courseId) return;

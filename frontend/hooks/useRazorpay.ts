@@ -4,8 +4,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import axios from 'axios';
 import { useAppStore } from '@/store/useAppStore';
+import { API_CONFIG } from '@/lib/api-config';
 
-const API_BASE = 'http://localhost:4000';
+const API_BASE = API_CONFIG.baseUrl;
 
 declare global {
     interface Window {
