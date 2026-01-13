@@ -41,7 +41,7 @@ async function startConsumer() {
   try {
     console.log("🚀 Starting Delete Course Consumer Service...");
 
-    await subscribeToEvents(COURSE_HUB, processDeleteCourseEvent, processError, "delete-course-group");
+    await subscribeToEvents(COURSE_HUB, processDeleteCourseEvent, processError);
     console.log(`✓ Subscribed to ${COURSE_HUB}`);
 
     console.log("🚀 Delete Course Consumer is running and waiting for events...");

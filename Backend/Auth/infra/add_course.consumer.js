@@ -151,7 +151,7 @@ async function startConsumer() {
   try {
     console.log("🚀 Starting Add Course Consumer Service...");
 
-    await subscribeToEvents(PAYMENT_DONE_HUB, processAddCourseEvent, processError, "add-course-group");
+    await subscribeToEvents(PAYMENT_DONE_HUB, processAddCourseEvent, processError);
     console.log(`✓ Subscribed to ${PAYMENT_DONE_HUB}`);
 
     console.log("🚀 Add Course Consumer is running and waiting for events...");

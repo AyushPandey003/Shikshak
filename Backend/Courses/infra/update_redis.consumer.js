@@ -59,7 +59,7 @@ async function startConsumer() {
   try {
     console.log("🚀 Starting Redis Update Consumer Service...");
 
-    await subscribeToEvents(COURSE_HUB, processRedisUpdateEvent, processError, "redis-update-group");
+    await subscribeToEvents(COURSE_HUB, processRedisUpdateEvent, processError);
     console.log(`✓ Subscribed to ${COURSE_HUB}`);
 
     console.log("🚀 Redis Update Consumer is running and waiting for events...");
