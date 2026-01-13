@@ -1,7 +1,7 @@
 import { createProxyMiddleware } from "http-proxy-middleware";
 
 const materialProxy = createProxyMiddleware({
-  target: process.env.COURSES_SERVICE_URL || "http://localhost:4002",
+  target: process.env.COURSES_SERVICE_URL || "http://shikshak-courses",
   changeOrigin: true,
   pathRewrite: {
     "^/material": "/api"

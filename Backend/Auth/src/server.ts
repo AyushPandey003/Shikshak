@@ -9,11 +9,16 @@ import { getUser, handleUpdateProfile } from './controllers/userController';
 import { setCorsHeaders } from './utils/httpUtils';
 import '../infra/startConsumer.js';
 
+console.log('[DEBUG-AUTH] Starting Auth Service...');
 // Load centralized environment configuration
 dotenv.config({ path: path.resolve(__dirname, '../../.config/.env') });
+console.log('[DEBUG-AUTH] Dotenv loaded');
 
 // Connect to Database
-connectDB();
+console.log('[DEBUG-AUTH] Connecting to Database...');
+connectDB()
+    .then(() => console.log('[DEBUG-AUTH] Database connected successfully'))
+    .catch(err => console.error('[DEBUG-AUTH] Database connection failed', err));
 
 const PORT = process.env.PORT_AUTH || 3000;
 

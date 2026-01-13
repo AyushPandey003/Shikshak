@@ -1,4 +1,4 @@
-name: 🚀 Deploy Backend
+name: 🚀 Deploy Microservices
 
 on:
   push:
@@ -7,10 +7,6 @@ on:
       - 'Backend/**'
   workflow_dispatch:
     inputs:
-      setup_infra:
-        description: 'Create Event Hub topics (run once)'
-        type: boolean
-        default: false
       environment:
         description: 'Target environment'
         type: choice
@@ -24,152 +20,163 @@ env:
   ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
   AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
   CONTAINER_APPS_ENVIRONMENT: ${{ secrets.CONTAINER_APPS_ENVIRONMENT || 'managedEnvironment-rgblob-bb4b' }}
-  EVENTHUB_NAMESPACE: shikshak-hub
   PNPM_VERSION: 8
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  deploy:
-    name: 🚀 Build & Deploy
+  build:
+    name: 🐳 Build & Push Image
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'production' }}
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # ========================================
-      # 🔐 Azure Login
-      # ========================================
-      - name: Azure Login
-        uses: azure/login@v2
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      # ========================================
-      # 📦 Infra (Event Hub)
-      # ========================================
-      - name: Create Event Hub Topics
-        if: github.event.inputs.setup_infra == 'true'
-        run: |
-          TOPICS=("module-created" "course" "payment-done")
-          for topic in "${TOPICS[@]}"; do
-            az eventhubs eventhub create \
-              --resource-group $AZURE_RESOURCE_GROUP \
-              --namespace-name $EVENTHUB_NAMESPACE \
-              --name $topic \
-              --partition-count 1 || true
-          done
-
-      # ========================================
-      # 🐳 Docker Build & Push
-      # ========================================
-      - name: Set up Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to ACR
-        uses: docker/login-action@v3
+      
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ACR_LOGIN_SERVER }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: Build & Push Image
+      - name: Build & Push
         uses: docker/build-push-action@v5
         with:
           context: ./Backend
           file: ./Backend/Dockerfile.unified
           push: true
-          build-args: |
-            PNPM_VERSION=${{ env.PNPM_VERSION }}
+          build-args: PNPM_VERSION=${{ env.PNPM_VERSION }}
           tags: |
             ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }}
             ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # ========================================
-      # 🚀 Deploy to Azure Container Apps
-      # ========================================
-      - name: Deploy Backend
-        run: |
-          # Check if container app exists
-          EXISTS=$(az containerapp show --name shikshak-backend --resource-group $AZURE_RESOURCE_GROUP --query name -o tsv 2>/dev/null || echo "")
-          
-          if [ -z "$EXISTS" ]; then
-            echo "Creating new container app..."
-            az containerapp create \
-              --name shikshak-backend \
-              --resource-group $AZURE_RESOURCE_GROUP \
-              --environment $CONTAINER_APPS_ENVIRONMENT \
-              --image $ACR_LOGIN_SERVER/shikshak-backend:${{ github.sha }} \
-              --registry-server $ACR_LOGIN_SERVER \
-              --registry-username ${{ secrets.ACR_USERNAME }} \
-              --registry-password ${{ secrets.ACR_PASSWORD }} \
-              --target-port 4000 \
-              --ingress external \
-              --cpu 0.5 \
-              --memory 1Gi \
-              --min-replicas 0 \
-              --max-replicas 10 \
-              --secrets "mongo-uri=${{ secrets.MONGO_URI }}" "better-auth-secret=${{ secrets.BETTER_AUTH_SECRET }}" \
-              --env-vars \
-                NODE_ENV=production \
-                PORT_GATEWAY=4000 \
-                PORT=3000 \
-                PORT_COURSES=4002 \
-                MONGO_URI=secretref:mongo-uri \
-                BETTER_AUTH_SECRET=secretref:better-auth-secret \
-                CORS_ORIGIN=${{ secrets.FRONTEND_URL }} \
-                RAG_SERVICE_URL=${{ secrets.RAG_SERVICE_URL }} \
-                AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }} \
-                EVENTHUB_CONNECTION_STRING=${{ secrets.EVENTHUB_CONNECTION_STRING }} \
-                REDIS_URL=${{ secrets.REDIS_URL }} \
-                RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
-                RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
-          else
-            echo "Updating existing container app..."
-            # First ensure secrets exist
-            az containerapp secret set \
-              --name shikshak-backend \
-              --resource-group $AZURE_RESOURCE_GROUP \
-              --secrets "mongo-uri=${{ secrets.MONGO_URI }}" "better-auth-secret=${{ secrets.BETTER_AUTH_SECRET }}"
-            # Then update the app
-            az containerapp update \
-              --name shikshak-backend \
-              --resource-group $AZURE_RESOURCE_GROUP \
-              --image $ACR_LOGIN_SERVER/shikshak-backend:${{ github.sha }} \
-              --set-env-vars \
-                NODE_ENV=production \
-                PORT_GATEWAY=4000 \
-                PORT=3000 \
-                PORT_COURSES=4002 \
-                MONGO_URI=secretref:mongo-uri \
-                BETTER_AUTH_SECRET=secretref:better-auth-secret \
-                CORS_ORIGIN=${{ secrets.FRONTEND_URL }} \
-                RAG_SERVICE_URL=${{ secrets.RAG_SERVICE_URL }} \
-                AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }} \
-                EVENTHUB_CONNECTION_STRING=${{ secrets.EVENTHUB_CONNECTION_STRING }} \
-                REDIS_URL=${{ secrets.REDIS_URL }} \
-                RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
-                RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
-          fi
+  deploy-gateway:
+    name: 🚀 Deploy Gateway
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # ========================================
-      # 📊 Summary
-      # ========================================
-      - name: Deployment Summary
-        run: |
-          URL=$(az containerapp show \
-            --name shikshak-backend \
-            --resource-group $AZURE_RESOURCE_GROUP \
-            --query "properties.configuration.ingress.fqdn" -o tsv)
+      - name: Deploy shikshak-gateway
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }}
+          containerAppName: shikshak-backend
+          resourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          containerAppEnvironment: ${{ env.CONTAINER_APPS_ENVIRONMENT }}
+          targetPort: 4000
+          ingress: external
+          # Override CMD to run only Gateway
+          containerCommand: node index.js
+          workDir: /app/ApiGateway
+          minReplicas: 0
+          maxReplicas: 10
+          environmentVariables: |
+            NODE_ENV=production
+            PORT_GATEWAY=4000
+            CORS_ORIGIN=${{ secrets.FRONTEND_URL }}
+            AUTH_SERVICE_URL=http://shikshak-auth
+            COURSES_SERVICE_URL=http://shikshak-courses
+            PAYMENT_SERVICE_URL=http://shikshak-payment
 
-          echo "## 🚀 Backend Deployed" >> $GITHUB_STEP_SUMMARY
-          echo "| Service | URL |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|-----|" >> $GITHUB_STEP_SUMMARY
-          echo "| Backend | https://$URL |" >> $GITHUB_STEP_SUMMARY
-          echo "| Commit | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
+  deploy-auth:
+    name: 🚀 Deploy Auth
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy shikshak-auth
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }}
+          containerAppName: shikshak-auth
+          resourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          containerAppEnvironment: ${{ env.CONTAINER_APPS_ENVIRONMENT }}
+          targetPort: 3000
+          ingress: internal
+          containerCommand: node dist/server.js
+          workDir: /app/Auth
+          minReplicas: 0
+          maxReplicas: 10
+          environmentVariables: |
+            NODE_ENV=production
+            PORT=3000
+            NEXT_PUBLIC_API_GATEWAY_URL=${{ secrets.NEXT_PUBLIC_API_GATEWAY_URL }}
+            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            MONGO_URI=secretref:mongo-uri
+            BETTER_AUTH_SECRET=secretref:better-auth-secret
+          secrets: |
+            mongo-uri=${{ secrets.MONGO_URI }}
+            better-auth-secret=${{ secrets.BETTER_AUTH_SECRET }}
+
+  deploy-courses:
+    name: 🚀 Deploy Courses
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy shikshak-courses
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }}
+          containerAppName: shikshak-courses
+          resourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          containerAppEnvironment: ${{ env.CONTAINER_APPS_ENVIRONMENT }}
+          targetPort: 4002
+          ingress: internal
+          containerCommand: node index.js
+          workDir: /app/Courses
+          minReplicas: 0
+          maxReplicas: 10
+          environmentVariables: |
+            NODE_ENV=production
+            PORT_COURSES=4002
+            RAG_SERVICE_URL=${{ secrets.RAG_SERVICE_URL }}
+            AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+            EVENTHUB_CONNECTION_STRING=${{ secrets.EVENTHUB_CONNECTION_STRING }}
+            REDIS_URL=${{ secrets.REDIS_URL }}
+            MONGO_URI=secretref:mongo-uri
+          secrets: |
+            mongo-uri=${{ secrets.MONGO_URI }}
+
+  deploy-payment:
+    name: 🚀 Deploy Payment
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy shikshak-payment
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }}
+          containerAppName: shikshak-payment
+          resourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          containerAppEnvironment: ${{ env.CONTAINER_APPS_ENVIRONMENT }}
+          targetPort: 4003
+          ingress: internal
+          containerCommand: node index.js
+          workDir: /app/payment
+          minReplicas: 0
+          maxReplicas: 10
+          environmentVariables: |
+            NODE_ENV=production
+            PORT=4003
+            RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }}
+            RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
+            MONGO_URI=secretref:mongo-uri
+          secrets: |
+            mongo-uri=${{ secrets.MONGO_URI }}
