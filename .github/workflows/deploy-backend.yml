@@ -23,8 +23,11 @@ env:
   PNPM_VERSION: 8
 
 jobs:
+  # =================================================================================================
+  # 🐳 BUILD JOB - Fast, Cached, Unified
+  # =================================================================================================
   build:
-    name: 🐳 Build & Push Image
+    name: 🐳 Build & Push
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,18 +55,19 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy:
-    name: 🚀 Deploy Services
+  # =================================================================================================
+  # 🚀 DEPLOY JOBS - Parallel Execution for Speed
+  # =================================================================================================
+  deploy-gateway:
+    name: 🚀 Gateway
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # GATEWAY
-      - name: Deploy Gateway (shikshak-backend)
+      - name: Deploy Gateway
         run: |
           az containerapp create \
             --name shikshak-backend \
@@ -76,8 +80,7 @@ jobs:
             --target-port 4000 \
             --ingress external \
             --min-replicas 0 --max-replicas 10 \
-            --command "node" \
-            --args "index.js" \
+            --command "node" --args "index.js" \
             --env-vars \
               NODE_ENV=production \
               PORT_GATEWAY=4000 \
@@ -85,10 +88,17 @@ jobs:
               AUTH_SERVICE_URL=http://shikshak-auth \
               COURSES_SERVICE_URL=http://shikshak-courses \
               PAYMENT_SERVICE_URL=http://shikshak-payment
-        continue-on-error: false
 
-      # AUTH
-      - name: Deploy Auth (shikshak-auth)
+  deploy-auth:
+    name: 🚀 Auth
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Auth
         run: |
           az containerapp create \
             --name shikshak-auth \
@@ -101,8 +111,7 @@ jobs:
             --target-port 3000 \
             --ingress internal \
             --min-replicas 0 --max-replicas 10 \
-            --command "node" \
-            --args "dist/server.js" \
+            --command "node" --args "dist/server.js" \
             --secrets "mongo-uri=${{ secrets.MONGO_URI }}" "better-auth-secret=${{ secrets.BETTER_AUTH_SECRET }}" \
             --env-vars \
               NODE_ENV=production \
@@ -113,8 +122,17 @@ jobs:
               MONGO_URI=secretref:mongo-uri \
               BETTER_AUTH_SECRET=secretref:better-auth-secret
 
-      # COURSES
-      - name: Deploy Courses (shikshak-courses)
+  deploy-courses:
+    name: 🚀 Courses
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4 # Need checkout for KEDA yaml
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Courses
         run: |
           az containerapp create \
             --name shikshak-courses \
@@ -127,10 +145,12 @@ jobs:
             --target-port 4002 \
             --ingress internal \
             --min-replicas 0 --max-replicas 10 \
-            --yaml-config-path ./Backend/Courses/keda.yaml \
-            --command "node" \
-            --args "index.js" \
-            --secrets "mongo-uri=${{ secrets.MONGO_URI }}" \
+            --scale-rule-name azure-eventhub-rule \
+            --scale-rule-type azure-eventhub \
+            --scale-rule-metadata "consumerGroup=\$Default" "unprocessedEventThreshold=1" "blobContainer=eventhub-checkpoints" "eventHubName=course" \
+            --scale-rule-auth "connection=eventhub-connection-string" "storageConnection=azure-storage-connection-string" \
+            --command "node" --args "index.js" \
+            --secrets "mongo-uri=${{ secrets.MONGO_URI }}" "eventhub-connection-string=${{ secrets.EVENTHUB_CONNECTION_STRING }}" "azure-storage-connection-string=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --env-vars \
               NODE_ENV=production \
               PORT_COURSES=4002 \
@@ -140,8 +160,16 @@ jobs:
               REDIS_URL=${{ secrets.REDIS_URL }} \
               MONGO_URI=secretref:mongo-uri
 
-      # PAYMENT
-      - name: Deploy Payment (shikshak-payment)
+  deploy-payment:
+    name: 🚀 Payment
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Payment
         run: |
           az containerapp create \
             --name shikshak-payment \
@@ -154,8 +182,7 @@ jobs:
             --target-port 4003 \
             --ingress internal \
             --min-replicas 0 --max-replicas 10 \
-            --command "node" \
-            --args "index.js" \
+            --command "node" --args "index.js" \
             --secrets "mongo-uri=${{ secrets.MONGO_URI }}" \
             --env-vars \
               NODE_ENV=production \
@@ -163,3 +190,23 @@ jobs:
               RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
               RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }} \
               MONGO_URI=secretref:mongo-uri
+
+  # =================================================================================================
+  # 🧹 CLEANUP JOB - Cost Optimization
+  # =================================================================================================
+  cleanup:
+    name: 🧹 Cleanup Old Images
+    needs: [deploy-gateway, deploy-auth, deploy-courses, deploy-payment]
+    runs-on: ubuntu-latest
+    if: always() # Run even if one deployment fails, to keep registry clean
+    steps:
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Purge Old Images
+        run: |
+          # Keep only the last 5 images to save storage costs
+          az acr run --registry ${{ secrets.ACR_LOGIN_SERVER }} \
+            --cmd "acr purge --filter 'shikshak-backend:.*' --ago 7d --keep 5 --untagged" /dev/null
+        continue-on-error: true
