@@ -97,34 +97,59 @@ jobs:
       # ========================================
       - name: Deploy Backend
         run: |
-          az containerapp up \
-            --name shikshak-backend \
-            --resource-group $AZURE_RESOURCE_GROUP \
-            --environment $CONTAINER_APPS_ENVIRONMENT \
-            --image $ACR_LOGIN_SERVER/shikshak-backend:${{ github.sha }} \
-            --registry-server $ACR_LOGIN_SERVER \
-            --registry-username ${{ secrets.ACR_USERNAME }} \
-            --registry-password ${{ secrets.ACR_PASSWORD }} \
-            --target-port 4000 \
-            --ingress external \
-            --cpu 0.5 \
-            --memory 1Gi \
-            --min-replicas 0 \
-            --max-replicas 10 \
-            --secrets "mongo-uri=${{ secrets.MONGO_URI }}" \
-            --env-vars \
-              NODE_ENV=production \
-              PORT_GATEWAY=4000 \
-              PORT=3000 \
-              PORT_COURSES=4002 \
-              MONGO_URI=secretref:mongo-uri \
-              CORS_ORIGIN=${{ secrets.FRONTEND_URL }} \
-              RAG_SERVICE_URL=${{ secrets.RAG_SERVICE_URL }} \
-              AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }} \
-              EVENTHUB_CONNECTION_STRING=${{ secrets.EVENTHUB_CONNECTION_STRING }} \
-              REDIS_URL=${{ secrets.REDIS_URL }} \
-              RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
-              RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
+          # Check if container app exists
+          EXISTS=$(az containerapp show --name shikshak-backend --resource-group $AZURE_RESOURCE_GROUP --query name -o tsv 2>/dev/null || echo "")
+          
+          if [ -z "$EXISTS" ]; then
+            echo "Creating new container app..."
+            az containerapp create \
+              --name shikshak-backend \
+              --resource-group $AZURE_RESOURCE_GROUP \
+              --environment $CONTAINER_APPS_ENVIRONMENT \
+              --image $ACR_LOGIN_SERVER/shikshak-backend:${{ github.sha }} \
+              --registry-server $ACR_LOGIN_SERVER \
+              --registry-username ${{ secrets.ACR_USERNAME }} \
+              --registry-password ${{ secrets.ACR_PASSWORD }} \
+              --target-port 4000 \
+              --ingress external \
+              --cpu 0.5 \
+              --memory 1Gi \
+              --min-replicas 0 \
+              --max-replicas 10 \
+              --secrets "mongo-uri=${{ secrets.MONGO_URI }}" \
+              --env-vars \
+                NODE_ENV=production \
+                PORT_GATEWAY=4000 \
+                PORT=3000 \
+                PORT_COURSES=4002 \
+                MONGO_URI=secretref:mongo-uri \
+                CORS_ORIGIN=${{ secrets.FRONTEND_URL }} \
+                RAG_SERVICE_URL=${{ secrets.RAG_SERVICE_URL }} \
+                AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }} \
+                EVENTHUB_CONNECTION_STRING=${{ secrets.EVENTHUB_CONNECTION_STRING }} \
+                REDIS_URL=${{ secrets.REDIS_URL }} \
+                RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
+                RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
+          else
+            echo "Updating existing container app..."
+            az containerapp update \
+              --name shikshak-backend \
+              --resource-group $AZURE_RESOURCE_GROUP \
+              --image $ACR_LOGIN_SERVER/shikshak-backend:${{ github.sha }} \
+              --set-env-vars \
+                NODE_ENV=production \
+                PORT_GATEWAY=4000 \
+                PORT=3000 \
+                PORT_COURSES=4002 \
+                MONGO_URI=secretref:mongo-uri \
+                CORS_ORIGIN=${{ secrets.FRONTEND_URL }} \
+                RAG_SERVICE_URL=${{ secrets.RAG_SERVICE_URL }} \
+                AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }} \
+                EVENTHUB_CONNECTION_STRING=${{ secrets.EVENTHUB_CONNECTION_STRING }} \
+                REDIS_URL=${{ secrets.REDIS_URL }} \
+                RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
+                RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
+          fi
 
       # ========================================
       # 📊 Summary
