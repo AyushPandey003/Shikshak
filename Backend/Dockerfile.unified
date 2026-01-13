@@ -44,7 +44,7 @@ COPY ecosystem.config.cjs ./
 # ApiGateway
 # ========================================
 WORKDIR /app/ApiGateway
-COPY ApiGateway/package.json ApiGateway/pnpm-lock.yaml ./
+COPY ApiGateway/package.json ApiGateway/pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile --prod
 COPY ApiGateway/ .
 
@@ -60,7 +60,7 @@ COPY --from=auth-builder /app/Auth/dist ./dist
 # Courses
 # ========================================
 WORKDIR /app/Courses
-COPY Courses/package.json Courses/pnpm-lock.yaml ./
+COPY Courses/package.json Courses/pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile --prod
 COPY Courses/ .
 
@@ -68,7 +68,7 @@ COPY Courses/ .
 # Payment
 # ========================================
 WORKDIR /app/payment
-COPY payment/package.json payment/pnpm-lock.yaml ./
+COPY payment/package.json payment/pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile --prod
 COPY payment/ .
 
