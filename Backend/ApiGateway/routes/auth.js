@@ -6,7 +6,7 @@ const authProxy = createProxyMiddleware({
   // Cookie handling for session management
   cookieDomainRewrite: "localhost",
   cookiePathRewrite: {
-    "/api/auth": "/authentication"
+    "/api/auth": "/api/auth"
   },
   pathRewrite: {
     "^/authentication": "/api/auth"

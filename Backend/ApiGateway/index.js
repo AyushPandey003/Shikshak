@@ -48,7 +48,7 @@ app.use(authMiddleware);
 // 🔓 Public routes - Manual check to ensure no path stripping
 app.use((req, res, next) => {
   console.log(`[GATEWAY] Request received: ${req.method} ${req.url} (originalUrl: ${req.originalUrl})`);
-  if (req.url.startsWith("/authentication")) {
+  if (req.url.startsWith("/authentication") || req.url.startsWith("/api/auth")) {
     console.log(`[GATEWAY] Routing to auth proxy`);
     return authProxy(req, res, next);
   }
