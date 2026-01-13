@@ -80,7 +80,7 @@ jobs:
             --target-port 4000 \
             --ingress external \
             --min-replicas 0 --max-replicas 10 \
-            --command "node" --args "index.js" \
+            --command "node" --args "/app/ApiGateway/index.js" \
             --env-vars \
               NODE_ENV=production \
               PORT_GATEWAY=4000 \
@@ -111,7 +111,7 @@ jobs:
             --target-port 3000 \
             --ingress internal \
             --min-replicas 0 --max-replicas 10 \
-            --command "node" --args "dist/server.js" \
+            --command "node" --args "/app/Auth/dist/server.js" \
             --secrets "mongo-uri=${{ secrets.MONGO_URI }}" "better-auth-secret=${{ secrets.BETTER_AUTH_SECRET }}" \
             --env-vars \
               NODE_ENV=production \
@@ -149,7 +149,7 @@ jobs:
             --scale-rule-type azure-eventhub \
             --scale-rule-metadata "consumerGroup=\$Default" "unprocessedEventThreshold=1" "blobContainer=eventhub-checkpoints" "eventHubName=course" \
             --scale-rule-auth "connection=eventhub-connection-string" "storageConnection=azure-storage-connection-string" \
-            --command "node" --args "index.js" \
+            --command "node" --args "/app/Courses/index.js" \
             --secrets "mongo-uri=${{ secrets.MONGO_URI }}" "eventhub-connection-string=${{ secrets.EVENTHUB_CONNECTION_STRING }}" "azure-storage-connection-string=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --env-vars \
               NODE_ENV=production \
@@ -182,7 +182,7 @@ jobs:
             --target-port 4003 \
             --ingress internal \
             --min-replicas 0 --max-replicas 10 \
-            --command "node" --args "index.js" \
+            --command "node" --args "/app/payment/index.js" \
             --secrets "mongo-uri=${{ secrets.MONGO_URI }}" \
             --env-vars \
               NODE_ENV=production \
