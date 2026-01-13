@@ -48,3 +48,5 @@ async function closeAllConsumers() {
   }
   activeSubscriptions.length = 0;
 }
+
+module.exports = { subscribeToEvents, closeAllConsumers };
