@@ -155,8 +155,8 @@ jobs:
               NODE_ENV=production \
               PORT_COURSES=4002 \
               RAG_SERVICE_URL=${{ secrets.RAG_SERVICE_URL }} \
-              AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }} \
-              EVENTHUB_CONNECTION_STRING=${{ secrets.EVENTHUB_CONNECTION_STRING }} \
+              AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage-connection-string \
+              EVENTHUB_CONNECTION_STRING=secretref:eventhub-connection-string \
               REDIS_URL=${{ secrets.REDIS_URL }} \
               MONGO_URI=secretref:mongo-uri
 
