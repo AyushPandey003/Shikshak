@@ -8,15 +8,14 @@ on:
   workflow_dispatch:
     inputs:
       setup_infra:
-        description: 'Create Event Hub topics (only needed once)'
-        required: false
-        default: false
+        description: 'Create Event Hub topics (run once)'
         type: boolean
+        default: false
       environment:
         description: 'Target environment'
-        required: true
-        default: 'production'
         type: choice
+        required: true
+        default: production
         options:
           - production
           - staging
@@ -26,6 +25,7 @@ env:
   AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
   CONTAINER_APPS_ENVIRONMENT: ${{ secrets.CONTAINER_APPS_ENVIRONMENT || 'shikshak-env' }}
   EVENTHUB_NAMESPACE: shikshak-events-dev
+  PNPM_VERSION: 8
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -35,38 +35,40 @@ jobs:
   deploy:
     name: 🚀 Build & Deploy
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
     environment: ${{ github.event.inputs.environment || 'production' }}
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       # ========================================
-      # 🏗️ INFRASTRUCTURE (Only when requested)
+      # 🔐 Azure Login
       # ========================================
       - name: Azure Login
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      # ========================================
+      # 📦 Infra (Event Hub)
+      # ========================================
       - name: Create Event Hub Topics
         if: github.event.inputs.setup_infra == 'true'
         run: |
-          echo "📦 Creating Event Hub topics..."
           TOPICS=("material-data" "course" "payment-done")
           for topic in "${TOPICS[@]}"; do
             az eventhubs eventhub create \
-              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-              --namespace-name ${{ env.EVENTHUB_NAMESPACE }} \
+              --resource-group $AZURE_RESOURCE_GROUP \
+              --namespace-name $EVENTHUB_NAMESPACE \
               --name $topic \
-              --message-retention 1 \
-              --partition-count 1 2>/dev/null || true
+              --partition-count 1 \
+              --message-retention 1 || true
           done
-          echo "✅ Topics created"
 
       # ========================================
-      # 🐳 BUILD & PUSH
+      # 🐳 Docker Build & Push
       # ========================================
-      - name: Set up Docker Buildx
+      - name: Set up Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Login to ACR
@@ -76,12 +78,14 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: Build and push
+      - name: Build & Push Image
         uses: docker/build-push-action@v5
         with:
           context: ./Backend
           file: ./Backend/Dockerfile.unified
           push: true
+          build-args: |
+            PNPM_VERSION=${{ env.PNPM_VERSION }}
           tags: |
             ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }}
             ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:latest
@@ -89,69 +93,51 @@ jobs:
           cache-to: type=gha,mode=max
 
       # ========================================
-      # 🚀 DEPLOY
+      # 🚀 Deploy to Azure Container Apps
       # ========================================
-      - name: Deploy to Container App
+      - name: Deploy Backend
         run: |
-          APP_EXISTS=$(az containerapp show \
+          az containerapp up \
             --name shikshak-backend \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --query "name" -o tsv 2>/dev/null || echo "")
-          
-          if [ -z "$APP_EXISTS" ]; then
-            echo "📦 Creating Container App..."
-            az containerapp create \
-              --name shikshak-backend \
-              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-              --environment ${{ env.CONTAINER_APPS_ENVIRONMENT }} \
-              --image ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }} \
-              --registry-server ${{ secrets.ACR_LOGIN_SERVER }} \
-              --registry-username ${{ secrets.ACR_USERNAME }} \
-              --registry-password ${{ secrets.ACR_PASSWORD }} \
-              --target-port 4000 \
-              --ingress external \
-              --min-replicas 0 \
-              --max-replicas 10 \
-              --cpu 0.5 \
-              --memory 1Gi \
-              --scale-rule-name http-scaling \
-              --scale-rule-type http \
-              --scale-rule-http-concurrency 30 \
-              --env-vars \
-                "NODE_ENV=production" \
-                "PORT_GATEWAY=4000" \
-                "PORT=3000" \
-                "PORT_COURSES=4002" \
-                "MONGO_URI=secretref:mongo-uri" \
-                "CORS_ORIGIN=${{ secrets.FRONTEND_URL }}" \
-                "RAG_SERVICE_URL=${{ secrets.RAG_SERVICE_URL }}" \
-                "AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-                "EVENTHUB_CONNECTION_STRING=${{ secrets.EVENTHUB_CONNECTION_STRING }}" \
-                "REDIS_URL=${{ secrets.REDIS_URL }}" \
-                "RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }}" \
-                "RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}"
-          else
-            echo "🔄 Updating Container App..."
-            az containerapp update \
-              --name shikshak-backend \
-              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-              --image ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }}
-          fi
+            --resource-group $AZURE_RESOURCE_GROUP \
+            --environment $CONTAINER_APPS_ENVIRONMENT \
+            --image $ACR_LOGIN_SERVER/shikshak-backend:${{ github.sha }} \
+            --registry-server $ACR_LOGIN_SERVER \
+            --registry-username ${{ secrets.ACR_USERNAME }} \
+            --registry-password ${{ secrets.ACR_PASSWORD }} \
+            --target-port 4000 \
+            --ingress external \
+            --cpu 0.5 \
+            --memory 1Gi \
+            --min-replicas 0 \
+            --max-replicas 10 \
+            --secrets "mongo-uri=${{ secrets.MONGO_URI }}" \
+            --env-vars \
+              NODE_ENV=production \
+              PORT_GATEWAY=4000 \
+              PORT=3000 \
+              PORT_COURSES=4002 \
+              MONGO_URI=secretref:mongo-uri \
+              CORS_ORIGIN=${{ secrets.FRONTEND_URL }} \
+              RAG_SERVICE_URL=${{ secrets.RAG_SERVICE_URL }} \
+              AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }} \
+              EVENTHUB_CONNECTION_STRING=${{ secrets.EVENTHUB_CONNECTION_STRING }} \
+              REDIS_URL=${{ secrets.REDIS_URL }} \
+              RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
+              RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
 
       # ========================================
-      # 📊 SUMMARY
+      # 📊 Summary
       # ========================================
-      - name: Summary
+      - name: Deployment Summary
         run: |
-          APP_URL=$(az containerapp show \
+          URL=$(az containerapp show \
             --name shikshak-backend \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --resource-group $AZURE_RESOURCE_GROUP \
             --query "properties.configuration.ingress.fqdn" -o tsv)
-          
-          echo "## 🚀 Deployment Complete" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Backend | https://$APP_URL |" >> $GITHUB_STEP_SUMMARY
-          echo "| Frontend | https://mshikshak.vercel.app |" >> $GITHUB_STEP_SUMMARY
-          echo "| Commit | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+
+          echo "## 🚀 Backend Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | URL |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-----|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend | https://$URL |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY

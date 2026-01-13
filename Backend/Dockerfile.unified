@@ -1,87 +1,85 @@
-# Multi-stage build for unified Node.js backend services
+# ========================================
+# Unified multi-service backend Dockerfile
 # Services: ApiGateway, Auth, Courses, Payment
+# ========================================
+
+ARG PNPM_VERSION=8
 
 # ========================================
-# Stage 1: Build Auth TypeScript service
+# Stage 1: Build Auth (TypeScript)
 # ========================================
 FROM node:20-alpine AS auth-builder
+ARG PNPM_VERSION
 
 WORKDIR /app/Auth
 
-# Copy package files
-COPY Auth/package*.json ./
-COPY Auth/pnpm-lock.yaml* ./
+# Install pinned pnpm
+RUN npm install -g "pnpm@^${PNPM_VERSION}"
 
-# Install pnpm and all dependencies (including dev for build)
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+# Copy dependency manifests
+COPY Auth/package.json Auth/pnpm-lock.yaml ./
 
-# Copy source code
+# Install deps (strict)
+RUN pnpm install --frozen-lockfile
+
+# Copy source & build
 COPY Auth/ .
-
-# Build TypeScript
 RUN pnpm run build
 
 # ========================================
-# Stage 2: Production image with all services
+# Stage 2: Production image
 # ========================================
 FROM node:20-alpine
+ARG PNPM_VERSION
 
-# Install PM2 globally for process management
-RUN npm install -g pm2 pnpm
+# Install PM2 + pnpm
+RUN npm install -g pm2 "pnpm@^${PNPM_VERSION}"
 
 WORKDIR /app
 
-# Copy PM2 ecosystem config
+# PM2 config
 COPY ecosystem.config.cjs ./
 
-# ----------------------------------------
-# ApiGateway setup
-# ----------------------------------------
+# ========================================
+# ApiGateway
+# ========================================
 WORKDIR /app/ApiGateway
-COPY ApiGateway/package*.json ./
-COPY ApiGateway/pnpm-lock.yaml* ./
+COPY ApiGateway/package.json ApiGateway/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 COPY ApiGateway/ .
 
-# ----------------------------------------
-# Auth setup (built files)
-# ----------------------------------------
+# ========================================
+# Auth (built output only)
+# ========================================
 WORKDIR /app/Auth
-COPY Auth/package*.json ./
-COPY Auth/pnpm-lock.yaml* ./
+COPY Auth/package.json Auth/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 COPY --from=auth-builder /app/Auth/dist ./dist
 
-# ----------------------------------------
-# Courses setup
-# ----------------------------------------
+# ========================================
+# Courses
+# ========================================
 WORKDIR /app/Courses
-COPY Courses/package*.json ./
-COPY Courses/pnpm-lock.yaml* ./
+COPY Courses/package.json Courses/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 COPY Courses/ .
 
-# ----------------------------------------
-# Payment setup
-# ----------------------------------------
+# ========================================
+# Payment
+# ========================================
 WORKDIR /app/payment
-COPY payment/package*.json ./
-COPY payment/pnpm-lock.yaml* ./
+COPY payment/package.json payment/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 COPY payment/ .
 
-# ----------------------------------------
-# Start all services
-# ----------------------------------------
+# ========================================
+# Runtime
+# ========================================
 WORKDIR /app
 
-# Expose ports (API Gateway is the main entry point)
-# ApiGateway: 4000, Auth: 3000, Courses: 4002, Payment: 4003
 EXPOSE 4000 3000 4002 4003
 
-# Health check for API Gateway
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:4000/ || exit 1
 
-# Start all services with PM2
 CMD ["pm2-runtime", "ecosystem.config.cjs"]
