@@ -37,6 +37,20 @@ export const auth = betterAuth({
     },
     // Map custom fields if better-auth supports it directly, 
     // otherwise we handle them via update-profile endpoint
+    // Cookie configuration for Cross-Site usage (Vercel <-> Azure)
+    advanced: {
+        cookies: {
+            session_token: {
+                name: "better-auth.session_token",
+                attributes: {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: "none",
+                    path: "/"
+                }
+            }
+        }
+    },
     user: {
         additionalFields: {
             role: {

@@ -85,6 +85,7 @@ jobs:
               NODE_ENV=production \
               PORT_GATEWAY=4000 \
               CORS_ORIGIN=${{ secrets.FRONTEND_URL }} \
+              AUTH_TRUST_HOST=true \
               AUTH_SERVICE_URL=http://shikshak-auth \
               COURSES_SERVICE_URL=http://shikshak-courses \
               PAYMENT_SERVICE_URL=http://shikshak-payment
