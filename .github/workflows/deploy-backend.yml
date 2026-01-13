@@ -55,7 +55,7 @@ jobs:
       - name: Create Event Hub Topics
         if: github.event.inputs.setup_infra == 'true'
         run: |
-          TOPICS=("material-data" "course" "payment-done")
+          TOPICS=("module-created" "course" "payment-done")
           for topic in "${TOPICS[@]}"; do
             az eventhubs eventhub create \
               --resource-group $AZURE_RESOURCE_GROUP \

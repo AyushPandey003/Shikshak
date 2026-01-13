@@ -55,6 +55,7 @@ WORKDIR /app/Auth
 COPY Auth/package.json Auth/pnpm-lock.yaml ./
 RUN pnpm install --no-frozen-lockfile --prod
 COPY --from=auth-builder /app/Auth/dist ./dist
+COPY --from=auth-builder /app/Auth/infra ./infra
 
 # ========================================
 # Courses

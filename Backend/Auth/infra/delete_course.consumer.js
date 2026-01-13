@@ -1,112 +1,71 @@
-// infra/email.consumer.js
-import { kafka } from "./client.js";
+// infra/delete_course.consumer.js - Azure Event Hubs version
+import { subscribeToEvents, closeAllConsumers } from "./client.js";
 
-const consumer = kafka.consumer({
-  groupId: "delete_course-group",
-  sessionTimeout: 30000,
-  heartbeatInterval: 3000,
-});
+// Event Hub topic
+const COURSE_HUB = "course";
 
-async function connectConsumer() {
+async function processDeleteCourseEvent(event, context) {
   try {
-    console.log("Connecting Consumer...");
-    console.log("Broker: localhost:9092");
-    await consumer.connect();
-    console.log("✓ Consumer Connected Successfully");
+    console.log("\n📨 NEW EVENT RECEIVED:");
+    console.log("─".repeat(50));
+
+    const payload = event.body;
+    const eventtype = payload.eventtype;
+
+    console.log(`Event Hub: ${context.eventHubName}`);
+    console.log(`Partition: ${context.partitionId}`);
+    console.log(`Event Type: ${eventtype}`);
+
+    if (eventtype === 'course_deleted') {
+      const { course_id } = payload;
+      console.log(`Course ID: ${course_id}`);
+
+      // TODO: delete course id from user schema
+
+      console.log(`✅ Course deleted event processed for course_id=${course_id}`);
+    } else {
+      console.warn(`⚠️ Unknown event type: ${eventtype}`);
+    }
+
+    console.log("─".repeat(50));
   } catch (error) {
-    console.error("❌ Failed to connect consumer:", error.message);
-    throw error;
+    console.error("❌ Error processing event:", error);
   }
 }
 
-async function subscribeToTopics() {
-  try {
-    console.log("Subscribing to topics: course");
-    await consumer.subscribe({
-      topics: ["course"],
-      fromBeginning: true
-    });
-    console.log("✓ Subscribed to topics: course");
-  } catch (error) {
-    console.error("❌ Failed to subscribe:", error.message);
-    throw error;
-  }
+async function processError(err, context) {
+  console.error(`[Delete Course Consumer] Error on partition ${context.partitionId}:`, err.message);
 }
 
 async function startConsumer() {
   try {
-    await connectConsumer();
-    await subscribeToTopics();
+    console.log("🚀 Starting Delete Course Consumer Service...");
 
-    console.log("🚀 Consumer is running and waiting for messages...");
-    console.log("Press CTRL+C to stop\n");
+    await subscribeToEvents(COURSE_HUB, processDeleteCourseEvent, processError, "delete-course-group");
+    console.log(`✓ Subscribed to ${COURSE_HUB}`);
 
-    await consumer.run({
-      eachMessage: async ({ topic, partition, message }) => {
-        try {
-          console.log("\n📨 NEW MESSAGE RECEIVED:");
-          console.log("─".repeat(50));
-
-          const value = message.value.toString();
-          console.log("Raw message:", value);
-
-          const payload = JSON.parse(value);
-          const { eventtype } = payload;
-
-          console.log(`Topic: ${topic}`);
-          console.log(`Partition: ${partition}`);
-          console.log(`Offset: ${message.offset}`);
-          console.log(`Key: ${message.key?.toString()}`);
-          console.log(`Event Type: ${eventtype}`);
-
-          if (eventtype === 'course_deleted') {
-            const { course_id } = payload;
-            console.log(`Course ID: ${course_id}`);
-
-            // delete course id from user schema
-
-            console.log(`✅ Course deleted for course_id=${course_id}`);
-          } else {
-            console.warn(`⚠️ Unknown event type: ${eventtype}`);
-          }
-
-          console.log("─".repeat(50));
-        } catch (error) {
-          console.error("❌ Error processing message:", error);
-          console.error("Message value:", message.value.toString());
-        }
-      },
-    });
+    console.log("🚀 Delete Course Consumer is running and waiting for events...");
   } catch (error) {
-    console.error("❌ Fatal error in consumer:", error);
+    console.error("❌ Fatal error starting consumer:", error);
     process.exit(1);
-  }
-}
-
-async function disconnectConsumer() {
-  try {
-    await consumer.disconnect();
-    console.log("✓ Consumer Disconnected");
-  } catch (error) {
-    console.error("Error disconnecting consumer:", error);
   }
 }
 
 // Graceful shutdown
 process.on("SIGINT", async () => {
-  console.log("\n\nShutting down consumer gracefully...");
-  await disconnectConsumer();
+  console.log("\n\nShutting down delete course consumer gracefully...");
+  await closeAllConsumers();
   process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
-  console.log("\n\nShutting down consumer gracefully...");
-  await disconnectConsumer();
+  console.log("\n\nShutting down delete course consumer gracefully...");
+  await closeAllConsumers();
   process.exit(0);
 });
 
-// Auto-start when this file is imported
+// Auto-start when imported
 startConsumer().catch((error) => {
-  console.error("Failed to start consumer:", error);
+  console.error("Failed to start delete course consumer:", error);
   process.exit(1);
 });

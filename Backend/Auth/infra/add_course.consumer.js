@@ -1,14 +1,11 @@
-// infra/add_course.consumer.js
+// infra/add_course.consumer.js - Azure Event Hubs version
 // Handles payment_done events - adds user to course
 
-import { kafka } from "./client.js";
+import { subscribeToEvents, closeAllConsumers } from "./client.js";
 import mongoose from "mongoose";
 
-const consumer = kafka.consumer({
-  groupId: "add_course-group",
-  sessionTimeout: 30000,
-  heartbeatInterval: 3000,
-});
+// Event Hub topic
+const PAYMENT_DONE_HUB = "payment-done";
 
 // MongoDB connection for updating courses
 let mongoConnection = null;
@@ -35,32 +32,6 @@ async function getMongoConnection() {
 
   console.log('[AddCourse] MongoDB connected');
   return mongoConnection;
-}
-
-async function connectConsumer() {
-  try {
-    console.log("Connecting Consumer...");
-    console.log("Broker: localhost:9092");
-    await consumer.connect();
-    console.log("✓ Consumer Connected Successfully");
-  } catch (error) {
-    console.error("❌ Failed to connect consumer:", error.message);
-    throw error;
-  }
-}
-
-async function subscribeToTopics() {
-  try {
-    console.log("Subscribing to topics: payment_done");
-    await consumer.subscribe({
-      topics: ["payment_done"],
-      fromBeginning: false
-    });
-    console.log("✓ Subscribed to topics: payment_done");
-  } catch (error) {
-    console.error("❌ Failed to subscribe:", error.message);
-    throw error;
-  }
 }
 
 async function addUserToCourse(course_id, user_id) {
@@ -137,89 +108,80 @@ async function addUserToCourse(course_id, user_id) {
   }
 }
 
-async function startConsumer() {
+async function processAddCourseEvent(event, context) {
   try {
-    await connectConsumer();
-    await subscribeToTopics();
+    console.log("\n📨 NEW EVENT RECEIVED:");
+    console.log("─".repeat(50));
 
-    console.log("🚀 Consumer is running and waiting for messages...");
-    console.log("Press CTRL+C to stop\n");
+    const payload = event.body;
+    const eventtype = payload.eventtype;
 
-    await consumer.run({
-      eachMessage: async ({ topic, partition, message }) => {
-        try {
-          console.log("\n📨 NEW MESSAGE RECEIVED:");
-          console.log("─".repeat(50));
+    console.log(`Event Hub: ${context.eventHubName}`);
+    console.log(`Partition: ${context.partitionId}`);
+    console.log(`Event Type: ${eventtype}`);
 
-          const value = message.value.toString();
-          console.log("Raw message:", value);
+    if (eventtype === 'payment_done') {
+      const { course_id, user_id } = payload;
+      console.log(`Course ID: ${course_id}`);
+      console.log(`User ID: ${user_id}`);
 
-          const payload = JSON.parse(value);
-          const { eventtype } = payload;
+      const success = await addUserToCourse(course_id, user_id);
 
-          console.log(`Topic: ${topic}`);
-          console.log(`Partition: ${partition}`);
-          console.log(`Offset: ${message.offset}`);
-          console.log(`Key: ${message.key?.toString()}`);
-          console.log(`Event Type: ${eventtype}`);
+      if (success) {
+        console.log(`✅ Course enrollment completed for user_id=${user_id}`);
+      } else {
+        console.error(`❌ Failed to enroll user_id=${user_id}`);
+      }
 
-          if (eventtype === 'payment_done') {
-            const { course_id, user_id } = payload;
-            console.log(`Course ID: ${course_id}`);
-            console.log(`User ID: ${user_id}`);
+    } else {
+      console.warn(`⚠️ Unknown event type: ${eventtype}`);
+    }
 
-            const success = await addUserToCourse(course_id, user_id);
-
-            if (success) {
-              console.log(`✅ Course enrollment completed for user_id=${user_id}`);
-            } else {
-              console.error(`❌ Failed to enroll user_id=${user_id}`);
-            }
-
-          } else {
-            console.warn(`⚠️ Unknown event type: ${eventtype}`);
-          }
-
-          console.log("─".repeat(50));
-        } catch (error) {
-          console.error("❌ Error processing message:", error);
-          console.error("Message value:", message.value.toString());
-        }
-      },
-    });
+    console.log("─".repeat(50));
   } catch (error) {
-    console.error("❌ Fatal error in consumer:", error);
-    process.exit(1);
+    console.error("❌ Error processing event:", error);
   }
 }
 
-async function disconnectConsumer() {
+async function processError(err, context) {
+  console.error(`[AddCourse Consumer] Error on partition ${context.partitionId}:`, err.message);
+}
+
+async function startConsumer() {
   try {
-    await consumer.disconnect();
-    if (mongoConnection) {
-      await mongoConnection.close();
-    }
-    console.log("✓ Consumer Disconnected");
+    console.log("🚀 Starting Add Course Consumer Service...");
+
+    await subscribeToEvents(PAYMENT_DONE_HUB, processAddCourseEvent, processError, "add-course-group");
+    console.log(`✓ Subscribed to ${PAYMENT_DONE_HUB}`);
+
+    console.log("🚀 Add Course Consumer is running and waiting for events...");
   } catch (error) {
-    console.error("Error disconnecting consumer:", error);
+    console.error("❌ Fatal error starting consumer:", error);
+    process.exit(1);
   }
 }
 
 // Graceful shutdown
 process.on("SIGINT", async () => {
-  console.log("\n\nShutting down consumer gracefully...");
-  await disconnectConsumer();
+  console.log("\n\nShutting down add course consumer gracefully...");
+  await closeAllConsumers();
+  if (mongoConnection) {
+    await mongoConnection.close();
+  }
   process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
-  console.log("\n\nShutting down consumer gracefully...");
-  await disconnectConsumer();
+  console.log("\n\nShutting down add course consumer gracefully...");
+  await closeAllConsumers();
+  if (mongoConnection) {
+    await mongoConnection.close();
+  }
   process.exit(0);
 });
 
-// Auto-start when this file is imported
+// Auto-start when imported
 startConsumer().catch((error) => {
-  console.error("Failed to start consumer:", error);
+  console.error("Failed to start add course consumer:", error);
   process.exit(1);
 });
