@@ -81,6 +81,6 @@ WORKDIR /app
 EXPOSE 4000 3000 4002 4003
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:4000/ || exit 1
+  CMD wget --no-verbose --tries=1 --spider ${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/ || exit 1
 
 CMD ["pm2-runtime", "ecosystem.config.cjs"]

@@ -40,7 +40,7 @@ const CreateTestPageContent: React.FC = () => {
         }
         console.log(config);
         // call api to create a test
-        await axios.post('http://localhost:4000/material/tests/test-create', {
+        await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/tests/test-create`, {
             title: config.title,
             questions: config.questions,
             course_id: course_id,

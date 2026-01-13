@@ -15,7 +15,7 @@ import { producePaymentDone, disconnectProducer } from "./infra/payment.producer
 const app = express();
 
 app.use(cors({
-  origin: ["http://localhost:3001", "http://localhost:4000"],
+  origin: ["http://localhost:3001", `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}`],
   credentials: true
 }));
 app.use(express.json());

@@ -3,7 +3,7 @@
  * Uses NEXT_PUBLIC_API_GATEWAY_URL environment variable in production
  */
 
-const API_GATEWAY_URL = process.env.NEXT_PUBLIC_API_GATEWAY_URL || 'http://localhost:4000';
+const API_GATEWAY_URL = process.env.NEXT_PUBLIC_API_GATEWAY_URL || process.env.NEXT_PUBLIC_API_GATEWAY_URL;
 
 export const API_CONFIG = {
     // Base URL for API Gateway

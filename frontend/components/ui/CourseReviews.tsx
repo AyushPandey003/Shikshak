@@ -26,7 +26,7 @@ const CourseReviews: React.FC<CourseReviewsProps> = ({ courseTitle, reviewsList 
             return;
         }
         try {
-            await axios.post('http://localhost:4000/material/reviews/delete_review', {
+            await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/reviews/delete_review`, {
                 review_id: reviewId
             }, {
                 withCredentials: true

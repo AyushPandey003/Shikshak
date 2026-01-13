@@ -32,7 +32,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
     // Fetch reviews to get real-time rating
     const fetchReviews = async () => {
       try {
-        const response = await axios.post("http://localhost:4000/material/reviews/get_reviews", {
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/reviews/get_reviews`, {
           course_id: course_id
         }, { withCredentials: true });
 
@@ -67,7 +67,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
     }
 
     try {
-      const response = await axios.post("http://localhost:4000/material/reviews/create_review", {
+      const response = await axios.post("${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/reviews/create_review", {
         rating: data.rating,
         comment: data.description,
         course_id: course.id,

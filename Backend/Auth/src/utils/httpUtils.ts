@@ -21,14 +21,14 @@ export const parseBody = (req: IncomingMessage): Promise<any> => {
 };
 
 export const setCorsHeaders = (req: IncomingMessage, res: ServerResponse) => {
-    const allowedOrigins = ['http://localhost:4000', 'http://localhost:3001', 'http://localhost:3000'];
+    const allowedOrigins = [`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}`, 'http://localhost:3001', 'http://localhost:3000'];
     const origin = req.headers.origin;
 
     if (origin && allowedOrigins.includes(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
     } else {
         // Default to Gateway if no origin or not allowed (optional, or strict)
-        // res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4000'); 
+        // res.setHeader('Access-Control-Allow-Origin', '${process.env.NEXT_PUBLIC_API_GATEWAY_URL}'); 
     }
 
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PATCH, DELETE');

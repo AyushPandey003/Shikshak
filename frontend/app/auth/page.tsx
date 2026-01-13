@@ -24,7 +24,7 @@ export default function Home() {
     console.log("Saving Profile to Backend:", { user: session?.user, ...profile });
 
     try {
-      const response = await fetch('http://localhost:4000/authentication/user_detail', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/authentication/user_detail`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

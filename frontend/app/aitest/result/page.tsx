@@ -23,7 +23,7 @@ function TestResultPageContent() {
             }
 
             try {
-                const response = await axios.post("http://localhost:4000/material/tests/get-student-result", {
+                const response = await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/tests/get-student-result`, {
                     test_id: testId,
                     user_id: userId
                 }, { withCredentials: true });

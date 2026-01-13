@@ -80,7 +80,7 @@ const StartTestPageContent: React.FC = () => {
             console.log("courseId", cId)
             console.log("testId", tId)
 
-            const response = await axios.post('http://localhost:4000/material/tests/fetch-questions', {
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/tests/fetch-questions`, {
                 course_id: cId,
                 test_id: tId
             }, { withCredentials: true });
@@ -174,7 +174,7 @@ const StartTestPageContent: React.FC = () => {
             console.log("testId", testId)
             console.log("userId", userId)
             console.log("name", name)
-            await axios.post('http://localhost:4000/material/tests/save-result', {
+            await axios.post('${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/tests/save-result', {
                 test_id: testId,
                 user_id: userId,
                 answers: answers,

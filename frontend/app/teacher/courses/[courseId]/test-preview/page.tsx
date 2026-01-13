@@ -38,7 +38,7 @@ function TestPreviewPageContent() {
     useEffect(() => {
         const fetchCourseData = async () => {
             try {
-                const response = await axios.post(`http://localhost:4000/material/courses/get_course_by_id`, {
+                const response = await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/courses/get_course_by_id`, {
                     course_id: courseId,
                     user_id: user?.id,
                     user_role: profile?.role
@@ -118,7 +118,7 @@ function TestPreviewPageContent() {
 
             console.log("Saving result:", selectedResultId, "Raw:", totalObtained, "Normalized:", normalizedScore);
 
-            await axios.post('http://localhost:4000/material/tests/give-marks', {
+            await axios.post('${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/tests/give-marks', {
                 result_id: selectedResultId,
                 marks: Number(normalizedScore.toFixed(2))
             }, { withCredentials: true });
@@ -142,7 +142,7 @@ function TestPreviewPageContent() {
 
     const getresults = async (testId: string) => {
         try {
-            const response = await axios.post(`http://localhost:4000/material/tests/get-results`, {
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/tests/get-results`, {
                 test_id: testId,
             }, { withCredentials: true });
 

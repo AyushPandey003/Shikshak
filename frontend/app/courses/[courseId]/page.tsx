@@ -26,7 +26,7 @@ const CourseDetailPage: React.FC = () => {
             if (!courseId) return;
             try {
                 // Using the specific endpoint for general info
-                const res = await axios.post("http://localhost:4000/material/courses/get_course_by_id_general", {
+                const res = await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/courses/get_course_by_id_general`, {
                     course_id: courseId
                 }, { withCredentials: true });
 
@@ -38,7 +38,7 @@ const CourseDetailPage: React.FC = () => {
                 if (data.thumbnail && !data.thumbnail.startsWith("http")) {
                     try {
                         // Use encodeURIComponent to handle spaces or special chars safe
-                        const sasRes = await axios.get(`http://localhost:4000/material/upload/${encodeURIComponent(data.thumbnail)}`, {
+                        const sasRes = await axios.get(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/upload/${encodeURIComponent(data.thumbnail)}`, {
                             headers: user?.accessToken ? { "Authorization": `Bearer ${user.accessToken}` } : {},
                             withCredentials: true
                         });
@@ -92,7 +92,7 @@ const CourseDetailPage: React.FC = () => {
                 };
 
                 // Fetch reviews specifically
-                const reviewsRes = await axios.post("http://localhost:4000/material/reviews/get_reviews", {
+                const reviewsRes = await axios.post("${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/reviews/get_reviews", {
                     course_id: courseId
                 }, { withCredentials: true });
 

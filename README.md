@@ -286,7 +286,7 @@ docker-compose up -d
 ```bash
 cd frontend
 npm install
-# Create .env.local with NEXT_PUBLIC_API_URL=http://localhost:4000
+# Create .env.local with NEXT_PUBLIC_API_URL=${process.env.NEXT_PUBLIC_API_GATEWAY_URL}
 npm run dev
 ```
 

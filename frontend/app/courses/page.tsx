@@ -33,7 +33,7 @@ export default function CoursesPage() {
       try {
         setLoading(true);
         const res = await axios.get(
-          "http://localhost:4000/material/courses/get_all_general",
+          `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/courses/get_all_general`,
           {
             withCredentials: true,
           }
@@ -57,7 +57,7 @@ export default function CoursesPage() {
           if (c.thumbnail && !c.thumbnail.startsWith("http")) {
             try {
               // Use encodeURIComponent to handle spaces or special chars safe
-              const sasRes = await axios.get(`http://localhost:4000/material/upload/${encodeURIComponent(c.thumbnail)}`, {
+              const sasRes = await axios.get(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/upload/${encodeURIComponent(c.thumbnail)}`, {
                 headers: user?.accessToken ? { "Authorization": `Bearer ${user.accessToken}` } : {},
                 withCredentials: true
               });
