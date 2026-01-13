@@ -4,8 +4,8 @@ const connectionString = process.env.EVENTHUB_CONNECTION_STRING;
 
 // Cache producer instances for reuse
 const producers = new Map();
-// Cache consumer instances for reuse
-const consumers = new Map();
+// Track active subscriptions for cleanup
+const activeSubscriptions = [];
 
 /**
  * Get or create a producer for the specified event hub
@@ -20,23 +20,6 @@ export function getProducer(eventHubName) {
     producers.set(eventHubName, new EventHubProducerClient(connectionString, eventHubName));
   }
   return producers.get(eventHubName);
-}
-
-/**
- * Get or create a consumer for the specified event hub
- * @param {string} eventHubName - Name of the event hub
- * @param {string} consumerGroup - Consumer group (default: "$Default")
- * @returns {EventHubConsumerClient}
- */
-export function getConsumer(eventHubName, consumerGroup = "$Default") {
-  const key = `${eventHubName}:${consumerGroup}`;
-  if (!consumers.has(key)) {
-    if (!connectionString) {
-      throw new Error("EVENTHUB_CONNECTION_STRING environment variable is not set");
-    }
-    consumers.set(key, new EventHubConsumerClient(consumerGroup, connectionString, eventHubName));
-  }
-  return consumers.get(key);
 }
 
 /**
@@ -60,17 +43,23 @@ export async function sendEvents(eventHubName, events) {
 
 /**
  * Subscribe to events from an event hub
+ * Creates a new consumer instance for each subscription to avoid conflicts
  * @param {string} eventHubName - Name of the event hub
  * @param {function} processEvent - Handler: async (event, context) => void
  * @param {function} processError - Error handler: async (err, context) => void
  * @param {string} consumerGroup - Consumer group (default: "$Default")
  */
 export async function subscribeToEvents(eventHubName, processEvent, processError, consumerGroup = "$Default") {
-  const consumer = getConsumer(eventHubName, consumerGroup);
+  if (!connectionString) {
+    throw new Error("EVENTHUB_CONNECTION_STRING environment variable is not set");
+  }
+
+  // Create a NEW consumer for each subscription to avoid partition conflicts
+  const consumer = new EventHubConsumerClient(consumerGroup, connectionString, eventHubName);
 
   console.log(`✓ Subscribing to Event Hub: ${eventHubName} (group: ${consumerGroup})`);
 
-  consumer.subscribe({
+  const subscription = consumer.subscribe({
     processEvents: async (events, context) => {
       for (const event of events) {
         await processEvent(event, context);
@@ -80,6 +69,8 @@ export async function subscribeToEvents(eventHubName, processEvent, processError
       console.error(`[${eventHubName}] Error:`, err.message);
     }),
   });
+
+  activeSubscriptions.push({ consumer, subscription, eventHubName });
 }
 
 /**
@@ -97,9 +88,9 @@ export async function closeAllProducers() {
  * Close all consumer connections
  */
 export async function closeAllConsumers() {
-  for (const [name, consumer] of consumers) {
+  for (const { consumer, eventHubName } of activeSubscriptions) {
     await consumer.close();
-    console.log(`✓ Closed consumer for ${name}`);
+    console.log(`✓ Closed consumer for ${eventHubName}`);
   }
-  consumers.clear();
+  activeSubscriptions.length = 0;
 }

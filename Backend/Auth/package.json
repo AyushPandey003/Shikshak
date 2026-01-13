@@ -2,6 +2,7 @@
   "name": "shikshak-auth-service",
   "version": "1.0.0",
   "description": "Auth microservice using Native Node.js, Better Auth and MongoDB",
+  "type": "module",
   "main": "src/server.ts",
   "scripts": {
     "dev": "nodemon src/server.ts",
