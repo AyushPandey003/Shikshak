@@ -21,6 +21,7 @@ const trustedOrigins = [
 console.log("[DEBUG-AUTH] Trusted Origins:", trustedOrigins);
 
 export const auth = betterAuth({
+    // IMPORTANT: baseURL must be the backend URL where OAuth callbacks are handled
     baseURL: `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/api/auth`,
     trustedOrigins: trustedOrigins,
     database: mongodbAdapter(db,
@@ -35,11 +36,15 @@ export const auth = betterAuth({
             clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
         },
     },
-    // Map custom fields if better-auth supports it directly, 
-    // otherwise we handle them via update-profile endpoint
     // Cookie configuration for Cross-Site usage (Vercel <-> Azure)
+    // ALL OAuth-related cookies MUST have SameSite=none and Secure=true
     advanced: {
+        // Trust X-Forwarded-* headers from the API Gateway proxy
+        trustedProxyHeaders: true,
+        // Ensure cookies are secure in production (HTTPS only)
+        useSecureCookies: process.env.NODE_ENV === "production",
         cookies: {
+            // Session cookie - for authenticated sessions
             session_token: {
                 name: "better-auth.session_token",
                 attributes: {
@@ -48,7 +53,44 @@ export const auth = betterAuth({
                     sameSite: "none",
                     path: "/"
                 }
+            },
+            // STATE cookie - CRITICAL for OAuth CSRF protection
+            // Must be SameSite=none for cross-domain OAuth callbacks
+            state: {
+                name: "better-auth.state",
+                attributes: {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: "none",
+                    path: "/"
+                }
+            },
+            // PKCE code verifier cookie - also needs cross-site support
+            pkce_code_verifier: {
+                name: "better-auth.pkce_code_verifier",
+                attributes: {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: "none",
+                    path: "/"
+                }
             }
+        }
+    },
+    // Redirect callback: after successful OAuth, redirect to frontend
+    callbacks: {
+        redirect: async ({ url, request }: { url: string; request: Request }) => {
+            // If callbackURL is provided in the request, use it
+            // Otherwise, redirect to the frontend
+            const frontendUrl = process.env.FRONTEND_URL || "https://mshikshak.vercel.app";
+
+            // Check if URL is already pointing to frontend
+            if (url.startsWith(frontendUrl)) {
+                return url;
+            }
+
+            // Default: redirect to frontend auth page
+            return `${frontendUrl}/auth`;
         }
     },
     user: {
