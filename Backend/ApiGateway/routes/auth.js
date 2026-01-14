@@ -1,7 +1,10 @@
 import { createProxyMiddleware } from "http-proxy-middleware";
 
+const AUTH_TARGET = process.env.AUTH_SERVICE_URL || "http://shikshak-auth";
+console.log(`[AUTH PROXY INIT] Target URL configured as: ${AUTH_TARGET}`);
+
 const authProxy = createProxyMiddleware({
-  target: process.env.AUTH_SERVICE_URL || "http://shikshak-auth",
+  target: AUTH_TARGET,
   changeOrigin: true,
   xfwd: true,
   // Cookie handling for session management
