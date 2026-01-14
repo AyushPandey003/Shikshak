@@ -19,7 +19,7 @@ const AuthPageComponent: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
         try {
             await authClient.signIn.social({
                 provider: "google",
-                callbackURL: "http://localhost:3001/auth", // Ensure redirect goes to Frontend port 3001
+                callbackURL: `${window.location.origin}/auth`, // Dynamic: works in both dev and prod
             });
             // The redirect happens automatically, so we might not reach here unless error or staying on page
         } catch (err) {
