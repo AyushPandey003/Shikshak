@@ -1,0 +1,59 @@
+# =============================================================================
+# Example Terraform Variables File
+# Copy to terraform.tfvars and fill in your values
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# General Settings
+# -----------------------------------------------------------------------------
+project_name        = "shikshak"
+environment         = "production"
+location            = "eastus"
+resource_group_name = "" # Leave empty to create new, or specify existing
+
+# -----------------------------------------------------------------------------
+# Container Configuration
+# -----------------------------------------------------------------------------
+container_image_tag = "latest"
+min_replicas        = 0
+max_replicas        = 10
+
+# -----------------------------------------------------------------------------
+# External URLs
+# -----------------------------------------------------------------------------
+frontend_url    = "https://your-frontend.vercel.app"
+api_gateway_url = "" # Will be auto-generated from backend FQDN
+rag_service_url = "https://your-rag-service.azurewebsites.net"
+
+# -----------------------------------------------------------------------------
+# Database Configuration (SENSITIVE)
+# -----------------------------------------------------------------------------
+mongo_uri = "mongodb+srv://user:password@cluster.mongodb.net/shikshak?retryWrites=true&w=majority"
+redis_url = "redis://user:password@redis-host:6379"
+
+# -----------------------------------------------------------------------------
+# Authentication Secrets (SENSITIVE)
+# -----------------------------------------------------------------------------
+better_auth_secret   = "your-secure-random-string-at-least-32-chars"
+google_client_id     = "your-google-client-id.apps.googleusercontent.com"
+google_client_secret = "your-google-client-secret"
+google_refresh_token = "your-google-refresh-token"
+gmail_user_email     = "your-email@gmail.com"
+
+# -----------------------------------------------------------------------------
+# Azure Event Hub (SENSITIVE)
+# -----------------------------------------------------------------------------
+# If using existing Event Hub, provide connection string
+# Otherwise leave empty and use terraform-created resources
+eventhub_connection_string = ""
+
+# -----------------------------------------------------------------------------
+# Azure Storage (SENSITIVE)
+# -----------------------------------------------------------------------------
+azure_storage_connection_string = ""
+
+# -----------------------------------------------------------------------------
+# Payment Gateway (SENSITIVE)
+# -----------------------------------------------------------------------------
+razorpay_key_id     = "rzp_live_xxxxx"
+razorpay_key_secret = "your-razorpay-secret"
