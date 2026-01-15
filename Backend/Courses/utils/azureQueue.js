@@ -1,4 +1,3 @@
-```javascript
 import { QueueClient } from "@azure/storage-queue";
 import dotenv from "dotenv";
 import path from "path";
@@ -25,7 +24,7 @@ export const initQueueClient = async () => {
     try {
         // Initialize QueueClient without policy (we will manually encode)
         queueClient = new QueueClient(AZURE_STORAGE_CONNECTION_STRING, QUEUE_NAME);
-        
+
         // Ensure queue exists
         await queueClient.createIfNotExists();
         return queueClient;
@@ -41,11 +40,11 @@ export const enqueueIngestionJob = async (jobData) => {
 
         // Message format must match what worker.py expects (JSON)
         const messageString = JSON.stringify(jobData);
-        
+
         // Manual Base64 encoding to match Python's BinaryBase64DecodePolicy expectation
         // Node's QueueClient (default) sends XML text. Python worker expects that text to be Base64.
         const messageBase64 = Buffer.from(messageString).toString('base64');
-        
+
         // Send message
         const sendMessageResponse = await client.sendMessage(messageBase64);
 
