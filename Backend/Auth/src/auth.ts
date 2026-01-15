@@ -21,8 +21,12 @@ const trustedOrigins = [
 console.log("[DEBUG-AUTH] Trusted Origins:", trustedOrigins);
 
 export const auth = betterAuth({
-    // IMPORTANT: baseURL must be the backend URL where OAuth callbacks are handled
-    baseURL: `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/api/auth`,
+    // baseURL is the PUBLIC URL where OAuth callbacks will be redirected
+    // Must use /authentication path since that's what external clients see
+    baseURL: `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/authentication` || "http://localhost:4000/authentication",
+    // basePath tells Better Auth internally where to mount routes  
+    // Must match /api/auth since Gateway rewrites /authentication -> /api/auth
+    basePath: "/api/auth",
     trustedOrigins: trustedOrigins,
     database: mongodbAdapter(db,
         {
