@@ -19,7 +19,7 @@ const AuthPageComponent: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
         try {
             await authClient.signIn.social({
                 provider: "google",
-                callbackURL: "/auth" // Better Auth handles the full URL
+                callbackURL: `${window.location.origin}/auth` // Use absolute URL to prevent backend redirect
             });
         } catch (err) {
             console.error("Login failed", err);
