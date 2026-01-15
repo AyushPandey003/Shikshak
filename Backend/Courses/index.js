@@ -15,6 +15,7 @@ import coursesRoutes from "./routes/courses.js";
 import moduleRoutes from "./routes/modules.js";
 import reviewsRoutes from "./routes/reviews.js";
 import testsRoutes from "./routes/tests.js";
+import ingestRoutes from "./routes/ingest.js";
 import { produceMaterialCreated } from "./infra/material.producer.js";
 import { disconnectMaterialProducer } from "./infra/material.producer.js";
 import "./infra/startConsumer.js";
@@ -47,6 +48,9 @@ app.use("/api/reviews", reviewsRoutes);
 
 // tests routes
 app.use("/api/tests", testsRoutes);
+
+// ingest routes (RAG)
+app.use("/api/ingest", ingestRoutes);
 
 const PORT = process.env.PORT_COURSES || 4002;
 app.listen(PORT, () => {

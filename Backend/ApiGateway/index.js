@@ -16,6 +16,7 @@ import authProxy from "./routes/auth.js";
 import materialProxy from "./routes/material.js";
 import paymentProxy from "./routes/payment.js";
 import ragProxy from "./routes/rag.js";
+import ingestProxy from "./routes/ingest.js";
 
 import authMiddleware from "./middleware/authMiddleware.js";
 
@@ -60,6 +61,10 @@ app.use((req, res, next) => {
   if (targetPath.startsWith("/payment")) {
     console.log(`[GATEWAY] Routing to payment proxy: ${targetPath}`);
     return paymentProxy(req, res, next);
+  }
+  if (targetPath.startsWith("/rag/ingest")) {
+    console.log(`[GATEWAY] Routing to ingest proxy: ${targetPath}`);
+    return ingestProxy(req, res, next);
   }
   if (targetPath.startsWith("/rag")) {
     console.log(`[GATEWAY] Routing to rag proxy: ${targetPath}`);

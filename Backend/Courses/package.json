@@ -12,11 +12,12 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@azure/event-hubs": "^6.0.2",
     "@azure/storage-blob": "^12.29.1",
+    "@azure/storage-queue": "^12.28.1",
     "axios": "^1.13.2",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "@azure/event-hubs": "^6.0.2",
     "mongoose": "^9.0.2",
     "multer": "^2.0.2",
     "redis": "^5.10.0",
