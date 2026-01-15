@@ -56,7 +56,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   # =================================================================================================
-  # 🚀 DEPLOY JOBS - Parallel Execution for Speed
+  # 🚀 DEPLOY JOBS - Update images only (preserves Terraform-managed config)
   # =================================================================================================
   deploy-gateway:
     name: 🚀 Gateway
@@ -69,26 +69,10 @@ jobs:
 
       - name: Deploy Gateway
         run: |
-          az containerapp create \
+          az containerapp update \
             --name shikshak-backend \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --environment ${{ env.CONTAINER_APPS_ENVIRONMENT }} \
-            --image ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }} \
-            --registry-server ${{ secrets.ACR_LOGIN_SERVER }} \
-            --registry-username ${{ secrets.ACR_USERNAME }} \
-            --registry-password ${{ secrets.ACR_PASSWORD }} \
-            --target-port 4000 \
-            --ingress external \
-            --min-replicas 0 --max-replicas 10 \
-            --command "node" --args "/app/ApiGateway/index.js" \
-            --env-vars \
-              NODE_ENV=production \
-              PORT_GATEWAY=4000 \
-              CORS_ORIGIN=${{ secrets.FRONTEND_URL }} \
-              AUTH_TRUST_HOST=true \
-              AUTH_SERVICE_URL=http://shikshak-auth \
-              COURSES_SERVICE_URL=http://shikshak-courses \
-              PAYMENT_SERVICE_URL=http://shikshak-payment
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }}
 
   deploy-auth:
     name: 🚀 Auth
@@ -101,69 +85,26 @@ jobs:
 
       - name: Deploy Auth
         run: |
-          az containerapp create \
+          az containerapp update \
             --name shikshak-auth \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --environment ${{ env.CONTAINER_APPS_ENVIRONMENT }} \
-            --image ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }} \
-            --registry-server ${{ secrets.ACR_LOGIN_SERVER }} \
-            --registry-username ${{ secrets.ACR_USERNAME }} \
-            --registry-password ${{ secrets.ACR_PASSWORD }} \
-            --target-port 3000 \
-            --ingress internal \
-            --min-replicas 0 --max-replicas 10 \
-            --command "node" --args "/app/Auth/dist/server.js" \
-            --secrets "mongo-uri=${{ secrets.MONGO_URI }}" "better-auth-secret=${{ secrets.BETTER_AUTH_SECRET }}" "eventhub-connection-string=${{ secrets.EVENTHUB_CONNECTION_STRING }}" "google-refresh-token=${{ secrets.GOOGLE_REFRESH_TOKEN }}" "gmail-user-email=${{ secrets.GMAIL_USER_EMAIL }}" \
-            --env-vars \
-              NODE_ENV=production \
-              PORT=3000 \
-              FRONTEND_URL=${{ secrets.FRONTEND_URL }} \
-              NEXT_PUBLIC_API_GATEWAY_URL=${{ secrets.NEXT_PUBLIC_API_GATEWAY_URL }} \
-              GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
-              GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
-              EVENTHUB_CONNECTION_STRING=secretref:eventhub-connection-string \
-              GOOGLE_REFRESH_TOKEN=secretref:google-refresh-token \
-              GMAIL_USER_EMAIL=secretref:gmail-user-email \
-              MONGO_URI=secretref:mongo-uri \
-              BETTER_AUTH_SECRET=secretref:better-auth-secret
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }}
 
   deploy-courses:
     name: 🚀 Courses
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4 # Need checkout for KEDA yaml
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy Courses
         run: |
-          az containerapp create \
+          az containerapp update \
             --name shikshak-courses \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --environment ${{ env.CONTAINER_APPS_ENVIRONMENT }} \
-            --image ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }} \
-            --registry-server ${{ secrets.ACR_LOGIN_SERVER }} \
-            --registry-username ${{ secrets.ACR_USERNAME }} \
-            --registry-password ${{ secrets.ACR_PASSWORD }} \
-            --target-port 4002 \
-            --ingress internal \
-            --min-replicas 0 --max-replicas 10 \
-            --scale-rule-name azure-eventhub-rule \
-            --scale-rule-type azure-eventhub \
-            --scale-rule-metadata "consumerGroup=\$Default" "unprocessedEventThreshold=1" "blobContainer=eventhub-checkpoints" "eventHubName=course" \
-            --scale-rule-auth "connection=eventhub-connection-string" "storageConnection=azure-storage-connection-string" \
-            --command "node" --args "/app/Courses/index.js" \
-            --secrets "mongo-uri=${{ secrets.MONGO_URI }}" "eventhub-connection-string=${{ secrets.EVENTHUB_CONNECTION_STRING }}" "azure-storage-connection-string=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-            --env-vars \
-              NODE_ENV=production \
-              PORT_COURSES=4002 \
-              RAG_SERVICE_URL=${{ secrets.RAG_SERVICE_URL }} \
-              AZURE_STORAGE_CONNECTION_STRING=secretref:azure-storage-connection-string \
-              EVENTHUB_CONNECTION_STRING=secretref:eventhub-connection-string \
-              REDIS_URL=${{ secrets.REDIS_URL }} \
-              MONGO_URI=secretref:mongo-uri
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }}
 
   deploy-payment:
     name: 🚀 Payment
@@ -176,25 +117,10 @@ jobs:
 
       - name: Deploy Payment
         run: |
-          az containerapp create \
+          az containerapp update \
             --name shikshak-payment \
             --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --environment ${{ env.CONTAINER_APPS_ENVIRONMENT }} \
-            --image ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }} \
-            --registry-server ${{ secrets.ACR_LOGIN_SERVER }} \
-            --registry-username ${{ secrets.ACR_USERNAME }} \
-            --registry-password ${{ secrets.ACR_PASSWORD }} \
-            --target-port 4003 \
-            --ingress internal \
-            --min-replicas 0 --max-replicas 10 \
-            --command "node" --args "/app/payment/index.js" \
-            --secrets "mongo-uri=${{ secrets.MONGO_URI }}" \
-            --env-vars \
-              NODE_ENV=production \
-              PORT=4003 \
-              RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }} \
-              RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }} \
-              MONGO_URI=secretref:mongo-uri
+            --image ${{ secrets.ACR_LOGIN_SERVER }}/shikshak-backend:${{ github.sha }}
 
   # =================================================================================================
   # 🧹 CLEANUP JOB - Cost Optimization
