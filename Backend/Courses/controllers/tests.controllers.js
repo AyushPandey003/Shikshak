@@ -203,7 +203,7 @@ export const generateAiQuestions = async (req, res) => {
             return res.status(400).json({ error: "Course ID, or Query is required" });
         }
 
-        const ragServiceUrl = process.env.RAG_PROXY_URL || 'http://localhost:4005';
+        const ragServiceUrl = process.env.RAG_SERVICE_URL || 'http://rag-service';
 
         // Construct the prompt for the RAG service
         // If a specific query/text is provided by the user (like the chunk in the prompt), we use that.
@@ -219,7 +219,7 @@ export const generateAiQuestions = async (req, res) => {
         // Call the RAG service query endpoint
         // logic: RAG service takes "query" and finds relevant chunks.
         // If we want questions *covering* the module, we might need "full_context: true" or just rely on semantic search.
-        const response = await axios.post(`${ragServiceUrl}/api/rag/query`, {
+        const response = await axios.post(`${ragServiceUrl}/query`, {
             query: ragQuery,
             ...(course_id && { course_id }),
             top_k: 5, // Get enough context
