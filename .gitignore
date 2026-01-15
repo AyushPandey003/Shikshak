@@ -17,3 +17,7 @@ Backend/Auth/.env
 
 package-lock.json
 frontend/package-lock.json
+Backend/infra/terraform/terraform.tfvars
+Backend/infra/terraform/.terraform/
+Backend/infra/terraform/*.tfstate*
+Backend/infra/terraform/*.tfstate.backup

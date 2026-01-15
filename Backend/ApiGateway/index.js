@@ -44,33 +44,40 @@ app.use(limiter);
 // 🔹 Global middleware
 app.use(authMiddleware);
 
-// 🔓 Public routes
 // 🔓 Public routes - Manual check to ensure no path stripping
 app.use((req, res, next) => {
-  console.log(`[GATEWAY] Request received: ${req.method} ${req.url} (originalUrl: ${req.originalUrl})`);
-  if (req.url.startsWith("/authentication") || req.url.startsWith("/api/auth")) {
-    console.log(`[GATEWAY] Routing to auth proxy`);
+  const targetPath = req.originalUrl || req.url;
+  console.log(`[GATEWAY] Processing: ${req.method} ${targetPath} (req.url: ${req.url})`);
+
+  if (targetPath.startsWith("/authentication") || targetPath.startsWith("/api/auth")) {
+    console.log(`[GATEWAY] Routing to auth proxy: ${targetPath}`);
     return authProxy(req, res, next);
   }
-  if (req.url.startsWith("/material")) {
-    console.log(`[GATEWAY] Routing to material proxy`);
+  if (targetPath.startsWith("/material")) {
+    console.log(`[GATEWAY] Routing to material proxy: ${targetPath}`);
     return materialProxy(req, res, next);
   }
-  if (req.url.startsWith("/payment")) {
-    console.log(`[GATEWAY] Routing to payment proxy`);
+  if (targetPath.startsWith("/payment")) {
+    console.log(`[GATEWAY] Routing to payment proxy: ${targetPath}`);
     return paymentProxy(req, res, next);
   }
-  if (req.url.startsWith("/rag")) {
-    console.log(`[GATEWAY] Routing to rag proxy`);
+  if (targetPath.startsWith("/rag")) {
+    console.log(`[GATEWAY] Routing to rag proxy: ${targetPath}`);
     return ragProxy(req, res, next);
   }
-  console.log(`[GATEWAY] Not matching any route, calling next()`);
+  console.log(`[GATEWAY] No route matched for: ${targetPath}`);
   next();
 });
 
 // Health check
 app.get("/", (req, res) => {
-  res.send("API Gateway is running 🚀");
+  res.status(200).send("API Gateway is running 🚀");
+});
+
+// Fallback 404 handler
+app.use((req, res) => {
+  console.log(`[GATEWAY] 404 - No handler for: ${req.originalUrl}`);
+  res.status(404).json({ error: "Gateway: Route not found", path: req.originalUrl });
 });
 
 const PORT = process.env.PORT_GATEWAY || 4000;
