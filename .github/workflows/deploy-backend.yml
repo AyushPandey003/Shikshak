@@ -24,10 +24,43 @@ env:
 
 jobs:
   # =================================================================================================
-  # 🐳 BUILD JOB - Fast, Cached, Unified
+  # � CHANGE DETECTION
+  # =================================================================================================
+  changes:
+    name: 🔍 Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      gateway: ${{ steps.filter.outputs.gateway }}
+      auth: ${{ steps.filter.outputs.auth }}
+      courses: ${{ steps.filter.outputs.courses }}
+      payment: ${{ steps.filter.outputs.payment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            gateway:
+              - 'Backend/ApiGateway/**'
+              - 'Backend/Dockerfile.unified'
+            auth:
+              - 'Backend/Auth/**'
+              - 'Backend/Dockerfile.unified'
+            courses:
+              - 'Backend/Courses/**'
+              - 'Backend/Dockerfile.unified'
+            payment:
+              - 'Backend/payment/**'
+              - 'Backend/Dockerfile.unified'
+
+  # =================================================================================================
+  # �🐳 BUILD JOB - Fast, Cached, Unified
   # =================================================================================================
   build:
     name: 🐳 Build & Push
+    needs: changes
+    # Only build if at least one service has changed
+    if: ${{ needs.changes.outputs.gateway == 'true' || needs.changes.outputs.auth == 'true' || needs.changes.outputs.courses == 'true' || needs.changes.outputs.payment == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -60,7 +93,8 @@ jobs:
   # =================================================================================================
   deploy-gateway:
     name: 🚀 Gateway
-    needs: build
+    needs: [build, changes]
+    if: ${{ needs.changes.outputs.gateway == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: azure/login@v2
@@ -76,7 +110,8 @@ jobs:
 
   deploy-auth:
     name: 🚀 Auth
-    needs: build
+    needs: [build, changes]
+    if: ${{ needs.changes.outputs.auth == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: azure/login@v2
@@ -92,7 +127,8 @@ jobs:
 
   deploy-courses:
     name: 🚀 Courses
-    needs: build
+    needs: [build, changes]
+    if: ${{ needs.changes.outputs.courses == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: azure/login@v2
@@ -108,7 +144,8 @@ jobs:
 
   deploy-payment:
     name: 🚀 Payment
-    needs: build
+    needs: [build, changes]
+    if: ${{ needs.changes.outputs.payment == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: azure/login@v2
@@ -129,7 +166,7 @@ jobs:
     name: 🧹 Cleanup Old Images
     needs: [deploy-gateway, deploy-auth, deploy-courses, deploy-payment]
     runs-on: ubuntu-latest
-    if: always() # Run even if one deployment fails, to keep registry clean
+    if: always() # Run even if one deployment fails/skips, to keep registry clean
     steps:
       - uses: azure/login@v2
         with:

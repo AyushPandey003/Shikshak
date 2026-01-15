@@ -1,4 +1,5 @@
-import { QueueClient, BinaryBase64EncodePolicy } from "@azure/storage-queue";
+```javascript
+import { QueueClient } from "@azure/storage-queue";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -22,11 +23,9 @@ export const initQueueClient = async () => {
     if (queueClient) return queueClient;
 
     try {
-        // RAG worker expects Base64 encoded messages
-        queueClient = new QueueClient(AZURE_STORAGE_CONNECTION_STRING, QUEUE_NAME, {
-            messageEncodePolicy: new BinaryBase64EncodePolicy()
-        });
-
+        // Initialize QueueClient without policy (we will manually encode)
+        queueClient = new QueueClient(AZURE_STORAGE_CONNECTION_STRING, QUEUE_NAME);
+        
         // Ensure queue exists
         await queueClient.createIfNotExists();
         return queueClient;
@@ -40,12 +39,15 @@ export const enqueueIngestionJob = async (jobData) => {
     try {
         const client = await initQueueClient();
 
-        // Message format must match what worker.py expects
-        // worker.py expects JSON with: { jobId, blobUrl, metadata }
-        const message = JSON.stringify(jobData);
-
+        // Message format must match what worker.py expects (JSON)
+        const messageString = JSON.stringify(jobData);
+        
+        // Manual Base64 encoding to match Python's BinaryBase64DecodePolicy expectation
+        // Node's QueueClient (default) sends XML text. Python worker expects that text to be Base64.
+        const messageBase64 = Buffer.from(messageString).toString('base64');
+        
         // Send message
-        const sendMessageResponse = await client.sendMessage(message);
+        const sendMessageResponse = await client.sendMessage(messageBase64);
 
         return {
             success: true,
