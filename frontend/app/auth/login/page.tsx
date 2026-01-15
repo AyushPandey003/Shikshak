@@ -17,15 +17,10 @@ const AuthPageComponent: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
     const handleGoogleLogin = async () => {
         setIsLoading(true);
         try {
-            // Redirect directly to backend OAuth endpoint
-            // This ensures state cookie is created and consumed on the SAME domain (backend)
-            const backendUrl = process.env.NEXT_PUBLIC_API_GATEWAY_URL || "http://localhost:4000";
-            const callbackUrl = encodeURIComponent(
-                `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/auth`
-            );
-
-            // Direct redirect to backend OAuth - bypasses cross-domain cookie issues
-            window.location.href = `${backendUrl}/authentication/sign-in/social?provider=google&callbackURL=${callbackUrl}`;
+            await authClient.signIn.social({
+                provider: "google",
+                callbackURL: "/auth" // Better Auth handles the full URL
+            });
         } catch (err) {
             console.error("Login failed", err);
             setIsLoading(false);
