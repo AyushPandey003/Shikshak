@@ -58,8 +58,15 @@ const server = http.createServer(async (req, res) => {
             return handleUpdateProfile(req, res);
         }
         // Better Auth Handler for all other /api/auth routes
-        console.log('[DEBUG] Routing to Better Auth');
-        return toNodeHandler(auth)(req, res);
+        console.log('[DEBUG] Routing to Better Auth for path:', req.url);
+        try {
+            const handler = toNodeHandler(auth);
+            return handler(req, res);
+        } catch (error) {
+            console.error('[ERROR] Better Auth handler error:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Auth handler failed', details: String(error) }));
+        }
     } else if (req.url === '/user_detail') {
         // User Profile Update (direct access)
         return handleUpdateProfile(req, res);
