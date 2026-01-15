@@ -50,7 +50,7 @@ export default function CreateCoursePage() {
         headers["Authorization"] = `Bearer ${user.accessToken}`;
       }
 
-      const res = await axios.post(`${API_CONFIG.upload}`, formData, {
+      const res = await axios.post(API_CONFIG.material.upload, formData, {
         headers,
         withCredentials: true
       });
@@ -104,7 +104,7 @@ export default function CreateCoursePage() {
         headers["Authorization"] = `Bearer ${user.accessToken}`;
       }
 
-      await axios.post(`${API_CONFIG.courses}/create_course`, payload, {
+      await axios.post(API_CONFIG.material.courses.createCourse, payload, {
         headers,
         withCredentials: true
       });

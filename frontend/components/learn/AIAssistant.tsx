@@ -72,7 +72,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ modules, isOpen, onClose, cou
         payload.module_id = selectedModule;
       }
 
-      const response = await axios.post(`${API_CONFIG.rag}/query`, payload, {
+      const response = await axios.post(API_CONFIG.rag.query, payload, {
         withCredentials: true
       });
 

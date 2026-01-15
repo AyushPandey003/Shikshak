@@ -4,6 +4,7 @@ import { Review } from '@/types/coursedet';
 import { STATIC_REVIEWS } from '@/constants/coursedetails';
 import { useAppStore } from '@/store/useAppStore';
 import axios from 'axios';
+import { API_CONFIG } from '@/lib/api-config';
 
 interface CourseReviewsProps {
     courseTitle: string;
@@ -26,7 +27,7 @@ const CourseReviews: React.FC<CourseReviewsProps> = ({ courseTitle, reviewsList 
             return;
         }
         try {
-            await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/reviews/delete_review`, {
+            await axios.post(API_CONFIG.material.reviews.deleteReview, {
                 review_id: reviewId
             }, {
                 withCredentials: true

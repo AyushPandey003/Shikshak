@@ -7,6 +7,7 @@ import { useAppStore } from "@/store/useAppStore";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { CoursesGridSkeleton } from "@/components/dashboard/CoursesSkeleton";
+import { API_CONFIG } from '@/lib/api-config';
 
 type Option = "All" | "In Progress" | "Completed";
 
@@ -49,7 +50,7 @@ export default function StudentCoursesPage() {
             try {
               console.log(`Student Courses Debug: Fetching details for ${courseId}`);
               // Using general endpoint to allow viewing if public, bypassing strict student list check
-              const response = await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/courses/get_course_by_id`, {
+              const response = await axios.post(API_CONFIG.material.courses.getCourseById, {
                 user_id: user?.id,
                 user_role: profile.role,
                 course_id: courseId
@@ -66,7 +67,7 @@ export default function StudentCoursesPage() {
                 // Fetch SAS URL if thumbnail is not a full URL
                 if (c.thumbnail && !c.thumbnail.startsWith("http")) {
                   try {
-                    const sasRes = await axios.get(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/upload/${encodeURIComponent(c.thumbnail)}`, {
+                    const sasRes = await axios.get(API_CONFIG.getUploadUrl(c.thumbnail), {
                       headers: user.accessToken ? { Authorization: `Bearer ${user.accessToken}` } : {},
                       withCredentials: true
                     });

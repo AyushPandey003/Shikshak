@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { API_CONFIG } from '@/lib/api-config';
 
 interface IngestResult {
     job_id: string;
@@ -33,7 +34,7 @@ interface HealthResult {
     queueService?: string;
 }
 
-const RAG_BASE_URL = 'http://localhost:4005/api/rag';
+// Use centralized API config for RAG endpoints
 
 export default function TestUploadPage() {
     // States for Ingest
@@ -90,7 +91,7 @@ export default function TestUploadPage() {
                 formData.append('notes_id', notesId);
             }
 
-            const response = await fetch(`${RAG_BASE_URL}/ingest`, {
+            const response = await fetch(API_CONFIG.rag.ingest, {
                 method: 'POST',
                 body: formData,
             });
@@ -120,7 +121,7 @@ export default function TestUploadPage() {
         setQueryResult(null);
 
         try {
-            const response = await fetch(`${RAG_BASE_URL}/query`, {
+            const response = await fetch(API_CONFIG.rag.query, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -149,7 +150,7 @@ export default function TestUploadPage() {
     const handleHealthCheck = async () => {
         setHealthLoading(true);
         try {
-            const response = await fetch(`${RAG_BASE_URL}/health`);
+            const response = await fetch(API_CONFIG.rag.health);
             const data = await response.json();
             setHealthResult(data);
         } catch (err: any) {
@@ -177,8 +178,8 @@ export default function TestUploadPage() {
                             key={tab}
                             onClick={() => setActiveTab(tab as any)}
                             className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${activeTab === tab
-                                    ? 'bg-blue-600 text-white shadow-lg'
-                                    : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                                ? 'bg-blue-600 text-white shadow-lg'
+                                : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
                                 }`}
                         >
                             {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -405,8 +406,8 @@ export default function TestUploadPage() {
 
                         {healthResult && (
                             <div className={`p-6 rounded-xl border ${healthResult.status === 'healthy'
-                                    ? 'bg-green-900/30 border-green-700/50'
-                                    : 'bg-yellow-900/30 border-yellow-700/50'
+                                ? 'bg-green-900/30 border-green-700/50'
+                                : 'bg-yellow-900/30 border-yellow-700/50'
                                 }`}>
                                 <div className="flex items-center gap-3 mb-4">
                                     <span className={`w-4 h-4 rounded-full ${healthResult.status === 'healthy' ? 'bg-green-500' : 'bg-yellow-500'
@@ -424,7 +425,7 @@ export default function TestUploadPage() {
                 {/* Footer */}
                 <div className="mt-8 text-center text-gray-500 text-sm">
                     <p>RAG Service Test Console v1.0</p>
-                    <p className="mt-1">Endpoint: <code className="text-blue-400">{RAG_BASE_URL}</code></p>
+                    <p className="mt-1">Endpoint: <code className="text-blue-400">{API_CONFIG.baseUrl}/rag</code></p>
                 </div>
             </div>
         </div>

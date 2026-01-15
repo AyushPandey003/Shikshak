@@ -15,6 +15,7 @@ import TestView from '@/components/learn/TestView';
 import PdfViewer from '@/components/learn/PdfViewer';
 import axios from 'axios';
 import { useAppStore } from '@/store/useAppStore';
+import { API_CONFIG } from '@/lib/api-config';
 
 export default function ModulePage() {
     const router = useRouter();
@@ -51,7 +52,7 @@ export default function ModulePage() {
 
                 // 1. Fetch Basic Course Info
                 // Using general endpoint for metadata
-                const courseRes = await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/courses/get_course_by_id`, {
+                const courseRes = await axios.post(API_CONFIG.material.courses.getCourseById, {
                     course_id: courseId,
                     user_id: user?.id,
                     user_role: profile?.role
@@ -70,7 +71,7 @@ export default function ModulePage() {
                         // 1. Check if attempted
                         if (user?.id) {
                             try {
-                                const resultRes = await axios.post("${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/tests/get-student-result", {
+                                const resultRes = await axios.post(API_CONFIG.material.tests.getStudentResult, {
                                     test_id: t._id,
                                     user_id: user.id
                                 }, { withCredentials: true });
@@ -123,7 +124,7 @@ export default function ModulePage() {
                 }
 
                 // 2. Fetch Modules (Sections)
-                const modulesRes = await axios.post("${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/module/get_all_module", {
+                const modulesRes = await axios.post(API_CONFIG.material.module.getAll, {
                     course_id: courseId
                 }, { withCredentials: true });
 
@@ -156,7 +157,7 @@ export default function ModulePage() {
                 let thumbnail = courseData.thumbnail;
                 if (thumbnail && !thumbnail.startsWith("http")) {
                     try {
-                        const sasRes = await axios.get(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/upload/${encodeURIComponent(thumbnail)}`, { withCredentials: true });
+                        const sasRes = await axios.get(API_CONFIG.getUploadUrl(thumbnail), { withCredentials: true });
                         if (sasRes.data?.url) thumbnail = sasRes.data.url;
                     } catch (e) {
                         console.error("Thumbnail fetch error", e);
@@ -203,7 +204,7 @@ export default function ModulePage() {
                 } else {
                     // It's a blob name, fetch SAS
                     try {
-                        const sasRes = await axios.get(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/upload/${encodeURIComponent(activeLecture.contentUrl)}`, {
+                        const sasRes = await axios.get(API_CONFIG.getUploadUrl(activeLecture.contentUrl), {
                             withCredentials: true
                         });
                         if (sasRes.data?.url) {

@@ -50,7 +50,7 @@ export const EditCourseModal: React.FC<EditCourseModalProps> = ({ isOpen, onClos
                 headers["Authorization"] = `Bearer ${user.accessToken}`;
             }
 
-            const res = await axios.post(`${API_CONFIG.upload}`, formData, {
+            const res = await axios.post(API_CONFIG.material.upload, formData, {
                 headers,
                 withCredentials: true
             });
@@ -102,7 +102,7 @@ export const EditCourseModal: React.FC<EditCourseModalProps> = ({ isOpen, onClos
             };
 
             await axios.post(
-                `${API_CONFIG.courses}/edit_course`,
+                API_CONFIG.material.courses.editCourse,
                 payload,
                 {
                     headers: {

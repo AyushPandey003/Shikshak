@@ -1,8 +1,9 @@
 'use client';
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { CheckCircle2, ArrowLeft, Loader2 } from 'lucide-react';
+import { API_CONFIG } from '@/lib/api-config';
 
 function TestResultPageContent() {
     const searchParams = useSearchParams();
@@ -23,13 +24,12 @@ function TestResultPageContent() {
             }
 
             try {
-                const response = await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/tests/get-student-result`, {
+                const response = await axios.post(API_CONFIG.material.tests.getStudentResult, {
                     test_id: testId,
                     user_id: userId
                 }, { withCredentials: true });
 
                 const data = response.data;
-                // Handle potential array or object response
                 if (data) {
                     const resObj = Array.isArray(data) ? data[0] : data;
                     if (resObj) {
@@ -79,7 +79,6 @@ function TestResultPageContent() {
 
     if (!result) return null;
 
-    // Combine questions and answers
     const qaPairs = result.questions?.map((q: string, i: number) => ({
         question: q,
         answer: result.answers?.[i] || "No answer recorded"
@@ -88,7 +87,6 @@ function TestResultPageContent() {
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 font-sans">
             <div className="max-w-4xl mx-auto space-y-8">
-                {/* Header Card */}
                 <div className="bg-white p-8 md:p-12 rounded-2xl shadow-xl border border-gray-100 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-blue-500 to-indigo-600"></div>
 
@@ -103,7 +101,6 @@ function TestResultPageContent() {
                             <p className="text-lg text-gray-500">Detailed breakdown of your performance</p>
                         </div>
 
-                        {/* Score Badge */}
                         {typeof result.marks === 'number' && (
                             <div className="flex items-center gap-4 bg-indigo-50 px-6 py-4 rounded-xl border border-indigo-100 shadow-sm">
                                 <div className="text-indigo-600">
@@ -118,7 +115,6 @@ function TestResultPageContent() {
                     </div>
                 </div>
 
-                {/* QA List */}
                 <div className="space-y-6">
                     <h2 className="text-xl font-bold text-gray-900 px-2">Question Breakdown</h2>
                     {qaPairs.length === 0 ? (
@@ -151,7 +147,7 @@ function TestResultPageContent() {
 
 export default function TestResultPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+        <Suspense fallback={<div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center text-gray-500"><Loader2 className="w-10 h-10 animate-spin text-indigo-600 mb-4" /><p>Loading your results...</p></div>}>
             <TestResultPageContent />
         </Suspense>
     );

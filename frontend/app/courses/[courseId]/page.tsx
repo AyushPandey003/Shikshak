@@ -12,6 +12,7 @@ import { Star, Award, Globe, AlertCircle, Play, CheckCircle2 } from 'lucide-reac
 import axios from 'axios';
 import { Course, Review } from '@/types/coursedet';
 import { useAppStore } from '@/store/useAppStore';
+import { API_CONFIG } from '@/lib/api-config';
 
 const CourseDetailPage: React.FC = () => {
     const { user } = useAppStore();
@@ -26,7 +27,7 @@ const CourseDetailPage: React.FC = () => {
             if (!courseId) return;
             try {
                 // Using the specific endpoint for general info
-                const res = await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/courses/get_course_by_id_general`, {
+                const res = await axios.post(API_CONFIG.material.courses.getCourseByIdGeneral, {
                     course_id: courseId
                 }, { withCredentials: true });
 
@@ -38,7 +39,7 @@ const CourseDetailPage: React.FC = () => {
                 if (data.thumbnail && !data.thumbnail.startsWith("http")) {
                     try {
                         // Use encodeURIComponent to handle spaces or special chars safe
-                        const sasRes = await axios.get(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/upload/${encodeURIComponent(data.thumbnail)}`, {
+                        const sasRes = await axios.get(API_CONFIG.getUploadUrl(data.thumbnail), {
                             headers: user?.accessToken ? { "Authorization": `Bearer ${user.accessToken}` } : {},
                             withCredentials: true
                         });
@@ -92,7 +93,7 @@ const CourseDetailPage: React.FC = () => {
                 };
 
                 // Fetch reviews specifically
-                const reviewsRes = await axios.post("${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/reviews/get_reviews", {
+                const reviewsRes = await axios.post(API_CONFIG.material.reviews.getReviews, {
                     course_id: courseId
                 }, { withCredentials: true });
 

@@ -74,7 +74,7 @@ export default function Page() {
           headers["Authorization"] = `Bearer ${user.accessToken}`;
         }
 
-        const response = await axios.post(`${API_CONFIG.courses}/get_all`, {
+        const response = await axios.post(API_CONFIG.material.courses.getAll, {
           user_id: user.id,
           user_role: "teacher"
         }, {
@@ -90,7 +90,7 @@ export default function Page() {
             if (c.thumbnail && !c.thumbnail.startsWith("http")) {
               try {
                 // Use encodeURIComponent to handle spaces or special chars safe
-                const sasRes = await axios.get(`${API_CONFIG.upload}/${encodeURIComponent(c.thumbnail)}`, {
+                const sasRes = await axios.get(API_CONFIG.getUploadUrl(c.thumbnail), {
                   headers: user?.accessToken ? { "Authorization": `Bearer ${user.accessToken}` } : {},
                   withCredentials: true
                 });

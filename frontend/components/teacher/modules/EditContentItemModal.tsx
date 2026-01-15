@@ -5,8 +5,6 @@ import { ContentItem } from './types';
 import axios from 'axios';
 import { API_CONFIG } from '@/lib/api-config';
 
-const UPLOAD_URL = API_CONFIG.upload;
-
 interface EditContentItemModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -40,7 +38,7 @@ export function EditContentItemModal({ isOpen, onClose, onConfirm, item }: EditC
 
             if (item.azureId) {
                 // Fetch SAS URL for preview
-                axios.get(`${UPLOAD_URL}/${item.azureId}`)
+                axios.get(API_CONFIG.getUploadUrl(item.azureId))
                     .then(res => setPreviewUrl(res.data.url))
                     .catch(err => console.error("Failed to load preview", err));
             } else {

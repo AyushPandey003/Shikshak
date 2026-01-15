@@ -6,8 +6,6 @@ import axios from 'axios';
 import { useAppStore } from '@/store/useAppStore';
 import { API_CONFIG } from '@/lib/api-config';
 
-const API_BASE = API_CONFIG.baseUrl;
-
 declare global {
     interface Window {
         Razorpay: any;
@@ -68,7 +66,7 @@ export function useRazorpay() {
         try {
             // Step 1: Create order
             const orderResponse = await axios.post(
-                `${API_BASE}/payment/create-order`,
+                API_CONFIG.payment.createOrder,
                 {
                     course_id: courseId,
                     user_id: user.id,
@@ -96,7 +94,7 @@ export function useRazorpay() {
                     try {
                         // Step 3: Verify payment
                         const verifyResponse = await axios.post(
-                            `${API_BASE}/payment/complete-payment`,
+                            API_CONFIG.payment.completePayment,
                             {
                                 razorpay_order_id: response.razorpay_order_id,
                                 razorpay_payment_id: response.razorpay_payment_id,

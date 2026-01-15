@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useRef, useEffect, Suspense } from 'react';
+import React, { Suspense, useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { GoogleGenAI, Modality, LiveServerMessage } from '@google/genai';
 import { AppState, AssessmentConfig, AssessmentReport, QuestionEntry } from '../../../types/types';
@@ -8,6 +8,7 @@ import ProctoringComponent from '../../../components/ProctoringComponent';
 import { decode, decodeAudioData, createBlob } from '../../../utils/audio-utils';
 import axios from 'axios';
 import { useAppStore } from '@/store/useAppStore';
+import { API_CONFIG } from '@/lib/api-config';
 
 
 
@@ -80,7 +81,7 @@ const StartTestPageContent: React.FC = () => {
             console.log("courseId", cId)
             console.log("testId", tId)
 
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/tests/fetch-questions`, {
+            const response = await axios.post(API_CONFIG.material.tests.fetchQuestions, {
                 course_id: cId,
                 test_id: tId
             }, { withCredentials: true });
@@ -174,7 +175,7 @@ const StartTestPageContent: React.FC = () => {
             console.log("testId", testId)
             console.log("userId", userId)
             console.log("name", name)
-            await axios.post('${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/tests/save-result', {
+            await axios.post(API_CONFIG.material.tests.saveResult, {
                 test_id: testId,
                 user_id: userId,
                 answers: answers,
@@ -580,12 +581,10 @@ const StartTestPageContent: React.FC = () => {
     );
 };
 
-const StartTestPage: React.FC = () => {
+export default function StartTestPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+        <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><p className="text-gray-500">Loading...</p></div>}>
             <StartTestPageContent />
         </Suspense>
     );
-};
-
-export default StartTestPage;
+}

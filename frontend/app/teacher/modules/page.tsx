@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
@@ -13,9 +13,9 @@ import { Module, ContentItem, GuidedStep, SidebarRecommendation } from '@/compon
 import { v4 as uuidv4 } from 'uuid';
 import { API_CONFIG } from '@/lib/api-config';
 
-const API_URL = `${API_CONFIG.modules}`;
-// const UPLOAD_URL = `${API_CONFIG.upload}`;
-const INGEST_URL = `${API_CONFIG.rag}/ingest`;
+const API_URL = API_CONFIG.material.module.base;
+// const UPLOAD_URL = API_CONFIG.material.upload;
+const INGEST_URL = API_CONFIG.rag.ingest;
 
 // Configure axios defaults to send credentials
 axios.defaults.withCredentials = true;
@@ -216,7 +216,7 @@ function ModulesPageContent() {
     };
 
 
-    const handleConfirmAddItem = async (data: { title: string; type: ContentItem['type']; duration: string; file?: File; moduleId: string; courseId: string }) => {
+    const handleConfirmAddItem = async (data: { title: string; type: ContentItem['type']; duration: string; file?: File }) => {
         if (!currentModuleForItem) return;
 
         try {
@@ -493,7 +493,7 @@ function ModulesPageContent() {
         }
     };
 
-    const COURSES_API_URL = API_CONFIG.courses;
+    const COURSES_API_URL = API_CONFIG.material.courses.base;
 
     const handleSaveCourseContent = async () => {
         if (!courseId) return;
@@ -601,15 +601,7 @@ function ModulesPageContent() {
                     setAddItemModalOpen(false);
                     setCurrentModuleForItem(null);
                 }}
-                onConfirm={(data) => {
-                    if (currentModuleForItem) {
-                        handleConfirmAddItem({
-                            ...data,
-                            moduleId: currentModuleForItem,
-                            courseId: courseId
-                        });
-                    }
-                }}
+                onConfirm={handleConfirmAddItem}
             />
 
             <EditContentItemModal
@@ -627,7 +619,7 @@ function ModulesPageContent() {
 
 export default function ModulesPage() {
     return (
-        <Suspense fallback={<div className="flex h-full w-full items-center justify-center bg-white">Loading...</div>}>
+        <Suspense fallback={<div className="flex h-full w-full items-center justify-center bg-white"><p className="text-gray-500">Loading modules...</p></div>}>
             <ModulesPageContent />
         </Suspense>
     );

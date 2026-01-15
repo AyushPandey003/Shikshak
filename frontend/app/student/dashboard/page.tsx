@@ -10,6 +10,7 @@ import Footer from '@/components/layout/Footer';
 import { useAppStore } from '@/store/useAppStore';
 import axios from 'axios';
 import { LoadingDashboard } from '@/components/dashboard/DashboardSkeletons';
+import { API_CONFIG } from '@/lib/api-config';
 
 // Dummy Data for Upcoming Events (Backend integration pending for events)
 const upcomingEvents = {
@@ -44,7 +45,7 @@ export default function StudentDashboardPage() {
           enrolledCourseIds.map(async (courseId: string) => {
             try {
               // Using general endpoint to allow viewing if public, bypassing strict student list check
-              const response = await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/courses/get_course_by_id_general`, {
+              const response = await axios.post(API_CONFIG.material.courses.getCourseByIdGeneral, {
                 course_id: courseId
               }, {
                 headers: user.accessToken ? { Authorization: `Bearer ${user.accessToken}` } : {},
@@ -60,7 +61,7 @@ export default function StudentDashboardPage() {
                 // Fetch SAS URL if thumbnail is not a full URL
                 if (c.thumbnail && !c.thumbnail.startsWith("http")) {
                   try {
-                    const sasRes = await axios.get(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/upload/${encodeURIComponent(c.thumbnail)}`, {
+                    const sasRes = await axios.get(API_CONFIG.getUploadUrl(c.thumbnail), {
                       headers: user.accessToken ? { Authorization: `Bearer ${user.accessToken}` } : {},
                       withCredentials: true
                     });

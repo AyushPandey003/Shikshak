@@ -9,6 +9,7 @@ import ReviewModal from './ReviewModal';
 import axios from 'axios';
 import { useAppStore } from '@/store/useAppStore';
 import { useRouter } from 'next/navigation';
+import { API_CONFIG } from '@/lib/api-config';
 
 interface CourseCardProps {
   course: Course;
@@ -32,7 +33,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
     // Fetch reviews to get real-time rating
     const fetchReviews = async () => {
       try {
-        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/reviews/get_reviews`, {
+        const response = await axios.post(API_CONFIG.material.reviews.getReviews, {
           course_id: course_id
         }, { withCredentials: true });
 
@@ -67,7 +68,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, isTeacher, canReview, o
     }
 
     try {
-      const response = await axios.post("${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/reviews/create_review", {
+      const response = await axios.post(API_CONFIG.material.reviews.createReview, {
         rating: data.rating,
         comment: data.description,
         course_id: course.id,

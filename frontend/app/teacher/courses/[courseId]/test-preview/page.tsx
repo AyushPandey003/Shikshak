@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ChevronLeft, Search, User, FileText, CheckCircle } from 'lucide-react';
 import { dummyTests, dummySubmissions, dummyQuestions, Test, StudentSubmission, Question } from '@/types/test';
 import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { useAppStore } from '@/store/useAppStore';
+import { API_CONFIG } from '@/lib/api-config';
 
 function TestPreviewPageContent() {
     const router = useRouter();
@@ -38,7 +39,7 @@ function TestPreviewPageContent() {
     useEffect(() => {
         const fetchCourseData = async () => {
             try {
-                const response = await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/courses/get_course_by_id`, {
+                const response = await axios.post(API_CONFIG.material.courses.getCourseById, {
                     course_id: courseId,
                     user_id: user?.id,
                     user_role: profile?.role
@@ -118,7 +119,7 @@ function TestPreviewPageContent() {
 
             console.log("Saving result:", selectedResultId, "Raw:", totalObtained, "Normalized:", normalizedScore);
 
-            await axios.post('${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/tests/give-marks', {
+            await axios.post(API_CONFIG.material.tests.giveMarks, {
                 result_id: selectedResultId,
                 marks: Number(normalizedScore.toFixed(2))
             }, { withCredentials: true });
@@ -142,7 +143,7 @@ function TestPreviewPageContent() {
 
     const getresults = async (testId: string) => {
         try {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/tests/get-results`, {
+            const response = await axios.post(API_CONFIG.material.tests.getResults, {
                 test_id: testId,
             }, { withCredentials: true });
 
@@ -404,7 +405,7 @@ function TestPreviewPageContent() {
 
 export default function TestPreviewPage() {
     return (
-        <Suspense fallback={<div className="flex h-screen items-center justify-center bg-gray-50">Loading...</div>}>
+        <Suspense fallback={<div className="flex flex-col h-screen bg-gray-50 items-center justify-center"><p className="text-gray-500">Loading test preview...</p></div>}>
             <TestPreviewPageContent />
         </Suspense>
     );

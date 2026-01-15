@@ -26,7 +26,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({ onStart, course_id }) =
     setLoading(true);
     try {
       // const newCourseId = "TEST_COURSE_001"
-      const response = await axios.post(`${API_CONFIG.tests}/aitest`, {
+      const response = await axios.post(API_CONFIG.material.tests.aitest, {
         query: userQuery,
         course_id: course_id
       }, { withCredentials: true });

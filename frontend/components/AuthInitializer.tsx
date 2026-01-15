@@ -17,7 +17,7 @@ export default function AuthInitializer() {
 
     const fetchUserDetails = async () => {
         try {
-            const res = await axios.get(`${API_CONFIG.auth}/get_user`, {
+            const res = await axios.get(API_CONFIG.auth.getUser, {
                 withCredentials: true, // Include cookies for session auth
             });
             // console.log("getting", res);

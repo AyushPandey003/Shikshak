@@ -8,6 +8,7 @@ import { CLASSES, BOARDS, SUBJECTS } from '@/constants/allcourses';
 import { TabOption, SortOption, Course } from '@/types/course';
 import axios from 'axios';
 import { useAppStore } from '@/store/useAppStore';
+import { API_CONFIG } from '@/lib/api-config';
 
 interface FilterState {
   grades: string[];
@@ -33,7 +34,7 @@ export default function CoursesPage() {
       try {
         setLoading(true);
         const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/courses/get_all_general`,
+          API_CONFIG.material.courses.getAllGeneral,
           {
             withCredentials: true,
           }
@@ -57,7 +58,7 @@ export default function CoursesPage() {
           if (c.thumbnail && !c.thumbnail.startsWith("http")) {
             try {
               // Use encodeURIComponent to handle spaces or special chars safe
-              const sasRes = await axios.get(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/upload/${encodeURIComponent(c.thumbnail)}`, {
+              const sasRes = await axios.get(API_CONFIG.getUploadUrl(c.thumbnail), {
                 headers: user?.accessToken ? { "Authorization": `Bearer ${user.accessToken}` } : {},
                 withCredentials: true
               });

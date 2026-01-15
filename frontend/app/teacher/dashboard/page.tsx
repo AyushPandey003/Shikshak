@@ -40,7 +40,7 @@ export default function TeacherDashboardPage() {
           headers["Authorization"] = `Bearer ${user.accessToken}`;
         }
 
-        const response = await axios.post(`${API_CONFIG.courses}/get_all`, {
+        const response = await axios.post(API_CONFIG.material.courses.getAll, {
           user_id: user.id,
           user_role: "teacher"
         }, {

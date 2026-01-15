@@ -6,6 +6,7 @@ import { AuthPage } from './login/page';
 import { UserDetailsPage } from './register/page';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
+import { API_CONFIG } from '@/lib/api-config';
 
 export default function Home() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function Home() {
     console.log("Saving Profile to Backend:", { user: session?.user, ...profile });
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/authentication/user_detail`, {
+      const response = await fetch(API_CONFIG.auth.userDetail, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

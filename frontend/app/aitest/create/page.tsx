@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AssessmentForm from '../../../components/AssessmentForm';
 import { AssessmentConfig } from '../../../types/types';
 import axios from 'axios';
 import { useAppStore } from '@/store/useAppStore';
+import { API_CONFIG } from '@/lib/api-config';
 
-const CreateTestPageContent: React.FC = () => {
+function CreateTestPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [course_id, setCourseId] = useState('');
@@ -40,7 +41,7 @@ const CreateTestPageContent: React.FC = () => {
         }
         console.log(config);
         // call api to create a test
-        await axios.post(`${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/material/tests/test-create`, {
+        await axios.post(API_CONFIG.material.tests.testCreate, {
             title: config.title,
             questions: config.questions,
             course_id: course_id,
@@ -58,14 +59,12 @@ const CreateTestPageContent: React.FC = () => {
             </div>
         </div>
     );
-};
+}
 
-const CreateTestPage: React.FC = () => {
+export default function CreateTestPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+        <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><p className="text-gray-500">Loading...</p></div>}>
             <CreateTestPageContent />
         </Suspense>
     );
-};
-
-export default CreateTestPage;
+}

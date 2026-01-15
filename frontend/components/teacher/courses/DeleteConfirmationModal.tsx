@@ -27,7 +27,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
-      await axios.post(`${API_CONFIG.courses}/delete_course`, {
+      await axios.post(API_CONFIG.material.courses.deleteCourse, {
         course_id: courseId
       }, {
         headers: {
