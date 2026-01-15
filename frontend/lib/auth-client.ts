@@ -3,7 +3,7 @@ import { API_CONFIG } from "./api-config"
 
 export const authClient = createAuthClient({
     baseURL: API_CONFIG.baseUrl,
-    basePath: "/authentication", // Maps to /api/auth on backend via API Gateway
+    basePath: "/api/auth", // Must match server's basePath for Better Auth routes
     fetchOptions: {
         credentials: "include",
     }
